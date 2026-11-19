@@ -1,4 +1,5 @@
 import type { FastifyInstance } from "fastify";
+import { refreshWeather } from "./weather-cache.js";
 import {
   assetUrlSchema,
   cardInput,
@@ -154,6 +155,14 @@ export function contentRoutes(app: FastifyInstance, realtime: Realtime) {
       update: config,
     });
     realtime.io.to(deviceRoom(id)).emit("panel.config");
+    if (config.weights.WEATHER > 0)
+      void refreshWeather(config)
+        .then((updated) => {
+          if (updated) realtime.io.to(deviceRoom(id)).emit("panel.content");
+        })
+        .catch(() =>
+          app.log.warn("Weather refresh failed for a configured panel"),
+        );
     return reply.code(204).send();
   });
 }

@@ -1,7 +1,11 @@
 import { Icon } from "../../components/Icon";
 import { useEffect, useState, type FormEvent } from "react";
 import { Link, useParams } from "react-router-dom";
-import { contentTypes, type PanelEditorData } from "@beend/shared";
+import {
+  brazilianStates,
+  contentTypes,
+  type PanelEditorData,
+} from "@beend/shared";
 import { api, message } from "../../api";
 
 const labels = {
@@ -38,6 +42,7 @@ export function PanelEditor() {
         ),
         cardSeconds: form.get("cardSeconds"),
         city: form.get("city"),
+        state: form.get("state") || null,
         callDisplaySeconds: form.get("callDisplaySeconds"),
         ticker: form.get("ticker"),
       });
@@ -137,6 +142,21 @@ export function PanelEditor() {
                   required
                   defaultValue={data.config.city}
                 />
+              </label>
+              <label>
+                Estado para o clima
+                <select
+                  name="state"
+                  required
+                  defaultValue={data.config.state ?? ""}
+                >
+                  <option value="">Selecione o estado</option>
+                  {Object.entries(brazilianStates).map(([uf, name]) => (
+                    <option key={uf} value={uf}>
+                      {name} ({uf})
+                    </option>
+                  ))}
+                </select>
               </label>
               <label>
                 Segundos por cartão

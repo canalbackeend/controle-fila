@@ -29,6 +29,12 @@ Crie um recurso **Docker Compose** apontando para o repositório e selecione `do
 
 Os volumes `postgres-data`, `uploads` e `backups` são persistentes. Use a mesma origem ao atualizar a aplicação para preservar sessões, pareamentos e QR Codes já impressos.
 
+## Previsão do tempo
+
+Configure `WEATHER_PROVIDER=weatherapi` e `WEATHER_API_KEY` nas variáveis de ambiente da API. O [plano gratuito da WeatherAPI.com](https://www.weatherapi.com/pricing) inclui três dias de previsão e até 100 mil consultas por mês para uso comercial. A TV credita a fonte.
+
+Em **Administração → Dispositivos**, abra **Configurar painel**, informe a cidade e selecione o estado. Dê um peso maior que zero a **Clima**. O servidor compartilha o cache entre painéis da mesma localização e atualiza os dados a cada 30 minutos. As configurações antigas mantêm a cidade salva até que um estado seja selecionado.
+
 ## Backup e restauração
 
 O serviço `backup` grava um dump PostgreSQL e um arquivo de imagens na inicialização e a cada 24 horas. Por padrão, a retenção local é de 14 dias. Configure `BACKUP_INTERVAL_SECONDS` e `BACKUP_RETENTION_DAYS` conforme a operação.

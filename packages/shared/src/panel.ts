@@ -1,6 +1,38 @@
 import type { TenantTheme } from "./theme.js";
 import type { PanelCall } from "./attendant.js";
 
+export const brazilianStates = {
+  AC: "Acre",
+  AL: "Alagoas",
+  AP: "Amapá",
+  AM: "Amazonas",
+  BA: "Bahia",
+  CE: "Ceará",
+  DF: "Distrito Federal",
+  ES: "Espírito Santo",
+  GO: "Goiás",
+  MA: "Maranhão",
+  MT: "Mato Grosso",
+  MS: "Mato Grosso do Sul",
+  MG: "Minas Gerais",
+  PA: "Pará",
+  PB: "Paraíba",
+  PR: "Paraná",
+  PE: "Pernambuco",
+  PI: "Piauí",
+  RJ: "Rio de Janeiro",
+  RN: "Rio Grande do Norte",
+  RS: "Rio Grande do Sul",
+  RO: "Rondônia",
+  RR: "Roraima",
+  SC: "Santa Catarina",
+  SP: "São Paulo",
+  SE: "Sergipe",
+  TO: "Tocantins",
+} as const;
+export type BrazilianState = keyof typeof brazilianStates;
+export type WeatherLocation = { city: string; state: BrazilianState | null };
+
 export type ContentType = "NOTICE" | "NEWS" | "WEATHER" | "TIP";
 export type DisplayCard = {
   id: string;
@@ -14,12 +46,11 @@ export type DisplayCard = {
     days: { day: string; min: number; max: number }[];
   };
 };
-export type PanelSettings = {
+export type PanelSettings = WeatherLocation & {
   serviceIds: string[];
   weights: Record<ContentType, number>;
   cardSeconds: number;
   newsCategories: string[];
-  city: string;
   callDisplaySeconds: number;
   ticker: string;
 };
@@ -32,6 +63,7 @@ export type PanelData = {
   calls: PanelCall[];
   cards: DisplayCard[];
   temperature?: number;
+  weatherSource?: string;
 };
 export const defaultPanelSettings: PanelSettings = {
   serviceIds: [],
@@ -39,6 +71,7 @@ export const defaultPanelSettings: PanelSettings = {
   cardSeconds: 10,
   newsCategories: [],
   city: "São Paulo",
+  state: "SP",
   callDisplaySeconds: 5,
   ticker: "",
 };
@@ -49,6 +82,9 @@ import { idSchema, nameSchema } from "./admin.js";
 export const contentTypes = ["NOTICE", "NEWS", "WEATHER", "TIP"] as const;
 const weight = z.coerce.number().int().min(0).max(100);
 export const categorySchema = z.string().trim().toLowerCase().min(1).max(60);
+export const weatherStateSchema = z.enum(
+  Object.keys(brazilianStates) as BrazilianState[],
+);
 export const panelInput = z.object({
   serviceIds: z
     .array(idSchema)
@@ -66,6 +102,7 @@ export const panelInput = z.object({
     .max(30)
     .transform((categories) => [...new Set(categories)]),
   city: nameSchema,
+  state: weatherStateSchema.nullable().default(null),
   callDisplaySeconds: z.coerce.number().int().min(2).max(30),
   ticker: z.string().trim().max(400),
 });

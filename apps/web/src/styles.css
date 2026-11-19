@@ -648,6 +648,10 @@ input.code-input {
 .tv-temperature {
   font-size: clamp(1rem, 2vw, 2.6rem);
 }
+.tv-temperature small {
+  display: block;
+  font-size: clamp(0.65rem, 0.8vw, 0.9rem);
+}
 .tv-layout {
   display: grid;
   grid-template-columns: minmax(0, 30%) minmax(0, 1fr);

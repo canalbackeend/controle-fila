@@ -237,6 +237,7 @@ model PanelConfig {
   cardSeconds        Int      @default(10)
   newsCategories     String[] @default([])
   city               String   @default("São Paulo")
+  state              String?
   callDisplaySeconds Int      @default(5)
   ticker             String   @default("")
   device             Device   @relation(fields: [tenantId, deviceId], references: [tenantId, id], onDelete: Cascade)

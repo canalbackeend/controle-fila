@@ -1,9 +1,14 @@
 import { schedule } from "node-cron";
 import type { FastifyInstance } from "fastify";
-import { defaultPanelSettings } from "@beend/shared";
+import {
+  defaultPanelSettings,
+  weatherStateSchema,
+  type WeatherLocation,
+} from "@beend/shared";
 import { prisma, tenantDb } from "../../db.js";
 import { configureSources, refreshNews } from "./news.js";
-import { configuredWeatherProvider } from "./weather.js";
+import { configuredWeatherProvider, weatherCacheKey } from "./weather.js";
+import { refreshWeather } from "./weather-cache.js";
 
 export function contentJobs(app: FastifyInstance) {
   const provider = configuredWeatherProvider();
@@ -19,32 +24,30 @@ export function contentJobs(app: FastifyInstance) {
   async function weather() {
     if (!provider) return;
     try {
-      const tenants = await prisma.tenant.findMany({ select: { id: true } });
-      const cities = new Set<string>([defaultPanelSettings.city]);
+      const tenants = await prisma.tenant.findMany({
+        where: { suspendedAt: null },
+        select: { id: true },
+      });
+      const cities = new Map<string, WeatherLocation>([
+        [weatherCacheKey(defaultPanelSettings), defaultPanelSettings],
+      ]);
       for (const { id } of tenants) {
         const configs = await tenantDb(id).panelConfig.findMany({
-          select: { city: true },
-          distinct: ["city"],
+          where: { weights: { path: ["WEATHER"], gt: 0 } },
+          select: { city: true, state: true },
+          distinct: ["city", "state"],
         });
-        configs.forEach(({ city }) => cities.add(city));
+        for (const { city, state } of configs) {
+          const location = {
+            city,
+            state: weatherStateSchema.safeParse(state).data ?? null,
+          };
+          cities.set(weatherCacheKey(location), location);
+        }
       }
-      for (const city of cities) {
+      for (const location of cities.values()) {
         try {
-          const existing = await prisma.weatherCache.findUnique({
-            where: { city },
-            select: { fetchedAt: true },
-          });
-          if (
-            existing &&
-            Date.now() - existing.fetchedAt.getTime() < 29 * 60_000
-          )
-            continue;
-          const payload = await provider.current(city);
-          await prisma.weatherCache.upsert({
-            where: { city },
-            create: { city, payload },
-            update: { payload, fetchedAt: new Date() },
-          });
+          await refreshWeather(location);
         } catch {
           app.log.warn("Weather refresh failed for a configured city");
         }

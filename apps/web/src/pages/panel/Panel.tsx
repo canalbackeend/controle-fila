@@ -342,6 +342,7 @@ function PanelDevice({ id }: { id: string }) {
           {data?.temperature !== undefined && (
             <span className="tv-temperature">
               {Math.round(data.temperature)}°C
+              {data.weatherSource && <small>{data.weatherSource}</small>}
             </span>
           )}
           <Clock timeZone={data?.timeZone || zone} />

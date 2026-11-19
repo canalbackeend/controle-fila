@@ -1,13 +1,14 @@
 import type { Card, PanelConfig } from "@prisma/client";
 import {
   defaultPanelSettings,
+  weatherStateSchema,
   type DisplayCard,
   type ManagedCard,
   type PanelSettings,
 } from "@beend/shared";
 import { prisma, tenantDb } from "../../db.js";
 import { defaultNewsCategory } from "./news.js";
-import { weatherCard, weatherData } from "./weather.js";
+import { weatherCacheKey, weatherCard, weatherData } from "./weather.js";
 
 export function settingsFor(saved: PanelConfig | null): PanelSettings {
   if (!saved) return defaultPanelSettings;
@@ -18,6 +19,7 @@ export function settingsFor(saved: PanelConfig | null): PanelSettings {
       ...(saved.weights as PanelSettings["weights"]),
     },
     city: saved.city,
+    state: weatherStateSchema.safeParse(saved.state).data ?? null,
     newsCategories: saved.newsCategories,
     cardSeconds: saved.cardSeconds,
     callDisplaySeconds: saved.callDisplaySeconds,
@@ -64,7 +66,11 @@ export async function panelContent(tenantId: string, config: PanelSettings) {
           take: 75,
         })
       : [],
-    prisma.weatherCache.findUnique({ where: { city: config.city } }),
+    config.weights.WEATHER > 0
+      ? prisma.weatherCache.findUnique({
+          where: { city: weatherCacheKey(config) },
+        })
+      : null,
   ]);
   const weather =
     weatherRow && now.getTime() - weatherRow.fetchedAt.getTime() < 6 * 3600000
@@ -92,10 +98,11 @@ export async function panelContent(tenantId: string, config: PanelSettings) {
         imageUrl: item.imageUrl ?? undefined,
         source: item.source,
       })),
-    ...(weather ? [weatherCard(config.city, weather)] : []),
+    ...(weather ? [weatherCard(config, weather)] : []),
   ];
   return {
     cards: cards.filter((card) => config.weights[card.type] > 0),
     temperature: weather?.temperature,
+    weatherSource: weather?.source,
   };
 }

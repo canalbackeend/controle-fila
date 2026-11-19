@@ -1,4 +1,5 @@
 import { prisma } from "../apps/api/src/db";
+import { weatherCacheKey } from "../apps/api/src/modules/content/weather";
 import { expect, test } from "./fixture";
 
 test("shows notices, tips, headlines and weather according to panel weights", async ({
@@ -6,6 +7,8 @@ test("shows notices, tips, headlines and weather according to panel weights", as
   unit,
 }) => {
   const city = `Cidade ${unit.slug}`;
+  const states = ["SP", "MG"] as const;
+  const cacheKeys = states.map((state) => weatherCacheKey({ city, state }));
   const category = unit.slug.slice(0, 45);
   const feed = await prisma.feedSource.create({
     data: { url: `https://example.invalid/${unit.slug}`, category },
@@ -21,16 +24,16 @@ test("shows notices, tips, headlines and weather according to panel weights", as
         publishedAt: new Date(),
       },
     });
-    await prisma.weatherCache.create({
-      data: {
-        city,
+    await prisma.weatherCache.createMany({
+      data: cacheKeys.map((key, index) => ({
+        city: key,
         payload: {
-          temperature: 24,
+          temperature: index === 0 ? 24 : 31,
           description: "Ensolarado",
           days: [{ day: "2026-11-19", min: 15, max: 26 }],
           source: "Fonte simulada",
         },
-      },
+      })),
     });
     for (const [type, title] of [
       ["NOTICE", "Aviso da unidade"],
@@ -59,6 +62,7 @@ test("shows notices, tips, headlines and weather according to panel weights", as
           weights,
           cardSeconds: 5,
           city,
+          state: "SP",
           newsCategories: [category],
           callDisplaySeconds: 5,
           ticker: "Atendimento por ordem de chamada",
@@ -77,16 +81,22 @@ test("shows notices, tips, headlines and weather according to panel weights", as
     for (const [type, title] of [
       ["TIP", "Dica da unidade"],
       ["NEWS", "Notícia do dia"],
-      ["WEATHER", city],
+      ["WEATHER", `${city}, SP`],
     ] as const) {
       await setWeight(type);
       await expect(page.getByRole("heading", { name: title })).toBeVisible();
     }
+    await expect(page.locator(".tv-temperature")).toContainText("24°C");
+    await expect(page.locator(".tv-temperature")).toContainText(
+      "Fonte simulada",
+    );
     await expect(
       page.getByText("Atendimento por ordem de chamada").first(),
     ).toBeVisible();
   } finally {
     await prisma.feedSource.delete({ where: { id: feed.id } });
-    await prisma.weatherCache.deleteMany({ where: { city } });
+    await prisma.weatherCache.deleteMany({
+      where: { city: { in: cacheKeys } },
+    });
   }
 });
