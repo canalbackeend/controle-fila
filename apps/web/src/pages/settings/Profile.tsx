@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from "react";
-import type { Actor } from "@beend/shared";
+import type { Actor, TenantTheme } from "@beend/shared";
+import { ThemeEditor } from "./ThemeEditor";
 import { api, message } from "../../api";
 
 const roles = {
@@ -11,9 +12,11 @@ const roles = {
 export function Profile({
   actor,
   onSave,
+  onThemeSave,
 }: {
   actor: Actor;
   onSave: (actor: Actor) => void;
+  onThemeSave: (theme: TenantTheme | null) => void;
 }) {
   const [name, setName] = useState(actor.name);
   const [email, setEmail] = useState(actor.email);
@@ -172,6 +175,18 @@ export function Profile({
           </div>
         </form>
       </section>
+      <ThemeEditor
+        current={actor.personalTheme ?? null}
+        inherited={actor.theme}
+        onSave={async (theme) => {
+          const saved = await api<{ theme: TenantTheme | null }>(
+            "/auth/profile/theme",
+            "PUT",
+            { theme },
+          );
+          onThemeSave(saved.theme);
+        }}
+      />
     </main>
   );
 }

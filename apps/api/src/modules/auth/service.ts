@@ -2,6 +2,7 @@ import { compare, hash } from "bcryptjs";
 import type { FastifyRequest } from "fastify";
 import {
   readTheme,
+  themeSchema,
   type Actor,
   type Role,
   type profileInput,
@@ -30,13 +31,14 @@ export async function getActor(
         role: true,
         email: true,
         credentialsChangedAt: true,
+        personalTheme: true,
       },
     }),
     db.unit.findFirst({ orderBy: { id: "asc" }, select: { id: true } }),
     db.tenant.findUnique({ where: { id: tenantId } }),
   ]);
   if (!user || !unit || !tenant) return null;
-  const { credentialsChangedAt, ...account } = user;
+  const { credentialsChangedAt, personalTheme, ...account } = user;
   if (
     issuedAt !== undefined &&
     credentialsChangedAt &&
@@ -46,6 +48,7 @@ export async function getActor(
   return {
     ...account,
     theme: readTheme(tenant.theme),
+    personalTheme: themeSchema.safeParse(personalTheme).data ?? null,
     tenantId,
     unitId: unit.id,
     tenantName: tenant.name,

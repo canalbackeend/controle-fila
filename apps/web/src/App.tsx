@@ -38,7 +38,10 @@ function Workspace({
     }
   }
   return (
-    <div className="theme workspace-theme" style={themeStyle(actor.theme)}>
+    <div
+      className="theme workspace-theme"
+      style={themeStyle(actor.personalTheme ?? actor.theme)}
+    >
       <header className="app-header">
         <Link className="brand" to="/" aria-label="Beend Fila">
           <BrandLogo />
@@ -210,7 +213,16 @@ export function App() {
       <Route
         path="/perfil"
         element={protectedPage((actor) => (
-          <Profile key={actor.id} actor={actor} onSave={setActor} />
+          <Profile
+            key={actor.id}
+            actor={actor}
+            onSave={setActor}
+            onThemeSave={(personalTheme) =>
+              setActor((known) =>
+                known?.id === actor.id ? { ...known, personalTheme } : known,
+              )
+            }
+          />
         ))}
       />
       <Route path="/t/:token" element={<Tracking />} />

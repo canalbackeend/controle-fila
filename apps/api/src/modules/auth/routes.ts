@@ -1,7 +1,14 @@
 import type { FastifyInstance } from "fastify";
-import { loginInput, profileInput, readTheme, slugSchema } from "@beend/shared";
+import {
+  loginInput,
+  personalThemeInput,
+  profileInput,
+  readTheme,
+  slugSchema,
+} from "@beend/shared";
 import { z } from "zod";
-import { prisma } from "../../db.js";
+import { Prisma } from "@prisma/client";
+import { prisma, tenantDb } from "../../db.js";
 import {
   authenticate,
   cookieOptions,
@@ -62,6 +69,15 @@ export function authRoutes(app: FastifyInstance, secure: boolean) {
         .send(updated);
     },
   );
+  app.put("/auth/profile/theme", async (request) => {
+    const actor = await requireActor(request);
+    const { theme } = personalThemeInput.parse(request.body);
+    await tenantDb(actor.tenantId).user.update({
+      where: { id: actor.id, active: true },
+      data: { personalTheme: theme ?? Prisma.DbNull },
+    });
+    return { theme };
+  });
   app.post("/auth/logout", async (_request, reply) => {
     return reply
       .clearCookie(sessionCookie, { path: "/", secure })

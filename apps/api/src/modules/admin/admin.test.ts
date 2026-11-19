@@ -441,6 +441,63 @@ describe.skipIf(!databaseTests)(
       expect(outside.json().theme).toEqual({ preset: "blue" });
     });
 
+    test("allows personal themes for attendants without modifying the tenant or another account", async () => {
+      const owner = actors[0]!;
+      const outsider = actors[1]!;
+      const { slug } = await tenantDb(owner.id).tenant.findUniqueOrThrow({
+        where: { id: owner.id },
+      });
+      const staff = await app.inject({
+        method: "POST",
+        url: "/auth/login",
+        payload: {
+          tenant: slug,
+          email: "staff@test.local",
+          password: input.password,
+        },
+      });
+      expect(staff.statusCode).toBe(200);
+      const cookie = String(staff.headers["set-cookie"]).split(";")[0]!;
+      const put = (payload: object, headers = { cookie }) =>
+        app.inject({
+          method: "PUT",
+          url: "/auth/profile/theme",
+          payload,
+          headers,
+        });
+      expect(
+        (await put({ theme: { preset: "green" } }, { cookie: "" })).statusCode,
+      ).toBe(401);
+      expect(
+        (await put({ theme: { preset: "green" }, tenantId: outsider.id }))
+          .statusCode,
+      ).toBe(400);
+      expect(
+        (await put({ theme: { preset: "custom", color: "invalid" } }))
+          .statusCode,
+      ).toBe(400);
+      const response = await put({ theme: { preset: "green" } });
+      expect(response.statusCode, response.body).toBe(200);
+      const session = (cookie: string) =>
+        app
+          .inject({ url: "/auth/session", headers: { cookie } })
+          .then((r) => r.json());
+      expect(await session(cookie)).toMatchObject({
+        theme: { preset: "custom", color: "#AA2639" },
+        personalTheme: { preset: "green" },
+      });
+      expect(await session(owner.cookie)).toMatchObject({
+        theme: { preset: "custom", color: "#AA2639" },
+        personalTheme: null,
+      });
+      expect(await session(outsider.cookie)).toMatchObject({
+        theme: { preset: "blue" },
+        personalTheme: null,
+      });
+      expect((await put({ theme: null })).statusCode).toBe(200);
+      expect(await session(cookie)).toMatchObject({ personalTheme: null });
+    });
+
     test("lets administrators edit their own profile and renews the session after changing credentials", async () => {
       const first = actors[0]!;
       const second = actors[1]!;

@@ -18,6 +18,9 @@ export const themeSchema = z.discriminatedUnion("preset", [
   }),
   z.strictObject({ preset: z.literal("custom"), color: hexColor }),
 ]);
+export const personalThemeInput = z.strictObject({
+  theme: themeSchema.nullable(),
+});
 export type TenantTheme = z.infer<typeof themeSchema>;
 export const defaultTheme: TenantTheme = { preset: "blue" };
 

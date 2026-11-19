@@ -107,6 +107,7 @@ export type Actor = {
   tenantName: string;
   email: string;
   theme: TenantTheme;
+  personalTheme: TenantTheme | null;
   timeZone: string;
   resetTime: string;
 };

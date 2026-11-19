@@ -93,3 +93,35 @@ test("applies the company theme to existing devices, tracking, sign-in and staff
     await devices.close();
   }
 });
+
+test("an attendant can use a personal theme and return to the company palette", async ({
+  page,
+  unit,
+}) => {
+  await unit.login(page, "staff@test.local");
+  await page.getByRole("link", { name: "Meu perfil", exact: true }).click();
+  await expect(
+    page.getByRole("radio", { name: "Usar tema da empresa" }),
+  ).toBeChecked();
+  await page.getByRole("radio", { name: "Verde", exact: true }).check();
+  await page.getByRole("button", { name: "Salvar tema" }).click();
+  await expect(page.getByText("Tema pessoal salvo.")).toBeVisible();
+  await page.reload();
+  await expect(
+    page.getByRole("radio", { name: "Verde", exact: true }),
+  ).toBeChecked();
+  const appearance = page.locator(".workspace-theme");
+  await page.getByRole("link", { name: "Atendimento", exact: true }).click();
+  await expect(appearance).toHaveCSS("--theme-color", "#257450");
+  const settings = await unit.request
+    .get("/api/auth/session")
+    .then((response) => response.json());
+  expect(settings).toMatchObject({
+    theme: { preset: "blue" },
+    personalTheme: null,
+  });
+  await page.getByRole("link", { name: "Meu perfil", exact: true }).click();
+  await page.getByRole("radio", { name: "Usar tema da empresa" }).check();
+  await page.getByRole("button", { name: "Salvar tema" }).click();
+  await expect(appearance).toHaveCSS("--theme-color", "#214FB5");
+});
