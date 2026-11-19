@@ -302,6 +302,18 @@ describe.skipIf(!databaseTests)(
       });
       expect(created.statusCode, created.body).toBe(201);
       const { code, device } = created.json();
+      const links = (cookie?: string) =>
+        app.inject({
+          url: "/devices/links",
+          headers: cookie ? { cookie } : {},
+        });
+      expect((await links()).statusCode).toBe(401);
+      expect((await links(outsider)).json()).toEqual([]);
+      expect((await links(cookie)).json()).toContainEqual({
+        id: device.id,
+        type: "KIOSK",
+        name: device.name,
+      });
       const pair = () =>
         app.inject({
           method: "POST",

@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from "react";
 import type { Actor, TenantTheme } from "@beend/shared";
+import { ProfileDeviceLinks } from "./ProfileDeviceLinks";
 import { ThemeEditor } from "./ThemeEditor";
 import { api, message } from "../../api";
 
@@ -69,6 +70,7 @@ export function Profile({
           <p>Gerencie os dados da sua conta em {actor.tenantName}.</p>
         </div>
       </div>
+      <ProfileDeviceLinks />
       <section className="surface">
         <div className="section-head">
           <h2>Dados da conta</h2>

@@ -1,13 +1,10 @@
 import { Link } from "react-router-dom";
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import type { DevicePairing, DeviceRecord } from "@beend/shared";
+import { devicePath } from "../../device-links";
 import { api, message } from "../../api";
 
 const labels = { KIOSK: "Totem", PANEL: "Painel de TV" };
-function devicePath(device: DeviceRecord) {
-  return `/${device.type === "KIOSK" ? "totem" : "painel"}/${device.id}`;
-}
-
 export function Devices() {
   const [devices, setDevices] = useState<DeviceRecord[]>([]);
   const [pairing, setPairing] = useState<DevicePairing>();

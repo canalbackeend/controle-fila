@@ -25,6 +25,7 @@ export type DeviceRecord = {
   paired: boolean;
   lastSeenAt: string | null;
 };
+export type DeviceLink = Pick<DeviceRecord, "id" | "name" | "type">;
 export type DevicePairing = {
   device: DeviceRecord;
   code: string;

@@ -1,6 +1,12 @@
-import { readTheme } from "@beend/shared";
 import type { FastifyInstance } from "fastify";
-import { deviceInput, idParams, issueInput, pairInput } from "@beend/shared";
+import {
+  deviceInput,
+  idParams,
+  issueInput,
+  pairInput,
+  readTheme,
+  type DeviceLink,
+} from "@beend/shared";
 import { tenantDb } from "../../db.js";
 import { deviceRoom, type Realtime } from "../../realtime.js";
 import { requireActor } from "../auth/service.js";
@@ -9,6 +15,15 @@ import { requireDevice } from "./auth.js";
 import { deviceRecord, newPairing, pairDevice } from "./service.js";
 
 export function deviceRoutes(app: FastifyInstance, realtime: Realtime) {
+  app.get("/devices/links", async (request): Promise<DeviceLink[]> => {
+    const actor = await requireActor(request);
+    return tenantDb(actor.tenantId).device.findMany({
+      where: { unitId: actor.unitId },
+      select: { id: true, name: true, type: true },
+      orderBy: [{ type: "asc" }, { name: "asc" }],
+    });
+  });
+
   app.get("/admin/devices", async (request) => {
     const actor = await requireActor(request, ["ADMIN", "SUPERADMIN"]);
     const devices = await tenantDb(actor.tenantId).device.findMany({
