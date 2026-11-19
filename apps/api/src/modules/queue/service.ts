@@ -94,6 +94,7 @@ async function event(
       unitId: scope.unitId,
       ticketId: ticket.id,
       type,
+      at: new Date(),
       ...context,
     },
   });

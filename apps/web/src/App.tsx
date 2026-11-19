@@ -5,6 +5,7 @@ import { api, message } from "./api";
 import { Login } from "./pages/auth/Login";
 import { Content } from "./pages/content/Content";
 import { PanelEditor } from "./pages/content/PanelEditor";
+import { Reports } from "./pages/reports/Reports";
 import { Tracking } from "./pages/tracking/Tracking";
 import { Panel } from "./pages/panel/Panel";
 import { Kiosk } from "./pages/kiosk/Kiosk";
@@ -45,6 +46,7 @@ function Workspace({
               <Link to="/admin">Administração</Link>
               <Link to="/admin/dispositivos">Dispositivos</Link>
               <Link to="/admin/conteudo">Conteúdo</Link>
+              <Link to="/admin/relatorios">Relatórios</Link>
             </>
           )}
           <Link to="/atendente">Atendimento</Link>
@@ -152,6 +154,16 @@ export function App() {
             <Navigate to="/atendente" replace />
           ) : (
             <PanelEditor />
+          ),
+        )}
+      />
+      <Route
+        path="/admin/relatorios"
+        element={protectedPage((actor) =>
+          actor.role === "ATTENDANT" ? (
+            <Navigate to="/atendente" replace />
+          ) : (
+            <Reports actor={actor} />
           ),
         )}
       />

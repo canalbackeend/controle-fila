@@ -14,3 +14,4 @@
 - As fontes RSS são configuradas por ambiente e precisam autorizar a exibição comercial. O servidor guarda miniaturas locais e usa o último clima válido por até seis horas se o provedor falhar.
 - Os pesos do painel são relativos entre as categorias habilitadas com conteúdo disponível. Em cada troca, o cartão anterior é excluído quando há outra opção.
 - A URL pública usa um token aleatório independente do código impresso. Após a virada, o endpoint responde como expirado. O celular recebe avisos do navegador enquanto a página está aberta.
+- Relatórios usam as datas do calendário no fuso da unidade, com até 93 dias por consulta. Cada etapa concluída ou encaminhada conta como um atendimento. A taxa de ausência usa como base as etapas concluídas e as ausências.

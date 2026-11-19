@@ -1,5 +1,10 @@
 import { useCallback, useEffect, useState, type FormEvent } from "react";
-import type { Actor, ManagedCard } from "@beend/shared";
+import {
+  dayStartUtc,
+  nextDay,
+  type Actor,
+  type ManagedCard,
+} from "@beend/shared";
 import { api, message } from "../../api";
 
 type ContentData = { logoUrl: string | null; cards: ManagedCard[] };
@@ -69,10 +74,18 @@ export function Content({ actor }: { actor: Actor }) {
           imageUrl:
             image ?? (form.has("remove") ? null : (card?.imageUrl ?? null)),
           validFrom: form.get("validFrom")
-            ? new Date(`${form.get("validFrom")}T00:00:00`).toISOString()
+            ? dayStartUtc(
+                String(form.get("validFrom")),
+                actor.timeZone,
+              ).toISOString()
             : null,
           validTo: form.get("validTo")
-            ? new Date(`${form.get("validTo")}T23:59:59`).toISOString()
+            ? new Date(
+                dayStartUtc(
+                  nextDay(String(form.get("validTo"))),
+                  actor.timeZone,
+                ).getTime() - 1,
+              ).toISOString()
             : null,
           active: form.has("active"),
           global: card ? card.global : form.has("global"),

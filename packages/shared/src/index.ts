@@ -7,3 +7,4 @@ export * from "./attendant.js";
 export * from "./devices.js";
 export * from "./panel.js";
 export * from "./tracking.js";
+export * from "./reports.js";

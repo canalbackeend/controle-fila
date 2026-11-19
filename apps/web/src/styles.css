@@ -846,3 +846,74 @@ fieldset .form-grid {
 .tracking-notifications input {
   width: 6rem;
 }
+
+.action-link {
+  display: inline-block;
+  flex-shrink: 0;
+  text-decoration: none;
+  font-weight: 650;
+  border: 1px solid var(--line);
+  border-radius: 0.65rem;
+  padding: 0.65rem 0.95rem;
+  background: white;
+}
+.report-metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
+  gap: 1rem;
+}
+.metric {
+  padding: 1rem 1.3rem;
+}
+.metric h2 {
+  font-size: 0.92rem;
+  color: var(--muted);
+}
+.metric strong {
+  font-size: 2rem;
+  color: var(--primary);
+}
+.hour-chart {
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+  padding: 0.7rem 1.3rem 1.4rem;
+}
+.hour-slot {
+  min-width: 2rem;
+  flex: 1;
+  text-align: center;
+  font-size: 0.77rem;
+  color: var(--muted);
+}
+.hour-track {
+  position: relative;
+  display: block;
+  height: 7rem;
+  margin-bottom: 0.35rem;
+  border-bottom: 1px solid var(--line);
+}
+.hour-track span {
+  position: absolute;
+  inset: auto 12% 0;
+  border-radius: 0.2rem 0.2rem 0 0;
+  background: #3467c6;
+}
+.report-table {
+  overflow: auto;
+}
+.report-table table {
+  width: 100%;
+  text-align: left;
+  border-collapse: collapse;
+}
+.report-table th,
+.report-table td {
+  white-space: nowrap;
+  padding: 0.8rem 1.3rem;
+  border-top: 1px solid var(--line);
+}
+.report-table th {
+  color: var(--muted);
+  font-size: 0.9rem;
+}

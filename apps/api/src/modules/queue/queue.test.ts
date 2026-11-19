@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { afterAll, beforeAll, describe, expect, test } from "vitest";
-import type { Actor } from "@beend/shared";
+import { localDay, type Actor } from "@beend/shared";
 import { buildApp } from "../../app.js";
 import { prisma, tenantDb } from "../../db.js";
 import { createTenant } from "../admin/service.js";
@@ -266,6 +266,53 @@ describe.skipIf(process.env.RUN_DB_TESTS !== "1")("queue transactions", () => {
       ]),
     );
     expect(events).toHaveLength(9);
+    const day = localDay(new Date(), actor.timeZone);
+    const reportUrl = `/reports?from=${day}&to=${day}`;
+    const ownReport = await app.inject({ url: reportUrl, headers: { cookie } });
+    expect(ownReport.statusCode, ownReport.body).toBe(200);
+    expect(ownReport.json().metrics).toMatchObject({
+      completed: 2,
+      noShows: 1,
+      noShowRate: 33.3,
+    });
+    expect(
+      ownReport
+        .json()
+        .hours.reduce((sum: number, count: number) => sum + count, 0),
+    ).toBe(3);
+    const filtered = await app.inject({
+      url: reportUrl + "&serviceId=" + second,
+      headers: { cookie },
+    });
+    expect(filtered.json().metrics).toMatchObject({ completed: 1, noShows: 0 });
+    const foreignReport = await app.inject({
+      url: reportUrl,
+      headers: { cookie: foreign.cookie },
+    });
+    expect(foreignReport.json().metrics).toMatchObject({
+      completed: 0,
+      noShows: 0,
+    });
+    expect(
+      (
+        await app.inject({
+          url: reportUrl + "&serviceId=" + second,
+          headers: { cookie: foreign.cookie },
+        })
+      ).statusCode,
+    ).toBe(404);
+    expect(
+      (await app.inject({ url: reportUrl, headers: { cookie: other.cookie } }))
+        .statusCode,
+    ).toBe(403);
+    const csv = await app.inject({
+      url: reportUrl.replace("/reports?", "/reports.csv?"),
+      headers: { cookie },
+    });
+    expect(csv.statusCode).toBe(200);
+    expect(csv.headers["content-type"]).toContain("text/csv");
+    expect(csv.body).toContain('"Triagem"');
+    expect(csv.body).not.toContain("Maria");
   }, 15000);
 
   test("expires only the waiting tickets of the selected tenant after the local reset and records the event", async () => {
