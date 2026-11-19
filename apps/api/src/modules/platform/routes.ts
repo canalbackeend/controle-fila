@@ -3,12 +3,15 @@ import type { FastifyInstance } from "fastify";
 import type { Tenant } from "@prisma/client";
 import {
   idParams,
+  deviceActivitySeconds,
   adminPasswordResetInput,
   tenantAccessInput,
   tenantProvisionInput,
+  type CompanyAdministrator,
   type PlatformCompany,
+  type PlatformDevice,
 } from "@beend/shared";
-import { lockTenant, prisma, tenantTransaction } from "../../db.js";
+import { lockTenant, prisma, tenantDb, tenantTransaction } from "../../db.js";
 import { missing } from "../../errors.js";
 import type { Realtime } from "../../realtime.js";
 import { createTenant } from "../admin/service.js";
@@ -39,11 +42,13 @@ function company(tenant: Tenant, kiosks = 0, panels = 0): PlatformCompany {
   };
 }
 
+const customerTenant = { users: { none: { role: "SUPERADMIN" as const } } };
+
 export function platformRoutes(app: FastifyInstance, realtime: Realtime) {
   app.get("/admin/tenants", async (request) => {
     await requireActor(request, ["SUPERADMIN"]);
     const tenants = await prisma.tenant.findMany({
-      where: { users: { none: { role: "SUPERADMIN" } } },
+      where: customerTenant,
       orderBy: { name: "asc" },
     });
     const devices = await prisma.device.groupBy({
@@ -66,6 +71,82 @@ export function platformRoutes(app: FastifyInstance, realtime: Realtime) {
     );
   });
 
+  app.get(
+    "/admin/tenants/:id/administrators",
+    async (request, reply): Promise<CompanyAdministrator[]> => {
+      await requireActor(request, ["SUPERADMIN"]);
+      const { id } = idParams.parse(request.params);
+      const db = tenantDb(id);
+      if (
+        !(await db.tenant.findFirst({
+          where: customerTenant,
+          select: { id: true },
+        }))
+      )
+        missing("Empresa não encontrada.");
+      reply.header("Cache-Control", "private, no-store");
+      return db.user.findMany({
+        where: { role: "ADMIN" },
+        select: {
+          name: true,
+          email: true,
+          active: true,
+          mustChangePassword: true,
+        },
+        orderBy: [{ active: "desc" }, { name: "asc" }, { email: "asc" }],
+      });
+    },
+  );
+
+  app.get(
+    "/admin/platform/devices",
+    async (request, reply): Promise<PlatformDevice[]> => {
+      await requireActor(request, ["SUPERADMIN"]);
+      const devices = await prisma.device.findMany({
+        where: { unit: { tenant: customerTenant } },
+        select: {
+          id: true,
+          name: true,
+          type: true,
+          tokenHash: true,
+          lastSeenAt: true,
+          unit: {
+            select: {
+              name: true,
+              tenant: {
+                select: {
+                  id: true,
+                  name: true,
+                  slug: true,
+                  timeZone: true,
+                  suspendedAt: true,
+                },
+              },
+            },
+          },
+        },
+        orderBy: [{ unit: { name: "asc" } }, { name: "asc" }, { id: "asc" }],
+      });
+      const cutoff = Date.now() - deviceActivitySeconds * 1000;
+      reply.header("Cache-Control", "private, no-store");
+      return devices.map(({ unit, tokenHash, lastSeenAt, ...device }) => {
+        const { suspendedAt, ...company } = unit.tenant;
+        let status: PlatformDevice["status"] = "OFFLINE";
+        if (suspendedAt) status = "SUSPENDED";
+        else if (!tokenHash) status = "UNPAIRED";
+        else if (lastSeenAt && lastSeenAt.getTime() >= cutoff)
+          status = "ONLINE";
+        return {
+          ...device,
+          company,
+          unitName: unit.name,
+          status,
+          lastSeenAt: lastSeenAt?.toISOString() ?? null,
+        };
+      });
+    },
+  );
+
   app.post("/admin/tenants", async (request, reply) => {
     await requireActor(request, ["SUPERADMIN"]);
     const input = tenantProvisionInput.parse(request.body);
@@ -80,7 +161,7 @@ export function platformRoutes(app: FastifyInstance, realtime: Realtime) {
     const result = await tenantTransaction(id, async (db) => {
       await lockTenant(db, id);
       const current = await db.tenant.findFirst({
-        where: { users: { none: { role: "SUPERADMIN" } } },
+        where: customerTenant,
       });
       if (!current) missing("Empresa não encontrada.");
       const [kiosks, panels] = await Promise.all([
@@ -116,7 +197,7 @@ export function platformRoutes(app: FastifyInstance, realtime: Realtime) {
     const userId = await tenantTransaction(id, async (db) => {
       await lockTenant(db, id);
       const tenant = await db.tenant.findFirst({
-        where: { users: { none: { role: "SUPERADMIN" } } },
+        where: customerTenant,
         select: { id: true },
       });
       if (!tenant) missing("Empresa não encontrada.");

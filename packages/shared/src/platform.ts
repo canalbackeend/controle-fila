@@ -1,4 +1,5 @@
 import { z } from "zod";
+import type { DeviceType } from "./devices.js";
 import {
   emailSchema,
   nameSchema,
@@ -41,3 +42,22 @@ export const adminPasswordResetInput = z.strictObject({
   email: emailSchema,
   password: passwordSchema,
 });
+
+export type CompanyAdministrator = {
+  name: string;
+  email: string;
+  active: boolean;
+  mustChangePassword: boolean;
+};
+
+export const deviceActivitySeconds = 90;
+
+export type PlatformDevice = {
+  id: string;
+  name: string;
+  type: DeviceType;
+  company: { id: string; name: string; slug: string; timeZone: string };
+  unitName: string;
+  status: "ONLINE" | "OFFLINE" | "UNPAIRED" | "SUSPENDED";
+  lastSeenAt: string | null;
+};

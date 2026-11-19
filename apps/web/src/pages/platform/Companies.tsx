@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import type { PlatformCompany } from "@beend/shared";
 import { api, message } from "../../api";
+import { CompanyAccess } from "./CompanyAccess";
 
 type InitialAccess = { company: string; email: string; password: string };
 
@@ -134,8 +135,7 @@ export function Companies() {
     }
   }
 
-  function resetAccess(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  function resetAccess(email: string) {
     if (
       !recovery ||
       !window.confirm(
@@ -143,9 +143,6 @@ export function Companies() {
       )
     )
       return;
-    const email = String(new FormData(event.currentTarget).get("email"))
-      .trim()
-      .toLowerCase();
     const password = temporaryPassword();
     void act(async () => {
       await api(`/admin/tenants/${recovery.id}/admin-password`, "POST", {
@@ -281,25 +278,13 @@ export function Companies() {
         </section>
       )}
       {recovery && (
-        <section className="surface">
-          <div className="section-head">
-            <h2>Recuperar acesso de {recovery.name}</h2>
-          </div>
-          <form className="editor" onSubmit={resetAccess}>
-            <label>
-              E-mail do administrador
-              <input name="email" type="email" maxLength={160} required />
-            </label>
-            <div className="actions">
-              <button type="button" onClick={() => setRecovery(undefined)}>
-                Cancelar
-              </button>
-              <button className="primary" disabled={busy}>
-                Gerar nova senha inicial
-              </button>
-            </div>
-          </form>
-        </section>
+        <CompanyAccess
+          key={recovery.id}
+          company={recovery}
+          busy={busy}
+          onClose={() => setRecovery(undefined)}
+          onReset={resetAccess}
+        />
       )}
       {editor && (
         <section className="surface">
@@ -418,7 +403,7 @@ export function Companies() {
                       setRecovery(company);
                     }}
                   >
-                    Recuperar acesso
+                    Ver acessos
                   </button>
 
                   <button disabled={busy} onClick={() => toggle(company)}>

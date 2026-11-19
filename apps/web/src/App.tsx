@@ -24,6 +24,11 @@ const Companies = lazy(() =>
     default: Companies,
   })),
 );
+const PlatformDevices = lazy(() =>
+  import("./pages/platform/PlatformDevices").then(({ PlatformDevices }) => ({
+    default: PlatformDevices,
+  })),
+);
 
 function Workspace({
   actor,
@@ -48,7 +53,7 @@ function Workspace({
       className="theme workspace-theme"
       style={themeStyle(
         actor.role === "ATTENDANT"
-          ? actor.personalTheme ?? actor.theme
+          ? (actor.personalTheme ?? actor.theme)
           : actor.theme,
       )}
     >
@@ -58,7 +63,12 @@ function Workspace({
         </Link>
         <nav aria-label="Navegação principal">
           {!actor.mustChangePassword && actor.role === "SUPERADMIN" && (
-            <Link to="/plataforma/empresas">Empresas</Link>
+            <>
+              <Link to="/plataforma/empresas">Empresas</Link>
+              <Link to="/plataforma/dispositivos">
+                Dispositivos dos clientes
+              </Link>
+            </>
           )}
           {!actor.mustChangePassword && actor.role !== "ATTENDANT" && (
             <>
@@ -191,6 +201,24 @@ export function App() {
               }
             >
               <Companies />
+            </Suspense>
+          ) : (
+            <Navigate to="/" replace />
+          ),
+        )}
+      />
+      <Route
+        path="/plataforma/dispositivos"
+        element={protectedPage((actor) =>
+          actor.role === "SUPERADMIN" ? (
+            <Suspense
+              fallback={
+                <main className="workspace">
+                  <p role="status">Carregando dispositivos…</p>
+                </main>
+              }
+            >
+              <PlatformDevices />
             </Suspense>
           ) : (
             <Navigate to="/" replace />

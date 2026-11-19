@@ -110,6 +110,42 @@ test.skipIf(process.env.RUN_DB_TESTS !== "1")(
     expect(firstChange.statusCode, firstChange.body).toBe(200);
     expect(firstChange.json().mustChangePassword).toBe(false);
     const client = { cookie: cookieOf(firstChange) };
+    const administrators = (companyId: string, headers = admin) =>
+      app.inject({
+        url: `/admin/tenants/${companyId}/administrators`,
+        headers,
+      });
+    const allowed = await administrators(id);
+    expect(allowed.json()).toEqual([
+      {
+        name: "Cliente administrador",
+        email,
+        active: true,
+        mustChangePassword: false,
+      },
+    ]);
+    expect((await administrators(id, client)).statusCode).toBe(403);
+    expect((await administrators(created[0]!)).statusCode).toBe(404);
+    const devices = (headers = admin) =>
+      app.inject({ url: "/admin/platform/devices", headers });
+    expect((await devices(client)).statusCode).toBe(403);
+    const operatorAccount = operator.json();
+    const internalDevice = await tenantDb(
+      operatorAccount.tenantId,
+    ).device.create({
+      data: {
+        tenantId: operatorAccount.tenantId,
+        unitId: operatorAccount.unitId,
+        type: "PANEL",
+        name: "TV interna da Beend",
+      },
+    });
+    expect((await devices()).json()).not.toContainEqual(
+      expect.objectContaining({ id: internalDevice.id }),
+    );
+    await tenantDb(operatorAccount.tenantId).device.delete({
+      where: { id: internalDevice.id },
+    });
     const update = (
       target: string,
       values: { active: boolean; kioskLimit: number; panelLimit: number },
@@ -200,6 +236,33 @@ test.skipIf(process.env.RUN_DB_TESTS !== "1")(
     const pending = await register("PANEL", "TV liberada");
     expect(pending.statusCode).toBe(201);
     const registeredPanel = pending.json();
+    const overview = await devices();
+    expect(overview.statusCode).toBe(200);
+    expect(
+      overview
+        .json()
+        .filter((row: { company: { id: string } }) => row.company.id === id),
+    ).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: device.id,
+          company: expect.objectContaining({
+            id,
+            name: "Cliente",
+            slug: customerSlug,
+          }),
+          type: "KIOSK",
+          status: "ONLINE",
+        }),
+        expect.objectContaining({
+          id: registeredPanel.device.id,
+          type: "PANEL",
+          status: "UNPAIRED",
+        }),
+      ]),
+    );
+    expect(overview.body).not.toContain(paired.json().token);
+    expect(overview.body).not.toContain("tokenHash");
     const platform = await app.inject({
       url: "/admin/tenants",
       headers: admin,
@@ -215,6 +278,13 @@ test.skipIf(process.env.RUN_DB_TESTS !== "1")(
     );
 
     const db = tenantDb(id);
+    await db.device.update({
+      where: { id: device.id },
+      data: { lastSeenAt: new Date(Date.now() - 100_000) },
+    });
+    expect((await devices()).json()).toContainEqual(
+      expect.objectContaining({ id: device.id, status: "OFFLINE" }),
+    );
     const account = firstChange.json();
     const date = new Intl.DateTimeFormat("sv-SE", {
       timeZone: account.timeZone,
@@ -252,6 +322,9 @@ test.skipIf(process.env.RUN_DB_TESTS !== "1")(
         .statusCode,
     ).toBe(200);
     expect((await login(customerSlug, updatedPassword)).statusCode).toBe(403);
+    expect((await devices()).json()).toContainEqual(
+      expect.objectContaining({ id: device.id, status: "SUSPENDED" }),
+    );
     expect(
       (await app.inject({ url: "/admin", headers: client })).statusCode,
     ).toBe(401);
@@ -279,6 +352,19 @@ test.skipIf(process.env.RUN_DB_TESTS !== "1")(
     ).toBe(200);
     expect((await app.inject(track)).statusCode).toBe(200);
     expect((await resetAccess(id)).statusCode).toBe(204);
+    const pairedPanel = await app.inject({
+      method: "POST",
+      url: `/devices/${registeredPanel.device.id}/pair`,
+      payload: { code: registeredPanel.code },
+    });
+    expect(pairedPanel.statusCode).toBe(200);
+    expect((await devices()).json()).toContainEqual(
+      expect.objectContaining({
+        id: registeredPanel.device.id,
+        type: "PANEL",
+        status: "ONLINE",
+      }),
+    );
     expect(
       (await app.inject({ url: "/auth/session", headers: client })).statusCode,
     ).toBe(401);

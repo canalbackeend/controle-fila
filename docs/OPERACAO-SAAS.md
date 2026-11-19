@@ -13,7 +13,8 @@
 - **Editar plano e limites** altera as liberações do cliente. Cada dispositivo cadastrado ocupa uma vaga, inclusive se ainda aguarda pareamento. Para reduzir o limite abaixo do uso, remova primeiro os dispositivos excedentes.
 - **Suspender** bloqueia logins, filas, dispositivos e acompanhamento público da empresa. Os registros são preservados para reativação.
 - **Reativar** libera novamente a operação. Dispositivos que ainda têm o token de pareamento voltam a conectar.
-- **Recuperar acesso** gera uma nova senha inicial para o e-mail de um administrador ativo do cliente. A senha anterior perde a validade e esse administrador precisa trocar a nova senha inicial no próximo acesso.
+- **Ver acessos** mostra o endereço de login, o identificador da empresa e os e-mails dos administradores. **Gerar senha provisória** invalida a senha anterior e exige troca no primeiro acesso. A nova senha provisória é exibida no momento em que é gerada.
+- **Dispositivos dos clientes** lista totens e TVs com empresa, unidade e último contato. A tela abre filtrada pelos equipamentos online. Um dispositivo pareado aparece como online quando fez contato nos últimos 90 segundos e a empresa está ativa.
 
 O plano comercial é um nome de referência. A contratação, o recebimento e a decisão de suspender ou reativar são manuais. Para disponibilizar o sistema aos clientes, configure um domínio HTTPS e a rotina de backup conforme o [guia de deploy](DEPLOY.md).
 

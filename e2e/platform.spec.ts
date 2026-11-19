@@ -121,6 +121,22 @@ test("the Beend operator provisions a client who activates and operates within i
 
     await page.getByRole("button", { name: "Fechar dados de acesso" }).click();
     const row = page.getByRole("listitem").filter({ hasText: customerSlug });
+    await row.getByRole("button", { name: "Ver acessos" }).click();
+    const accessList = page.getByRole("region", {
+      name: "Acessos de Clínica de teste",
+    });
+    await expect(accessList.getByText(customerEmail)).toBeVisible();
+    await expect(
+      accessList.getByLabel("Endereço de login da empresa"),
+    ).toHaveValue(new URL(`/entrar?empresa=${customerSlug}`, baseURL).href);
+    await expect(accessList.getByText(secret!)).toHaveCount(0);
+    await page.getByRole("link", { name: "Dispositivos dos clientes" }).click();
+    await page.getByLabel("Buscar dispositivo ou empresa").fill(customerSlug);
+    const monitored = page
+      .getByRole("listitem")
+      .filter({ hasText: "Totem da unidade" });
+    await expect(monitored.getByText("Online", { exact: true })).toBeVisible();
+    await page.getByRole("link", { name: "Empresas", exact: true }).click();
     page.once("dialog", (dialog) => void dialog.accept());
     await row.getByRole("button", { name: "Suspender", exact: true }).click();
     await expect(
@@ -131,6 +147,13 @@ test("the Beend operator provisions a client who activates and operates within i
     await expect(kiosk.getByRole("button", { name: "Recepção" })).toBeEnabled({
       timeout: 18000,
     });
+    await row.getByRole("button", { name: "Ver acessos" }).click();
+    page.once("dialog", (dialog) => void dialog.accept());
+    await accessList
+      .getByRole("button", { name: "Gerar senha provisória" })
+      .click();
+    await expect(page.getByText("Nova senha inicial gerada.")).toBeVisible();
+    await expect(page.locator(".platform-access code")).not.toHaveText(secret!);
   } finally {
     await clientContext.close();
     const client = await prisma.tenant.findUnique({
