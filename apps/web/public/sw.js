@@ -80,3 +80,28 @@ self.addEventListener("fetch", (event) => {
     );
   }
 });
+
+self.addEventListener("message", (event) => {
+  if (event.data?.type !== "CACHE_IMAGES" || !Array.isArray(event.data.paths))
+    return;
+  const paths = [...new Set(event.data.paths)]
+    .filter(
+      (path) =>
+        typeof path === "string" &&
+        /^\/api\/assets\/[a-f0-9]{64}\.webp$/.test(path),
+    )
+    .slice(0, 48);
+  event.waitUntil(
+    (async () => {
+      const cache = await caches.open(CACHE);
+      for (const path of paths) {
+        if (await cache.match(path)) continue;
+        try {
+          await cacheResponse(cache, path, await fetch(path));
+        } catch {
+          /* Existing cached assets remain usable. */
+        }
+      }
+    })(),
+  );
+});

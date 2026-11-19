@@ -29,6 +29,16 @@ export function deviceRoutes(app: FastifyInstance, realtime: Realtime) {
     realtime.io.in(deviceRoom(id)).disconnectSockets(true);
     return pairing;
   });
+  app.patch("/admin/devices/:id", async (request, reply) => {
+    const actor = await requireActor(request, ["ADMIN", "SUPERADMIN"]);
+    const { id } = idParams.parse(request.params);
+    const data = deviceInput.pick({ name: true }).parse(request.body);
+    await tenantDb(actor.tenantId).device.update({
+      where: { id, unitId: actor.unitId },
+      data,
+    });
+    return reply.code(204).send();
+  });
   app.delete("/admin/devices/:id", async (request, reply) => {
     const actor = await requireActor(request, ["ADMIN", "SUPERADMIN"]);
     const { id } = idParams.parse(request.params);

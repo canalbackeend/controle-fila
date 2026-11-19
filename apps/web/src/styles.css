@@ -692,17 +692,23 @@ input.code-input {
   font-size: clamp(0.9rem, 1.65vw, 2rem);
   font-weight: 650;
 }
-.tv-ticker span {
-  display: inline-block;
-  padding-left: 100%;
+.tv-ticker-track {
+  display: flex;
+  width: max-content;
+}
+.tv-ticker-track span {
+  min-width: 100vw;
+  padding: 0 2.45vw;
+}
+.tv-ticker-track.scrolling {
   animation: tv-ticker 38s linear infinite;
 }
-.tv-screen:has(.tv-overlay) .tv-ticker span {
+.tv-screen:has(.tv-overlay) .tv-ticker-track {
   animation-play-state: paused;
 }
 @keyframes tv-ticker {
   to {
-    transform: translateX(-100%);
+    transform: translateX(-50%);
   }
 }
 .tv-overlay,
@@ -753,9 +759,8 @@ input.code-input {
   .tv-overlay .tv-call-code {
     animation: none;
   }
-  .tv-ticker span {
+  .tv-ticker-track.scrolling {
     animation: none;
-    padding-left: 1rem;
   }
 }
 

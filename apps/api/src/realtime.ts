@@ -6,6 +6,7 @@ import { sessionActor, sessionCookie } from "./modules/auth/service.js";
 import { resolveTracking } from "./modules/tracking/service.js";
 import { deviceIdentity } from "./modules/devices/auth.js";
 import {
+  dateFor,
   queueStats,
   ticketSummary,
   type QueueChange,
@@ -14,8 +15,8 @@ import {
 
 const unitRoom = (scope: Pick<QueueScope, "tenantId" | "unitId">) =>
   `unit:${scope.tenantId}:${scope.unitId}`;
-const trackingRoom = (scope: QueueScope) =>
-  `tracking:${scope.tenantId}:${scope.unitId}`;
+const trackingRoom = (scope: QueueScope, date: string) =>
+  `tracking:${scope.tenantId}:${scope.unitId}:${date}`;
 const ticketRoom = (token: string) => `ticket:${token}`;
 export const deviceRoom = (id: string) => `panel:${id}`;
 
@@ -39,8 +40,11 @@ export function attachRealtime(app: FastifyInstance, origin: string) {
       if (auth.publicToken) {
         if (typeof auth.publicToken !== "string")
           return next(new Error("Senha indisponível."));
-        const { scope } = await resolveTracking(auth.publicToken);
-        await socket.join([ticketRoom(auth.publicToken), trackingRoom(scope)]);
+        const { scope, ticket } = await resolveTracking(auth.publicToken);
+        await socket.join([
+          ticketRoom(auth.publicToken),
+          trackingRoom(scope, ticket.businessDate),
+        ]);
         return next();
       }
       if (auth.deviceToken) {
@@ -67,10 +71,13 @@ export function attachRealtime(app: FastifyInstance, origin: string) {
     const { ticket, type, counterName, displayName, eventId, eventTime } =
       change;
     const room = io.to(unitRoom(scope));
-    io.to(trackingRoom(scope)).emit("queue.changed");
-    io.to(ticketRoom(ticket.publicToken)).emit("ticket.updated", {
-      status: ticket.status,
-    });
+    const date = dateFor(scope);
+    io.to(trackingRoom(scope, date)).emit("queue.changed");
+    if (ticket.businessDate === date) {
+      io.to(ticketRoom(ticket.publicToken)).emit("ticket.updated", {
+        status: ticket.status,
+      });
+    }
     room.emit(
       type === "ISSUED" ? "ticket.issued" : "ticket.updated",
       ticketSummary(ticket),

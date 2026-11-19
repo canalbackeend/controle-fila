@@ -13,11 +13,18 @@ const port = z.coerce
   .default(3000)
   .parse(process.env.API_PORT);
 const settings = z
-  .object({ SESSION_SECRET: z.string().min(32), APP_ORIGIN: z.url() })
+  .object({
+    SESSION_SECRET: z.string().min(32),
+    APP_ORIGIN: z.url(),
+    TRUST_PROXY_HOPS: z.coerce.number().int().min(0).max(5).default(0),
+  })
   .parse(process.env);
 const app = buildApp(
   {
     logger: true,
+    trustProxy: settings.TRUST_PROXY_HOPS
+      ? (_address, hop) => hop < settings.TRUST_PROXY_HOPS
+      : false,
     logController: new LogController({ disableRequestLogging: true }),
   },
   {

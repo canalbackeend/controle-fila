@@ -11,6 +11,7 @@ function devicePath(device: DeviceRecord) {
 export function Devices() {
   const [devices, setDevices] = useState<DeviceRecord[]>([]);
   const [pairing, setPairing] = useState<DevicePairing>();
+  const [editor, setEditor] = useState<DeviceRecord>();
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const load = useCallback(
@@ -27,6 +28,7 @@ export function Devices() {
     try {
       const result = await api<DevicePairing | undefined>(path, method, fields);
       setPairing(result);
+      setEditor(undefined);
       await load();
     } catch (error) {
       setError(message(error));
@@ -124,6 +126,38 @@ export function Devices() {
             Atualizar
           </button>
         </div>
+        {editor && (
+          <form
+            className="editor"
+            key={editor.id}
+            onSubmit={(event) => {
+              event.preventDefault();
+              void mutate(
+                `/admin/devices/${editor.id}`,
+                "PATCH",
+                Object.fromEntries(new FormData(event.currentTarget)),
+              );
+            }}
+          >
+            <label>
+              Nome do dispositivo
+              <input
+                name="name"
+                defaultValue={editor.name}
+                maxLength={100}
+                required
+              />
+            </label>
+            <div className="actions">
+              <button type="button" onClick={() => setEditor(undefined)}>
+                Cancelar
+              </button>
+              <button className="primary" disabled={busy}>
+                Salvar nome
+              </button>
+            </div>
+          </form>
+        )}
         {devices.length ? (
           <ul className="records">
             {devices.map((device) => (
@@ -136,6 +170,9 @@ export function Devices() {
                   {device.paired ? "Pareado" : "Aguardando pareamento"}
                 </span>
                 <div className="actions">
+                  <button type="button" onClick={() => setEditor(device)}>
+                    Editar nome
+                  </button>
                   {device.type === "PANEL" && (
                     <Link to={`/admin/painel/${device.id}`}>
                       Configurar painel

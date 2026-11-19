@@ -6,7 +6,10 @@ import { templates } from "./modules/admin/templates.js";
 
 const env = z
   .object({
-    DEMO_ADMIN_PASSWORD: passwordSchema,
+    DEMO_ADMIN_PASSWORD: z.preprocess(
+      (value) => value || undefined,
+      passwordSchema.optional(),
+    ),
     SUPERADMIN_PASSWORD: passwordSchema,
   })
   .parse(process.env);
@@ -24,7 +27,10 @@ try {
       "SUPERADMIN",
     );
   }
-  if (!(await prisma.tenant.findUnique({ where: { slug: "demo" } }))) {
+  if (
+    env.DEMO_ADMIN_PASSWORD &&
+    !(await prisma.tenant.findUnique({ where: { slug: "demo" } }))
+  ) {
     await createTenant({
       slug: "demo",
       name: "Unidade Demo",

@@ -83,7 +83,7 @@ test("shows notices, tips, headlines and weather according to panel weights", as
       await expect(page.getByRole("heading", { name: title })).toBeVisible();
     }
     await expect(
-      page.getByText("Atendimento por ordem de chamada"),
+      page.getByText("Atendimento por ordem de chamada").first(),
     ).toBeVisible();
   } finally {
     await prisma.feedSource.delete({ where: { id: feed.id } });

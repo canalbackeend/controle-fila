@@ -27,9 +27,12 @@ describe.skipIf(!databaseTests)(
     const actors: { id: string; cookie: string }[] = [];
 
     beforeAll(async () => {
-      for (const name of ["Alfa", "Beta"]) {
+      for (const name of ["Alfa", "Beta", "Beend Teste"]) {
         const slug = `test-${randomUUID()}`;
-        const tenant = await createTenant({ ...input, slug, name });
+        const tenant = await createTenant(
+          { ...input, slug, name },
+          name === "Beend Teste" ? "SUPERADMIN" : "ADMIN",
+        );
         const identity = { id: tenant.id, cookie: "" };
         actors.push(identity);
         const result = await app.inject({
@@ -164,6 +167,51 @@ describe.skipIf(!databaseTests)(
       expect(saved.json().users).toHaveLength(2);
     });
 
+    test("lets only the superadmin publish reusable templates", async () => {
+      const cookie = actors[2]!.cookie;
+      const outsider = actors[0]!.cookie;
+      expect(
+        (
+          await app.inject({
+            method: "POST",
+            url: "/admin/templates",
+            headers: { cookie: outsider },
+            payload: { name: "Modelo" },
+          })
+        ).statusCode,
+      ).toBe(403);
+      expect(
+        (
+          await app.inject({
+            method: "POST",
+            url: "/admin/template",
+            headers: { cookie },
+            payload: { templateId: "registry" },
+          })
+        ).statusCode,
+      ).toBe(204);
+      const created = await app.inject({
+        method: "POST",
+        url: "/admin/templates",
+        headers: { cookie },
+        payload: { name: "Modelo de teste" },
+      });
+      expect(created.statusCode, created.body).toBe(201);
+      const { id } = created.json();
+      try {
+        const catalog = await app.inject({
+          url: "/admin",
+          headers: { cookie: outsider },
+        });
+        expect(catalog.json().templates).toContainEqual({
+          id,
+          name: "Modelo de teste",
+        });
+      } finally {
+        await prisma.template.delete({ where: { id } });
+      }
+    });
+
     test("keeps uploaded cards and panel configuration tenant-scoped", async () => {
       const cookie = actors[0]!.cookie;
       const outsider = actors[1]!.cookie;
@@ -269,6 +317,26 @@ describe.skipIf(!databaseTests)(
         headers: { cookie: outsider },
       });
       expect(foreign.statusCode).toBe(404);
+      expect(
+        (
+          await app.inject({
+            method: "PATCH",
+            url: `/admin/devices/${device.id}`,
+            headers: { cookie: outsider },
+            payload: { name: "Outro nome" },
+          })
+        ).statusCode,
+      ).toBe(404);
+      expect(
+        (
+          await app.inject({
+            method: "PATCH",
+            url: `/admin/devices/${device.id}`,
+            headers: { cookie },
+            payload: { name: "Entrada" },
+          })
+        ).statusCode,
+      ).toBe(204);
       const list = await app.inject({
         url: "/admin/devices",
         headers: { cookie: outsider },

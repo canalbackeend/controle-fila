@@ -297,6 +297,7 @@ export function Admin({ actor }: { actor: Actor }) {
           </div>
           {editor && (
             <form
+              key={existing?.id ?? "new"}
               className="editor"
               onSubmit={(event) =>
                 submit(
@@ -451,6 +452,40 @@ export function Admin({ actor }: { actor: Actor }) {
                   <strong>{tenant.name}</strong>
                   <p>{tenant.slug}</p>
                 </div>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+      {section === "tenants" && actor.role === "SUPERADMIN" && (
+        <section className="surface">
+          <div className="section-head">
+            <div>
+              <h2>Modelos de atendimento</h2>
+              <p>
+                Salve os serviços e guichês ativos da unidade Beend como um
+                modelo para novas empresas.
+              </p>
+            </div>
+          </div>
+          <form
+            className="editor"
+            onSubmit={(event) => submit(event, "/admin/templates", "POST")}
+          >
+            <label>
+              Nome do modelo
+              <input required name="name" maxLength={100} />
+            </label>
+            <div>
+              <button className="primary" disabled={busy}>
+                Salvar modelo
+              </button>
+            </div>
+          </form>
+          <ul className="records">
+            {data.templates.map(({ id, name }) => (
+              <li key={id}>
+                <strong>{name}</strong>
               </li>
             ))}
           </ul>

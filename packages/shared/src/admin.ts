@@ -82,12 +82,11 @@ export const userInput = z.object({
 export const userUpdate = userInput.extend({
   password: passwordSchema.optional(),
 });
-export const templateInput = z.object({
-  templateId: z.enum(["clinic", "registry", "retail"]),
-});
+export const templateInput = z.object({ templateId: slugSchema });
+export const customTemplateInput = z.object({ name: nameSchema });
 export const templateConfig = z.object({
-  services: z.array(serviceInput),
-  counters: z.array(counterInput),
+  services: z.array(serviceInput).min(1).max(100),
+  counters: z.array(counterInput).min(1).max(100),
 });
 export type ServiceInput = z.infer<typeof serviceInput>;
 export type CounterInput = z.infer<typeof counterInput>;

@@ -1,0 +1,13 @@
+.git
+.env
+.env.*
+!.env.example
+**/node_modules
+**/dist
+.pnpm-store
+uploads
+backups
+test-results
+playwright-report
+coverage
+.DS_Store

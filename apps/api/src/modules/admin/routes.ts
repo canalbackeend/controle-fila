@@ -2,6 +2,7 @@ import type { FastifyInstance } from "fastify";
 import { hash } from "bcryptjs";
 import {
   counterInput,
+  customTemplateInput,
   idParams,
   serviceInput,
   templateInput,
@@ -21,32 +22,34 @@ import {
   userFields,
   validatePrefixes,
 } from "./service.js";
-import { templates } from "./templates.js";
+import { findTemplate, saveTemplate, templateCatalog } from "./templates.js";
 
 export function adminRoutes(app: FastifyInstance) {
   app.get("/admin", async (request) => {
     const actor = await requireActor(request, ["ADMIN", "SUPERADMIN"]);
     const db = tenantDb(actor.tenantId);
-    const [tenant, unit, services, counters, users] = await Promise.all([
-      db.tenant.findUniqueOrThrow({ where: { id: actor.tenantId } }),
-      db.unit.findUniqueOrThrow({ where: { id: actor.unitId } }),
-      db.service.findMany({
-        where: { unitId: actor.unitId },
-        orderBy: [{ stageOrder: "asc" }, { name: "asc" }],
-      }),
-      db.counter.findMany({
-        where: { unitId: actor.unitId },
-        orderBy: { number: "asc" },
-      }),
-      db.user.findMany({ select: userFields, orderBy: { name: "asc" } }),
-    ]);
+    const [tenant, unit, services, counters, users, templates] =
+      await Promise.all([
+        db.tenant.findUniqueOrThrow({ where: { id: actor.tenantId } }),
+        db.unit.findUniqueOrThrow({ where: { id: actor.unitId } }),
+        db.service.findMany({
+          where: { unitId: actor.unitId },
+          orderBy: [{ stageOrder: "asc" }, { name: "asc" }],
+        }),
+        db.counter.findMany({
+          where: { unitId: actor.unitId },
+          orderBy: { number: "asc" },
+        }),
+        db.user.findMany({ select: userFields, orderBy: { name: "asc" } }),
+        templateCatalog(),
+      ]);
     return {
       tenant,
       unit,
       services,
       counters,
       users,
-      templates: templates.map(({ id, name }) => ({ id, name })),
+      templates,
     };
   });
 
@@ -162,7 +165,7 @@ export function adminRoutes(app: FastifyInstance) {
   app.post("/admin/template", async (request, reply) => {
     const actor = await requireActor(request, ["ADMIN", "SUPERADMIN"]);
     const { templateId } = templateInput.parse(request.body);
-    const template = templates.find(({ id }) => id === templateId);
+    const template = await findTemplate(templateId);
     if (!template) throw new HttpError(404, "Modelo não encontrado.");
     await configureServices(actor, async (db) => {
       const where = { unitId: actor.unitId };
@@ -177,19 +180,25 @@ export function adminRoutes(app: FastifyInstance) {
       }
       const scope = { unitId: actor.unitId, tenantId: actor.tenantId };
       await db.service.createMany({
-        data: template.config.services.map((service) => ({
+        data: template.services.map((service) => ({
           ...service,
           ...scope,
         })),
       });
       await db.counter.createMany({
-        data: template.config.counters.map((counter) => ({
+        data: template.counters.map((counter) => ({
           ...counter,
           ...scope,
         })),
       });
     });
     return reply.code(204).send();
+  });
+
+  app.post("/admin/templates", async (request, reply) => {
+    const actor = await requireActor(request, ["SUPERADMIN"]);
+    const { name } = customTemplateInput.parse(request.body);
+    return reply.code(201).send(await saveTemplate(actor, name));
   });
 
   app.get("/admin/tenants", async (request) => {

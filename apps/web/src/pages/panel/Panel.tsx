@@ -43,7 +43,7 @@ function Clock({ timeZone }: { timeZone: string }) {
     return () => window.clearInterval(timer);
   }, []);
   return (
-    <div className="panel-clock">
+    <div className="tv-clock">
       <time dateTime={now.toISOString()}>
         {new Intl.DateTimeFormat("pt-BR", {
           timeZone,
@@ -217,13 +217,31 @@ function PanelDevice({ id }: { id: string }) {
     return () => window.clearInterval(timer);
   }, [refresh, token]);
   useEffect(() => {
-    if (import.meta.env.PROD && "serviceWorker" in navigator)
-      void navigator.serviceWorker.register("/sw.js").catch(() => {});
     return () => {
       void audio.current?.close().catch(() => {});
       audio.current = null;
     };
   }, []);
+  useEffect(() => {
+    if (!import.meta.env.PROD || !("serviceWorker" in navigator)) return;
+    let active = true;
+    void navigator.serviceWorker
+      .register("/sw.js")
+      .then(() => navigator.serviceWorker.ready)
+      .then((registration) => {
+        if (!active) return;
+        const paths = [
+          data?.logoUrl,
+          ...cards.map((card) => card.imageUrl),
+        ].filter(Boolean);
+        if (paths.length)
+          registration.active?.postMessage({ type: "CACHE_IMAGES", paths });
+      })
+      .catch(() => {});
+    return () => {
+      active = false;
+    };
+  }, [cards, data?.logoUrl]);
   useEffect(() => {
     if (!started || current) return;
     const timer = window.setTimeout(
@@ -326,7 +344,10 @@ function PanelDevice({ id }: { id: string }) {
         <Card card={card} />
       </div>
       <footer className="tv-ticker">
-        <span>{config.ticker || "Acompanhe as chamadas neste painel."}</span>
+        <div className={`tv-ticker-track${config.ticker ? " scrolling" : ""}`}>
+          <span>{config.ticker || "Acompanhe as chamadas neste painel."}</span>
+          {config.ticker && <span aria-hidden="true">{config.ticker}</span>}
+        </div>
       </footer>
       {current && (
         <section

@@ -1,0 +1,42 @@
+# Implantação do Beend Fila
+
+## Docker Compose
+
+O Compose de produção inclui PostgreSQL 16, API em Node.js 22, interface estática no Nginx e um serviço de backup. Apenas a interface recebe tráfego externo. As migrações são aplicadas antes de iniciar a API.
+
+1. Configure as variáveis de `.env.example` na máquina ou no Coolify. Use valores próprios e aleatórios para `POSTGRES_PASSWORD` e `SESSION_SECRET`. Um valor hexadecimal de `openssl rand -hex 32` pode ser usado diretamente na URL do PostgreSQL.
+2. Defina `APP_ORIGIN` como a origem HTTPS final, por exemplo `https://fila.suaempresa.com.br`. O mesmo endereço é usado pela TV, pelo totem e pelos celulares que leem os QR Codes.
+3. Suba o Compose e confirme a resposta em `/api/health` no domínio escolhido.
+
+```sh
+docker compose -f docker-compose.prod.yml up -d --build --wait
+docker compose -f docker-compose.prod.yml ps
+```
+
+Para criar a primeira conta, configure `SUPERADMIN_PASSWORD` e execute o seed uma vez. A conta é `superadmin@beend.local`, na empresa `beend`. Preencha `DEMO_ADMIN_PASSWORD` somente se quiser criar também a empresa demo.
+
+```sh
+docker compose -f docker-compose.prod.yml exec api pnpm --filter api seed
+```
+
+Entre com a conta superadmin, abra **Administração → Empresas** e cadastre a empresa com seu administrador. Com a conta da empresa, aplique um modelo e configure a unidade.
+
+## Coolify
+
+Crie um recurso **Docker Compose** apontando para o repositório e selecione `docker-compose.prod.yml`. No serviço `web`, configure o domínio com HTTPS para a porta interna 80. O banco e a API ficam na rede do Compose. Reserve um valor livre para `WEB_PORT` se houver publicação local de porta. A proxy do domínio deve encaminhar WebSocket em `/socket.io/` e anexar a cadeia real de `X-Forwarded-For`.
+
+`TRUST_PROXY_HOPS` controla quantos proxies o Fastify considera ao identificar o IP para o limite de tentativas. O padrão 1 corresponde ao Nginx sozinho. Use 2 quando a proxy do Coolify for o único salto extra e o Nginx estiver acessível externamente apenas por ela. Ajuste conforme a topologia efetiva. Exclua caminhos públicos de senha e credenciais dos logs de acesso da proxy externa, caso ela esteja configurada para logar URLs completas.
+
+Os volumes `postgres-data`, `uploads` e `backups` são persistentes. Use a mesma origem ao atualizar a aplicação para preservar sessões, pareamentos e QR Codes já impressos.
+
+## Backup e restauração
+
+O serviço `backup` grava um dump PostgreSQL e um arquivo de imagens na inicialização e a cada 24 horas. Por padrão, a retenção local é de 14 dias. Configure `BACKUP_INTERVAL_SECONDS` e `BACKUP_RETENTION_DAYS` conforme a operação.
+
+```sh
+docker compose -f docker-compose.prod.yml logs backup
+docker compose -f docker-compose.prod.yml exec backup ls -lh /backups
+docker compose -f docker-compose.prod.yml cp backup:/backups ./backup-beend
+```
+
+Para validar um dump, rode `pg_restore --list` antes de restaurá-lo. Teste a restauração em um banco novo e aplique o arquivo de imagens correspondente no volume de uploads da instalação de recuperação. Mantenha cópias do par de arquivos fora da VPS, com acesso restrito, pois podem conter dados operacionais e nomes ainda dentro do período de retenção.
