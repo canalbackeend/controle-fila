@@ -1,6 +1,7 @@
 import { LogController } from "fastify";
 import { z } from "zod";
 import { prisma } from "./db.js";
+import { contentJobs } from "./modules/content/jobs.js";
 import { queueJobs } from "./modules/queue/jobs.js";
 import { buildApp } from "./app.js";
 
@@ -26,8 +27,10 @@ const app = buildApp(
   },
 );
 const jobs = queueJobs(app);
+const stopContent = contentJobs(app);
 app.addHook("onClose", async () => {
   await jobs.destroy();
+  await stopContent();
   await prisma.$disconnect();
 });
 

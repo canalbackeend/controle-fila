@@ -53,6 +53,7 @@ describe.skipIf(!databaseTests)(
         await db.ticketEvent.deleteMany({});
         await db.ticket.deleteMany({});
         await db.queueSequence.deleteMany({});
+        await db.card.deleteMany({});
         await db.device.deleteMany({});
         await db.counter.deleteMany({});
         await db.service.deleteMany({});
@@ -161,6 +162,73 @@ describe.skipIf(!databaseTests)(
       ).toEqual(["Recepção"]);
       expect(saved.json().counters).toHaveLength(1);
       expect(saved.json().users).toHaveLength(2);
+    });
+
+    test("keeps uploaded cards and panel configuration tenant-scoped", async () => {
+      const cookie = actors[0]!.cookie;
+      const outsider = actors[1]!.cookie;
+      const card = {
+        type: "NOTICE",
+        title: "Aviso exclusivo",
+        text: "Texto da unidade",
+      };
+      const created = await app.inject({
+        method: "POST",
+        url: "/admin/cards",
+        headers: { cookie },
+        payload: card,
+      });
+      expect(created.statusCode, created.body).toBe(201);
+      const out = await app.inject({
+        url: "/admin/content",
+        headers: { cookie: outsider },
+      });
+      expect(out.json().cards).toEqual([]);
+      const id = created.json().id;
+      expect(
+        (
+          await app.inject({
+            method: "PUT",
+            url: `/admin/cards/${id}`,
+            headers: { cookie: outsider },
+            payload: card,
+          })
+        ).statusCode,
+      ).toBe(404);
+      expect(
+        (
+          await app.inject({
+            method: "DELETE",
+            url: `/admin/cards/${id}`,
+            headers: { cookie: outsider },
+          })
+        ).statusCode,
+      ).toBe(404);
+      expect(
+        (
+          await app.inject({
+            method: "POST",
+            url: "/admin/cards",
+            headers: { cookie },
+            payload: { ...card, type: "TIP", global: true },
+          })
+        ).statusCode,
+      ).toBe(403);
+      const panel = await app.inject({
+        method: "POST",
+        url: "/admin/devices",
+        headers: { cookie },
+        payload: { name: "TV A", type: "PANEL" },
+      });
+      expect(panel.statusCode, panel.body).toBe(201);
+      expect(
+        (
+          await app.inject({
+            url: `/admin/panels/${panel.json().device.id}`,
+            headers: { cookie: outsider },
+          })
+        ).statusCode,
+      ).toBe(404);
     });
 
     test("pairs a kiosk once, confines its token to the device and tenant, and reuses a retried ticket", async () => {

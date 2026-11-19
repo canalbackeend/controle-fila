@@ -1,11 +1,6 @@
 import type { FastifyInstance } from "fastify";
-import {
-  defaultPanelSettings,
-  idParams,
-  type PanelCall,
-  type PanelData,
-  type PanelSettings,
-} from "@beend/shared";
+import { idParams, type PanelCall, type PanelData } from "@beend/shared";
+import { panelContent, settingsFor } from "../content/service.js";
 import { requireDevice } from "../devices/auth.js";
 import { nameFor } from "../queue/service.js";
 
@@ -24,21 +19,8 @@ export function panelRoutes(app: FastifyInstance) {
       }),
       db.panelConfig.findUnique({ where: { deviceId: id } }),
     ]);
-    const config: PanelSettings = saved
-      ? {
-          serviceIds: saved.serviceIds,
-          weights: {
-            ...defaultPanelSettings.weights,
-            ...(saved.weights as PanelSettings["weights"]),
-          },
-          city: saved.city,
-          newsCategories: saved.newsCategories,
-          cardSeconds: saved.cardSeconds,
-          callDisplaySeconds: saved.callDisplaySeconds,
-          ticker: saved.ticker,
-        }
-      : defaultPanelSettings;
-    const [events, services, counters] = await Promise.all([
+    const config = settingsFor(saved);
+    const [events, services, counters, content] = await Promise.all([
       db.ticketEvent.findMany({
         where: {
           unitId: scope.unitId,
@@ -67,6 +49,7 @@ export function panelRoutes(app: FastifyInstance) {
         where: { unitId: scope.unitId },
         select: { id: true, name: true },
       }),
+      panelContent(tenant.id, config),
     ]);
     const calls = events.flatMap((event): PanelCall[] => {
       const service = services.find(({ id }) => id === event.fromServiceId);
@@ -91,7 +74,7 @@ export function panelRoutes(app: FastifyInstance) {
       logoUrl: tenant.logoUrl ?? undefined,
       config,
       calls,
-      cards: [],
+      ...content,
     };
   });
 }

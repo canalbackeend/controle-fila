@@ -1,6 +1,9 @@
 import Fastify, { type FastifyServerOptions } from "fastify";
 import cookie from "@fastify/cookie";
 import rateLimit from "@fastify/rate-limit";
+import multipart from "@fastify/multipart";
+import { assetRoutes } from "./modules/content/assets.js";
+import { contentRoutes } from "./modules/content/routes.js";
 import { Prisma } from "@prisma/client";
 import { ZodError } from "zod";
 import { HttpError } from "./errors.js";
@@ -61,6 +64,7 @@ export function buildApp(
     app.register(async (api) => {
       await api.register(cookie, { secret: settings.secret });
       await api.register(rateLimit, { global: false });
+      await api.register(multipart);
       api.addHook("onRequest", async (request) => {
         if (
           !["GET", "HEAD", "OPTIONS"].includes(request.method) &&
@@ -77,6 +81,8 @@ export function buildApp(
       queueRoutes(api, realtime.publish);
       deviceRoutes(api, realtime);
       panelRoutes(api);
+      assetRoutes(api);
+      contentRoutes(api, realtime);
     });
   }
   return app;

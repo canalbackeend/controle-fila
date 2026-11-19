@@ -29,3 +29,10 @@ pnpm test
 ```
 
 Com o banco local migrado, execute `RUN_DB_TESTS=1 pnpm test` para validar as operações com dois tenants temporários.
+
+## Conteúdo da TV
+
+- Em **Dispositivos**, cadastre e pareie um painel. Use **Configurar painel** para ajustar serviços, cidade, letreiro, tempos e pesos das categorias.
+- Em **Conteúdo**, cadastre avisos e dicas da unidade e envie o logotipo.
+- Para notícias, configure `RSS_FEEDS` como JSON, por exemplo `[{"url":"https://exemplo.com/feed.xml","category":"cultura"}]`. Use fontes que autorizem a exibição comercial de manchetes e imagens.
+- Para clima, configure `WEATHER_PROVIDER=weatherapi` e `WEATHER_API_KEY` com uma chave da [WeatherAPI.com](https://www.weatherapi.com/docs/). A disponibilidade da previsão depende do plano contratado.

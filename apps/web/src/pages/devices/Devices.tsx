@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import type { DevicePairing, DeviceRecord } from "@beend/shared";
 import { api, message } from "../../api";
@@ -135,6 +136,11 @@ export function Devices() {
                   {device.paired ? "Pareado" : "Aguardando pareamento"}
                 </span>
                 <div className="actions">
+                  {device.type === "PANEL" && (
+                    <Link to={`/admin/painel/${device.id}`}>
+                      Configurar painel
+                    </Link>
+                  )}
                   <a href={devicePath(device)} target="_blank" rel="noreferrer">
                     Abrir dispositivo
                   </a>

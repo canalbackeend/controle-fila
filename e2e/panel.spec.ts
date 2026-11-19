@@ -10,6 +10,18 @@ test("queues calls on the paired TV and restores the display", async ({
   });
   expect(registration.ok(), await registration.text()).toBeTruthy();
   const { device, code } = await registration.json();
+  const configured = await unit.request.put(`/api/admin/panels/${device.id}`, {
+    data: {
+      serviceIds: [],
+      weights: { NOTICE: 0, NEWS: 0, WEATHER: 0, TIP: 0 },
+      cardSeconds: 10,
+      newsCategories: [],
+      city: "São Paulo",
+      callDisplaySeconds: 5,
+      ticker: "",
+    },
+  });
+  expect(configured.ok(), await configured.text()).toBeTruthy();
   await page.goto(`/painel/${device.id}`);
   await page.getByLabel("Código de pareamento").fill(code);
   await page.getByRole("button", { name: "Parear dispositivo" }).click();

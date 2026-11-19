@@ -17,10 +17,15 @@ export async function api<T>(
     method,
     credentials: "same-origin",
     headers: {
-      ...(body === undefined ? {} : { "content-type": "application/json" }),
+      ...(body === undefined || body instanceof FormData
+        ? {}
+        : { "content-type": "application/json" }),
       ...(deviceToken ? { authorization: `Bearer ${deviceToken}` } : {}),
     },
-    body: body === undefined ? undefined : JSON.stringify(body),
+    body:
+      body === undefined || body instanceof FormData
+        ? body
+        : JSON.stringify(body),
   });
   if (!response.ok) {
     const result = await response.json().catch(() => null);

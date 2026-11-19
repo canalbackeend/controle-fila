@@ -758,3 +758,42 @@ input.code-input {
     padding-left: 1rem;
   }
 }
+
+.content-thumb {
+  width: 4rem;
+  height: 3rem;
+  object-fit: contain;
+  border-radius: 0.35rem;
+}
+.record-title {
+  flex: 1 1 12rem;
+}
+fieldset legend {
+  font-weight: 700;
+  padding: 0;
+}
+fieldset .form-grid {
+  margin-top: 0.7rem;
+}
+.tv-weather {
+  display: grid;
+  gap: 1.5vh;
+}
+.tv-weather > strong {
+  font-size: clamp(2.8rem, 7.5vw, 8.5rem);
+  line-height: 1.15;
+}
+.tv-weather ul {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  gap: 1vw;
+  padding: 0;
+}
+.tv-weather li {
+  display: grid;
+  gap: 0.35rem;
+  border-top: 2px solid #a3c5ff;
+  padding: 0.75vh 0.7vw;
+  font-size: clamp(0.9rem, 1.35vw, 1.65rem);
+}

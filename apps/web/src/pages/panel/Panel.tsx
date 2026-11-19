@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import type { Socket } from "socket.io-client";
 import {
   defaultPanelSettings,
+  pickPanelCard,
   type DisplayCard,
   type PanelCall,
   type PanelData,
@@ -25,6 +26,7 @@ const fallback: DisplayCard = {
   text: "Confira o código da sua senha e o guichê indicado no painel.",
 };
 const zone = "America/Sao_Paulo";
+const emptyCards: DisplayCard[] = [];
 
 function readCache(key: string): PanelData | undefined {
   try {
@@ -91,7 +93,30 @@ function Card({ card }: { card: DisplayCard }) {
           <p className="tv-topic">{cardLabels[card.type]}</p>
         )}
         <h2>{card.title}</h2>
-        <p>{card.text}</p>
+        {card.text && <p>{card.text}</p>}
+        {card.weather && (
+          <div className="tv-weather">
+            <strong>
+              <span aria-hidden="true">◐</span>{" "}
+              {Math.round(card.weather.temperature)}°C
+            </strong>
+            <ul>
+              {card.weather.days.map((day) => (
+                <li key={day.day}>
+                  <b>
+                    {new Intl.DateTimeFormat("pt-BR", {
+                      timeZone: "UTC",
+                      weekday: "short",
+                    }).format(new Date(day.day + "T00:00:00Z"))}
+                  </b>
+                  <span>
+                    {Math.round(day.min)}° / {Math.round(day.max)}°
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
         {card.source && <p className="tv-source">{card.source}</p>}
       </div>
     </article>
@@ -104,15 +129,21 @@ function PanelDevice({ id }: { id: string }) {
   const [data, setData] = useState(() => readCache(key));
   const [history, setHistory] = useState<PanelCall[]>([]);
   const [overlay, setOverlay] = useState<PanelCall[]>([]);
-  const [index, setIndex] = useState(0);
+  const [cardId, setCardId] = useState<string | undefined>(
+    () =>
+      pickPanelCard(
+        data?.cards ?? [],
+        data?.config.weights ?? defaultPanelSettings.weights,
+      )?.id,
+  );
   const [started, setStarted] = useState(false);
   const [audioError, setAudioError] = useState("");
   const audio = useRef<AudioContext | null>(null);
   const seen = useRef<string[]>([]);
   const current = overlay[0];
   const config = data?.config ?? defaultPanelSettings;
-  const cards = data?.cards?.length ? data.cards : [fallback];
-  const card = cards[index % cards.length] ?? fallback;
+  const cards = data?.cards ?? emptyCards;
+  const card = cards.find(({ id }) => id === cardId) ?? fallback;
 
   const merge = useCallback((newCalls: PanelCall[]) => {
     setHistory((previous) =>
@@ -134,10 +165,20 @@ function PanelDevice({ id }: { id: string }) {
         undefined,
         token,
       );
-      setData(next);
+      const content = { ...next, calls: [] };
+      setData((previous) =>
+        JSON.stringify(previous) === JSON.stringify(content)
+          ? previous
+          : content,
+      );
+      setCardId((previous) =>
+        next.cards.some(({ id }) => id === previous)
+          ? previous
+          : pickPanelCard(next.cards, next.config.weights)?.id,
+      );
       merge(next.calls);
       try {
-        localStorage.setItem(key, JSON.stringify({ ...next, calls: [] }));
+        localStorage.setItem(key, JSON.stringify(content));
       } catch {
         /* Memory remains available. */
       }
@@ -186,11 +227,11 @@ function PanelDevice({ id }: { id: string }) {
   useEffect(() => {
     if (!started || current) return;
     const timer = window.setTimeout(
-      () => setIndex((position) => (position + 1) % cards.length),
+      () => setCardId(pickPanelCard(cards, config.weights, cardId)?.id),
       config.cardSeconds * 1000,
     );
     return () => window.clearTimeout(timer);
-  }, [cards.length, config.cardSeconds, current, index, started, card.id]);
+  }, [cards, config.cardSeconds, config.weights, current, started, cardId]);
   useEffect(() => {
     if (!started || !current) return;
     if (audio.current) playAlert(audio.current);
@@ -229,7 +270,10 @@ function PanelDevice({ id }: { id: string }) {
         </div>
       </main>
     );
-  const [latest, ...previous] = history;
+  const [latest, ...previous] = history.filter(
+    ({ serviceId }) =>
+      !config.serviceIds.length || config.serviceIds.includes(serviceId),
+  );
   return (
     <main className="tv-screen">
       <header className="tv-header">
