@@ -1,3 +1,4 @@
+import { themeStyle } from "../../theme";
 import { BrandLogo } from "../../components/BrandLogo";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
@@ -63,6 +64,7 @@ function Tracker({ token }: { token: string }) {
     (socket: Socket) => {
       const update = () => void refresh();
       socket.on("connect", update);
+      socket.on("tenant.theme", update);
       socket.on("queue.changed", update);
       socket.on("ticket.updated", update);
     },
@@ -126,7 +128,7 @@ function Tracker({ token }: { token: string }) {
   }
 
   return (
-    <main className="tracking">
+    <main className="tracking theme" style={themeStyle(data?.theme)}>
       <header className="tracking-header">
         <BrandLogo />
       </header>

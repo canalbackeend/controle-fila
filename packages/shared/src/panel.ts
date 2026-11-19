@@ -1,3 +1,4 @@
+import type { TenantTheme } from "./theme.js";
 import type { PanelCall } from "./attendant.js";
 
 export type ContentType = "NOTICE" | "NEWS" | "WEATHER" | "TIP";
@@ -23,6 +24,7 @@ export type PanelSettings = {
   ticker: string;
 };
 export type PanelData = {
+  theme: TenantTheme;
   unitName: string;
   logoUrl?: string;
   timeZone: string;

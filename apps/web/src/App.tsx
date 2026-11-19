@@ -1,7 +1,12 @@
 import { BrandLogo } from "./components/BrandLogo";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Link, Navigate, Route, Routes, useLocation } from "react-router-dom";
-import type { Actor } from "@beend/shared";
+import { readTheme, type Actor, type TenantTheme } from "@beend/shared";
+import type { Socket } from "socket.io-client";
+import { useRealtime } from "./realtime";
+import { themeStyle } from "./theme";
+import { ThemeSettings } from "./pages/settings/ThemeSettings";
+import { Profile } from "./pages/settings/Profile";
 import { api, message } from "./api";
 import { Login } from "./pages/auth/Login";
 import { Content } from "./pages/content/Content";
@@ -33,7 +38,7 @@ function Workspace({
     }
   }
   return (
-    <>
+    <div className="theme workspace-theme" style={themeStyle(actor.theme)}>
       <header className="app-header">
         <Link className="brand" to="/" aria-label="Beend Fila">
           <BrandLogo />
@@ -45,10 +50,13 @@ function Workspace({
               <Link to="/admin/dispositivos">Dispositivos</Link>
               <Link to="/admin/conteudo">Conteúdo</Link>
               <Link to="/admin/relatorios">Relatórios</Link>
+              <Link to="/admin/configuracoes">Configurações</Link>
             </>
           )}
           <Link to="/atendente">Atendimento</Link>
-          <span>{actor.name}</span>
+          <Link to="/perfil" title={actor.name}>
+            Meu perfil
+          </Link>
           <button onClick={() => void logout()}>Sair</button>
         </nav>
       </header>
@@ -58,7 +66,7 @@ function Workspace({
         </p>
       )}
       {children}
-    </>
+    </div>
   );
 }
 
@@ -81,6 +89,26 @@ export function App() {
       active = false;
     };
   }, [publicPage]);
+
+  const updateTheme = useCallback((theme: TenantTheme) => {
+    setActor((known) => (known ? { ...known, theme } : known));
+  }, []);
+  const followTheme = useCallback(
+    (socket: Socket) => {
+      socket.on("tenant.theme", (theme: unknown) =>
+        updateTheme(readTheme(theme)),
+      );
+      socket.on("connect", () => {
+        void api<Actor>("/auth/session").then(
+          (fresh) =>
+            setActor((known) => (known?.id === fresh.id ? fresh : known)),
+          () => {},
+        );
+      });
+    },
+    [updateTheme],
+  );
+  useRealtime(followTheme, undefined, Boolean(actor) && !publicPage);
 
   function protectedPage(children: (actor: Actor) => React.ReactNode) {
     if (actor === undefined)
@@ -164,6 +192,26 @@ export function App() {
             <Reports actor={actor} />
           ),
         )}
+      />
+      <Route
+        path="/admin/configuracoes"
+        element={protectedPage((actor) =>
+          actor.role === "ATTENDANT" ? (
+            <Navigate to="/atendente" replace />
+          ) : (
+            <ThemeSettings
+              key={actor.tenantId}
+              current={actor.theme}
+              onSave={updateTheme}
+            />
+          ),
+        )}
+      />
+      <Route
+        path="/perfil"
+        element={protectedPage((actor) => (
+          <Profile key={actor.id} actor={actor} onSave={setActor} />
+        ))}
       />
       <Route path="/t/:token" element={<Tracking />} />
       <Route path="/totem/:id?" element={<Kiosk />} />

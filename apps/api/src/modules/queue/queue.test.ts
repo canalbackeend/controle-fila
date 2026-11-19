@@ -191,6 +191,7 @@ describe.skipIf(process.env.RUN_DB_TESTS !== "1")("queue transactions", () => {
       "peopleAhead",
       "service",
       "status",
+      "theme",
       "unitName",
     ]);
     expect(publicResponse.body).not.toContain("Maria");

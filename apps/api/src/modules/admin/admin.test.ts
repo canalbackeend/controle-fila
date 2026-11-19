@@ -388,5 +388,142 @@ describe.skipIf(!databaseTests)(
         (await app.inject({ url: `/kiosk/${device.id}`, headers })).statusCode,
       ).toBe(401);
     });
+
+    test("changes the company theme only for its own tenant and administrators", async () => {
+      const first = actors[0]!;
+      const second = actors[1]!;
+      const db = tenantDb(first.id);
+      const { slug } = await db.tenant.findUniqueOrThrow({
+        where: { id: first.id },
+      });
+      const admin = { cookie: first.cookie };
+      const set = (payload: object, headers = admin) =>
+        app.inject({ method: "PUT", url: "/admin/theme", headers, payload });
+      expect((await set({ preset: "custom", color: "red" })).statusCode).toBe(
+        400,
+      );
+      expect(
+        (await set({ preset: "red", tenantId: second.id })).statusCode,
+      ).toBe(400);
+      expect((await set({ preset: "red" }, { cookie: "" })).statusCode).toBe(
+        401,
+      );
+      const staffLogin = await app.inject({
+        method: "POST",
+        url: "/auth/login",
+        payload: {
+          tenant: slug,
+          email: "staff@test.local",
+          password: input.password,
+        },
+      });
+      expect(staffLogin.statusCode).toBe(200);
+      expect(
+        (
+          await set(
+            { preset: "red" },
+            { cookie: String(staffLogin.headers["set-cookie"]).split(";")[0]! },
+          )
+        ).statusCode,
+      ).toBe(403);
+      const response = await set({ preset: "custom", color: "#aa2639" });
+      expect(response.statusCode, response.body).toBe(200);
+      expect(response.json()).toEqual({ preset: "custom", color: "#AA2639" });
+      const branding = await app.inject(`/auth/branding/${slug}`);
+      expect(branding.json()).toEqual(response.json());
+      expect(
+        (await app.inject("/auth/branding/empresa-inexistente")).json(),
+      ).toEqual({ preset: "blue" });
+      const outside = await app.inject({
+        url: "/auth/session",
+        headers: { cookie: second.cookie },
+      });
+      expect(outside.json().theme).toEqual({ preset: "blue" });
+    });
+
+    test("lets administrators edit their own profile and renews the session after changing credentials", async () => {
+      const first = actors[0]!;
+      const second = actors[1]!;
+      const { slug } = await tenantDb(first.id).tenant.findUniqueOrThrow({
+        where: { id: first.id },
+      });
+      const headers = { cookie: first.cookie };
+      const put = (payload: object, cookie = first.cookie) =>
+        app.inject({
+          method: "PUT",
+          url: "/auth/profile",
+          headers: { cookie },
+          payload,
+        });
+      const nameOnly = await put({
+        name: "Nome atualizado",
+        email: input.email,
+      });
+      expect(nameOnly.statusCode, nameOnly.body).toBe(200);
+      expect(nameOnly.json()).toMatchObject({
+        name: "Nome atualizado",
+        email: input.email,
+        role: "ADMIN",
+      });
+      expect(
+        (
+          await put({
+            name: "Nome atualizado",
+            email: "novo@test.local",
+            currentPassword: "senha-incorreta",
+          })
+        ).statusCode,
+      ).toBe(403);
+      expect(
+        (
+          await put({
+            name: "Outro",
+            email: input.email,
+            tenantId: second.id,
+            role: "SUPERADMIN",
+          })
+        ).statusCode,
+      ).toBe(400);
+      const updated = await put({
+        name: "Nome atualizado",
+        email: "novo@test.local",
+        currentPassword: input.password,
+        newPassword: "another-integration-strong-password",
+      });
+      expect(updated.statusCode, updated.body).toBe(200);
+      expect(updated.json().email).toBe("novo@test.local");
+      expect(updated.json().passwordHash).toBeUndefined();
+      expect(
+        (await app.inject({ url: "/auth/session", headers })).statusCode,
+      ).toBe(401);
+      const renewed = String(updated.headers["set-cookie"]).split(";")[0]!;
+      expect(
+        (
+          await app.inject({
+            url: "/auth/session",
+            headers: { cookie: renewed },
+          })
+        ).statusCode,
+      ).toBe(200);
+      const outside = await app.inject({
+        url: "/auth/session",
+        headers: { cookie: second.cookie },
+      });
+      expect(outside.json()).toMatchObject({
+        name: input.adminName,
+        email: input.email,
+        role: "ADMIN",
+      });
+      const login = await app.inject({
+        method: "POST",
+        url: "/auth/login",
+        payload: {
+          tenant: slug,
+          email: "novo@test.local",
+          password: "another-integration-strong-password",
+        },
+      });
+      expect(login.statusCode, login.body).toBe(200);
+    });
   },
 );

@@ -1,3 +1,4 @@
+import type { TenantTheme } from "./theme.js";
 import { z } from "zod";
 import { nameSchema, slugSchema } from "./admin.js";
 import type { ServiceOption } from "./attendant.js";
@@ -29,4 +30,8 @@ export type DevicePairing = {
   code: string;
   expiresAt: string;
 };
-export type KioskData = { unitName: string; services: ServiceOption[] };
+export type KioskData = {
+  theme: TenantTheme;
+  unitName: string;
+  services: ServiceOption[];
+};

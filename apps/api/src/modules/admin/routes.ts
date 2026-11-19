@@ -2,6 +2,7 @@ import type { FastifyInstance } from "fastify";
 import { hash } from "bcryptjs";
 import {
   counterInput,
+  themeSchema,
   customTemplateInput,
   idParams,
   serviceInput,
@@ -13,6 +14,7 @@ import {
 } from "@beend/shared";
 import { prisma, tenantDb } from "../../db.js";
 import { HttpError } from "../../errors.js";
+import type { Realtime } from "../../realtime.js";
 import { requireActor } from "../auth/service.js";
 import {
   configureServices,
@@ -24,7 +26,18 @@ import {
 } from "./service.js";
 import { findTemplate, saveTemplate, templateCatalog } from "./templates.js";
 
-export function adminRoutes(app: FastifyInstance) {
+export function adminRoutes(app: FastifyInstance, realtime: Realtime) {
+  app.put("/admin/theme", async (request) => {
+    const actor = await requireActor(request, ["ADMIN", "SUPERADMIN"]);
+    const theme = themeSchema.parse(request.body);
+    await tenantDb(actor.tenantId).tenant.update({
+      where: { id: actor.tenantId },
+      data: { theme },
+    });
+    realtime.publishTheme(actor.tenantId, theme);
+    return theme;
+  });
+
   app.get("/admin", async (request) => {
     const actor = await requireActor(request, ["ADMIN", "SUPERADMIN"]);
     const db = tenantDb(actor.tenantId);

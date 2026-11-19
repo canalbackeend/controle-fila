@@ -1,3 +1,4 @@
+import { themeStyle } from "../../theme";
 import { BrandLogo } from "../../components/BrandLogo";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
@@ -40,6 +41,7 @@ function KioskDevice({ id }: { id: string }) {
   }, [clear, id, token]);
   const configure = useCallback(
     (socket: Socket) => {
+      socket.on("tenant.theme", () => void refresh());
       socket.on("connect", () => void refresh());
       socket.on("disconnect", () => void refresh());
       socket.on("connect_error", () => void refresh());
@@ -104,7 +106,7 @@ function KioskDevice({ id }: { id: string }) {
 
   if (!token) return <PairingForm label="totem" pair={pair} />;
   return (
-    <main className="kiosk">
+    <main className="kiosk theme" style={themeStyle(data?.theme)}>
       <header>
         <span className="brand">
           <BrandLogo />

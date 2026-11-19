@@ -1,3 +1,4 @@
+import { readTheme } from "@beend/shared";
 import type { FastifyInstance } from "fastify";
 import { deviceInput, idParams, issueInput, pairInput } from "@beend/shared";
 import { tenantDb } from "../../db.js";
@@ -61,7 +62,7 @@ export function deviceRoutes(app: FastifyInstance, realtime: Realtime) {
 
   app.get("/kiosk/:id", async (request) => {
     const { id } = idParams.parse(request.params);
-    const { scope, db } = await requireDevice(
+    const { scope, db, tenant } = await requireDevice(
       request.headers.authorization,
       id,
       "KIOSK",
@@ -77,7 +78,7 @@ export function deviceRoutes(app: FastifyInstance, realtime: Realtime) {
         orderBy: [{ stageOrder: "asc" }, { name: "asc" }],
       }),
     ]);
-    return { unitName: unit.name, services };
+    return { unitName: unit.name, services, theme: readTheme(tenant.theme) };
   });
   app.post(
     "/kiosk/:id/tickets",

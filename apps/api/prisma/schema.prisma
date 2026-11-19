@@ -64,6 +64,7 @@ model Tenant {
   resetTime     String   @default("00:00")
   retentionDays Int      @default(30)
   logoUrl       String?
+  theme         Json     @default("{\"preset\":\"blue\"}")
   createdAt     DateTime @default(now())
   units         Unit[]
   users         User[]
@@ -83,15 +84,16 @@ model Unit {
 }
 
 model User {
-  id           String           @id @default(uuid())
-  tenantId     String
-  name         String
-  email        String
-  passwordHash String
-  role         Role             @default(ATTENDANT)
-  active       Boolean          @default(true)
-  tenant       Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  sessions     CounterSession[]
+  id                   String           @id @default(uuid())
+  tenantId             String
+  name                 String
+  email                String
+  passwordHash         String
+  credentialsChangedAt DateTime?
+  role                 Role             @default(ATTENDANT)
+  active               Boolean          @default(true)
+  tenant               Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  sessions             CounterSession[]
 
   @@unique([tenantId, email])
   @@unique([tenantId, id])

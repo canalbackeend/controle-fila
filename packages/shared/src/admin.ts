@@ -1,4 +1,5 @@
 import { z } from "zod";
+import type { TenantTheme } from "./theme.js";
 
 export const idSchema = z.uuid();
 export const idParams = z.object({ id: idSchema });
@@ -56,6 +57,12 @@ export const loginInput = z.object({
   email,
   password: z.string().min(1).max(72),
 });
+export const profileInput = z.strictObject({
+  name: nameSchema,
+  email,
+  currentPassword: z.string().min(1).max(72).optional(),
+  newPassword: passwordSchema.optional(),
+});
 export const serviceInput = z.object({
   name: nameSchema,
   prefix,
@@ -98,6 +105,8 @@ export type Actor = {
   name: string;
   role: Role;
   tenantName: string;
+  email: string;
+  theme: TenantTheme;
   timeZone: string;
   resetTime: string;
 };

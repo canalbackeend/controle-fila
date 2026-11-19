@@ -1,3 +1,4 @@
+import { themeStyle } from "../../theme";
 import { BrandLogo } from "../../components/BrandLogo";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
@@ -195,6 +196,7 @@ function PanelDevice({ id }: { id: string }) {
   }, [clear, id, key, merge, token]);
   const configure = useCallback(
     (socket: Socket) => {
+      socket.on("tenant.theme", () => void refresh());
       socket.on("connect", () => void refresh());
       socket.on("disconnect", () => void refresh());
       socket.on("connect_error", () => void refresh());
@@ -278,7 +280,10 @@ function PanelDevice({ id }: { id: string }) {
   if (!token) return <PairingForm label="painel de TV" pair={pair} />;
   if (!started)
     return (
-      <main className="tv-screen tv-start">
+      <main
+        className="tv-screen tv-start theme"
+        style={themeStyle(data?.theme)}
+      >
         <div>
           <p>{data?.unitName || "Beend Fila"}</p>
           <h1>Painel de chamadas</h1>
@@ -294,7 +299,7 @@ function PanelDevice({ id }: { id: string }) {
       !config.serviceIds.length || config.serviceIds.includes(serviceId),
   );
   return (
-    <main className="tv-screen">
+    <main className="tv-screen theme" style={themeStyle(data?.theme)}>
       <header className="tv-header">
         <span className="brand">
           {data?.logoUrl ? (

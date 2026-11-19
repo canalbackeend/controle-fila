@@ -1,5 +1,10 @@
 import type { FastifyInstance } from "fastify";
-import { idParams, type PanelCall, type PanelData } from "@beend/shared";
+import {
+  idParams,
+  readTheme,
+  type PanelCall,
+  type PanelData,
+} from "@beend/shared";
 import { panelContent, settingsFor } from "../content/service.js";
 import { requireDevice } from "../devices/auth.js";
 import { nameFor } from "../queue/service.js";
@@ -70,6 +75,7 @@ export function panelRoutes(app: FastifyInstance) {
     });
     return {
       unitName: unit.name,
+      theme: readTheme(tenant.theme),
       timeZone: scope.timeZone,
       logoUrl: tenant.logoUrl ?? undefined,
       config,

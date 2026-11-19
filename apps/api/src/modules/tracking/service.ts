@@ -1,4 +1,4 @@
-import { publicTokenSchema, type TrackingData } from "@beend/shared";
+import { publicTokenSchema, readTheme, type TrackingData } from "@beend/shared";
 import { prisma, tenantDb } from "../../db.js";
 import { HttpError, missing } from "../../errors.js";
 import { dateFor, position } from "../queue/service.js";
@@ -16,22 +16,23 @@ export async function resolveTracking(token: string) {
     db.ticket.findUnique({ where: { id: reference.id, publicToken: token } }),
     db.tenant.findUniqueOrThrow({
       where: { id: reference.tenantId },
-      select: { timeZone: true, resetTime: true },
+      select: { timeZone: true, resetTime: true, theme: true },
     }),
   ]);
   if (!ticket) missing("Esta senha não foi encontrada.");
   const scope = {
     tenantId: reference.tenantId,
     unitId: ticket.unitId,
-    ...tenant,
+    timeZone: tenant.timeZone,
+    resetTime: tenant.resetTime,
   };
   if (ticket.businessDate !== dateFor(scope))
     throw new HttpError(410, "O acompanhamento desta senha expirou.");
-  return { db, ticket, scope };
+  return { db, ticket, scope, theme: readTheme(tenant.theme) };
 }
 
 export async function trackingData(token: string): Promise<TrackingData> {
-  const { db, ticket, scope } = await resolveTracking(token);
+  const { db, ticket, scope, theme } = await resolveTracking(token);
   const [service, unit, counter] = await Promise.all([
     db.service.findUniqueOrThrow({
       where: { id: ticket.serviceId, unitId: scope.unitId },
@@ -48,6 +49,7 @@ export async function trackingData(token: string): Promise<TrackingData> {
       : null,
   ]);
   return {
+    theme,
     code: ticket.code,
     status: ticket.status,
     unitName: unit.name,

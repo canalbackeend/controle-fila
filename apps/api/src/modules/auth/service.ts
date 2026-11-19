@@ -1,7 +1,13 @@
-import { compare } from "bcryptjs";
+import { compare, hash } from "bcryptjs";
 import type { FastifyRequest } from "fastify";
-import type { Actor, Role } from "@beend/shared";
+import {
+  readTheme,
+  type Actor,
+  type Role,
+  type profileInput,
+} from "@beend/shared";
 import { prisma, tenantDb } from "../../db.js";
+import type { z } from "zod";
 import { HttpError } from "../../errors.js";
 
 export const sessionCookie = "beend_session";
@@ -12,19 +18,34 @@ const dummyHash =
 export async function getActor(
   tenantId: string,
   userId: string,
+  issuedAt?: number,
 ): Promise<Actor | null> {
   const db = tenantDb(tenantId);
   const [user, unit, tenant] = await Promise.all([
     db.user.findFirst({
       where: { id: userId, active: true },
-      select: { id: true, name: true, role: true },
+      select: {
+        id: true,
+        name: true,
+        role: true,
+        email: true,
+        credentialsChangedAt: true,
+      },
     }),
     db.unit.findFirst({ orderBy: { id: "asc" }, select: { id: true } }),
     db.tenant.findUnique({ where: { id: tenantId } }),
   ]);
   if (!user || !unit || !tenant) return null;
+  const { credentialsChangedAt, ...account } = user;
+  if (
+    issuedAt !== undefined &&
+    credentialsChangedAt &&
+    issuedAt < credentialsChangedAt.getTime()
+  )
+    return null;
   return {
-    ...user,
+    ...account,
+    theme: readTheme(tenant.theme),
     tenantId,
     unitId: unit.id,
     tenantName: tenant.name,
@@ -55,6 +76,46 @@ export async function authenticate(
   return actor;
 }
 
+export async function updateProfile(
+  actor: Actor,
+  input: z.infer<typeof profileInput>,
+) {
+  const db = tenantDb(actor.tenantId);
+  const user = await db.user.findUniqueOrThrow({
+    where: { id: actor.id, active: true },
+  });
+  const sensitive = input.email !== user.email || Boolean(input.newPassword);
+  if (
+    sensitive &&
+    (!input.currentPassword ||
+      !(await compare(input.currentPassword, user.passwordHash)))
+  ) {
+    throw new HttpError(
+      403,
+      "Informe a senha atual correta para alterar o e-mail ou a senha.",
+    );
+  }
+  const passwordHash = input.newPassword
+    ? await hash(input.newPassword, 12)
+    : undefined;
+  await db.user.update({
+    where: {
+      id: actor.id,
+      active: true,
+      email: user.email,
+      passwordHash: user.passwordHash,
+    },
+    data: {
+      name: input.name,
+      email: input.email,
+      passwordHash,
+      credentialsChangedAt: sensitive ? new Date() : undefined,
+    },
+  });
+  const updated = await getActor(actor.tenantId, actor.id);
+  if (!updated) throw new HttpError(401, "Conta indisponível.");
+  return updated;
+}
 export function sessionValue(actor: Actor) {
   return `${actor.tenantId}.${actor.id}.${Date.now() + sessionSeconds * 1000}`;
 }
@@ -75,9 +136,10 @@ export async function sessionActor(
   const signed = unsign(cookie);
   if (!signed.valid || !signed.value) return null;
   const [tenantId, userId, expires] = signed.value.split(".");
-  if (!tenantId || !userId || !expires || Number(expires) <= Date.now())
+  const expiry = Number(expires);
+  if (!tenantId || !userId || !Number.isFinite(expiry) || expiry <= Date.now())
     return null;
-  return getActor(tenantId, userId);
+  return getActor(tenantId, userId, expiry - sessionSeconds * 1000);
 }
 
 export async function requireActor(request: FastifyRequest, roles?: Role[]) {

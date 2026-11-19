@@ -1,13 +1,36 @@
 import { BrandLogo } from "../../components/BrandLogo";
-import { useState, type FormEvent } from "react";
-import { useNavigate } from "react-router-dom";
-import type { Actor } from "@beend/shared";
+import { useEffect, useState, type FormEvent } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { slugSchema, type Actor, type TenantTheme } from "@beend/shared";
+import { themeStyle } from "../../theme";
 import { api, message } from "../../api";
 
 export function Login({ onLogin }: { onLogin: (actor: Actor) => void }) {
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const navigate = useNavigate();
+  const [query] = useSearchParams();
+  const [tenant, setTenant] = useState(query.get("empresa") ?? "");
+  const [theme, setTheme] = useState<TenantTheme>();
+  useEffect(() => {
+    const parsed = slugSchema.safeParse(tenant);
+    if (!parsed.success) return;
+    let active = true;
+    const timer = window.setTimeout(() => {
+      void api<TenantTheme>(`/auth/branding/${parsed.data}`).then(
+        (theme) => {
+          if (active) setTheme(theme);
+        },
+        () => {
+          if (active) setTheme(undefined);
+        },
+      );
+    }, 350);
+    return () => {
+      active = false;
+      window.clearTimeout(timer);
+    };
+  }, [tenant]);
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -28,7 +51,7 @@ export function Login({ onLogin }: { onLogin: (actor: Actor) => void }) {
   }
 
   return (
-    <main className="login">
+    <main className="login theme" style={themeStyle(theme)}>
       <section className="login-aside">
         <BrandLogo onDark />
         <div className="login-pitch">
@@ -49,6 +72,11 @@ export function Login({ onLogin }: { onLogin: (actor: Actor) => void }) {
               Identificador da empresa
               <input
                 name="tenant"
+                value={tenant}
+                onChange={(event) => {
+                  setTheme(undefined);
+                  setTenant(event.currentTarget.value);
+                }}
                 required
                 autoComplete="organization"
                 placeholder="ex. demo"

@@ -16,3 +16,5 @@
 - A URL pública usa um token aleatório independente do código impresso. Após a virada, o endpoint responde como expirado. O celular recebe avisos do navegador enquanto a página está aberta.
 - Relatórios usam as datas do calendário no fuso da unidade, com até 93 dias por consulta. Cada etapa concluída ou encaminhada conta como um atendimento. A taxa de ausência usa como base as etapas concluídas e as ausências.
 - O superadministrador pode salvar serviços e guichês ativos da unidade Beend como modelo global. Os modelos podem ser aplicados a unidades sem cadastros prévios.
+- O tema é uma preferência da empresa, com cinco paletas e uma cor hexadecimal personalizada. Azul é o padrão dos cadastros existentes. O servidor divulga apenas a paleta das telas públicas e aplica a mudança em tempo real às sessões da mesma empresa.
+- O perfil pessoal pertence à conta autenticada. Alterar o e-mail ou a senha exige a senha atual e invalida os cookies anteriores da conta. As permissões são gerenciadas no cadastro de equipe.

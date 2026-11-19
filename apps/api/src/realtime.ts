@@ -1,6 +1,6 @@
 import type { FastifyInstance } from "fastify";
 import { Server } from "socket.io";
-import type { PanelCall } from "@beend/shared";
+import type { PanelCall, TenantTheme } from "@beend/shared";
 import { tenantDb } from "./db.js";
 import { sessionActor, sessionCookie } from "./modules/auth/service.js";
 import { resolveTracking } from "./modules/tracking/service.js";
@@ -18,6 +18,7 @@ const unitRoom = (scope: Pick<QueueScope, "tenantId" | "unitId">) =>
 const trackingRoom = (scope: QueueScope, date: string) =>
   `tracking:${scope.tenantId}:${scope.unitId}:${date}`;
 const ticketRoom = (token: string) => `ticket:${token}`;
+const themeRoom = (tenantId: string) => `theme:${tenantId}`;
 export const deviceRoom = (id: string) => `panel:${id}`;
 
 export function attachRealtime(app: FastifyInstance, origin: string) {
@@ -44,6 +45,7 @@ export function attachRealtime(app: FastifyInstance, origin: string) {
         await socket.join([
           ticketRoom(auth.publicToken),
           trackingRoom(scope, ticket.businessDate),
+          themeRoom(scope.tenantId),
         ]);
         return next();
       }
@@ -51,7 +53,7 @@ export function attachRealtime(app: FastifyInstance, origin: string) {
         const device = await deviceIdentity(auth.deviceToken);
         if (!device) return next(new Error("Dispositivo não autorizado."));
         socket.data.deviceId = device.id;
-        await socket.join(deviceRoom(device.id));
+        await socket.join([deviceRoom(device.id), themeRoom(device.tenantId)]);
         return next();
       }
       const cookies = app.parseCookie(socket.request.headers.cookie ?? "");
@@ -60,7 +62,7 @@ export function attachRealtime(app: FastifyInstance, origin: string) {
         app.unsignCookie.bind(app),
       );
       if (!actor) return next(new Error("Sessão não autorizada."));
-      await socket.join(unitRoom(actor));
+      await socket.join([unitRoom(actor), themeRoom(actor.tenantId)]);
       return next();
     } catch {
       return next(new Error("Conexão indisponível."));
@@ -116,6 +118,8 @@ export function attachRealtime(app: FastifyInstance, origin: string) {
 
   return {
     io,
+    publishTheme: (tenantId: string, theme: TenantTheme) =>
+      io.to(themeRoom(tenantId)).emit("tenant.theme", theme),
     publish: (scope: QueueScope, change: QueueChange) => {
       void publish(scope, change).catch(() =>
         app.log.error("Could not publish queue change"),
