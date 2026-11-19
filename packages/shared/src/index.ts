@@ -5,3 +5,4 @@ export * from "./admin.js";
 export * from "./queue.js";
 export * from "./attendant.js";
 export * from "./devices.js";
+export * from "./panel.js";

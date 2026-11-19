@@ -31,6 +31,8 @@ export type QueueChange = {
   type: ChangeType;
   counterName?: string;
   displayName?: string;
+  eventId?: string;
+  eventTime?: Date;
 };
 export const activeStatuses = ["CALLED", "IN_SERVICE"] as const;
 
@@ -86,7 +88,7 @@ async function event(
     >
   > = {},
 ) {
-  await db.ticketEvent.create({
+  return db.ticketEvent.create({
     data: {
       tenantId: scope.tenantId,
       unitId: scope.unitId,
@@ -351,7 +353,7 @@ export function callTicket(actor: Actor, code?: string): Promise<QueueChange> {
         sessionId: session.id,
       },
     });
-    await event(db, actor, called, "CALLED", {
+    const logged = await event(db, actor, called, "CALLED", {
       userId: actor.id,
       counterId: session.counterId,
       fromServiceId: service.id,
@@ -359,6 +361,8 @@ export function callTicket(actor: Actor, code?: string): Promise<QueueChange> {
     return {
       ticket: called,
       type: "CALLED",
+      eventId: logged.id,
+      eventTime: logged.at,
       counterName: session.counter.name,
       displayName: nameFor(service, called),
     };
@@ -463,13 +467,15 @@ export function updateTicket(
           : undefined,
       },
     });
-    await event(db, actor, changed, transition.type, context);
+    const logged = await event(db, actor, changed, transition.type, context);
     const service = await db.service.findUniqueOrThrow({
       where: { id: changed.serviceId },
     });
     return {
       ticket: changed,
       type: transition.type,
+      eventId: logged.id,
+      eventTime: logged.at,
       counterName: session.counter.name,
       displayName: nameFor(service, changed),
     };

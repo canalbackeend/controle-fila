@@ -1,4 +1,3 @@
-import { randomUUID } from "node:crypto";
 import type { FastifyInstance } from "fastify";
 import { Server } from "socket.io";
 import type { PanelCall } from "@beend/shared";
@@ -54,22 +53,23 @@ export function attachRealtime(app: FastifyInstance, origin: string) {
   });
 
   async function publish(scope: QueueScope, change: QueueChange) {
-    const { ticket, type, counterName, displayName } = change;
+    const { ticket, type, counterName, displayName, eventId, eventTime } =
+      change;
     const room = io.to(unitRoom(scope));
     room.emit(
       type === "ISSUED" ? "ticket.issued" : "ticket.updated",
       ticketSummary(ticket),
     );
-    if (type === "CALLED" || type === "RECALLED") {
+    if ((type === "CALLED" || type === "RECALLED") && eventId && eventTime) {
       const call: PanelCall = {
-        id: randomUUID(),
+        id: eventId,
         ticketId: ticket.id,
         code: ticket.code,
         counter: counterName ?? "",
         displayName,
         serviceId: ticket.serviceId,
         isRecall: type === "RECALLED",
-        at: new Date().toISOString(),
+        at: eventTime.toISOString(),
       };
       room.emit("ticket.called", { ...call, displayName: undefined });
       const panels = await tenantDb(scope.tenantId).device.findMany({

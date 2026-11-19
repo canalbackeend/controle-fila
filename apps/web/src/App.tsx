@@ -3,6 +3,7 @@ import { Link, Navigate, Route, Routes } from "react-router-dom";
 import type { Actor } from "@beend/shared";
 import { api, message } from "./api";
 import { Login } from "./pages/auth/Login";
+import { Panel } from "./pages/panel/Panel";
 import { Kiosk } from "./pages/kiosk/Kiosk";
 import { Devices } from "./pages/devices/Devices";
 import { Attendant } from "./pages/attendant/Attendant";
@@ -128,6 +129,7 @@ export function App() {
         )}
       />
       <Route path="/totem/:id?" element={<Kiosk />} />
+      <Route path="/painel/:id?" element={<Panel />} />
       <Route
         path="/atendente"
         element={protectedPage((actor) => (

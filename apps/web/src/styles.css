@@ -514,3 +514,247 @@ input.code-input {
     font-size: 32pt;
   }
 }
+
+.tv-screen {
+  height: 100svh;
+  min-height: 27rem;
+  background: #101b39;
+  color: #eff5ff;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  overflow: hidden;
+  position: relative;
+  font-variant-numeric: tabular-nums;
+}
+.tv-screen h1,
+.tv-screen h2,
+.tv-screen p {
+  color: inherit;
+}
+.tv-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.1vh 2.45vw;
+  border-bottom: 1px solid #354268;
+}
+.tv-header .brand {
+  font-size: clamp(1rem, 2.1vw, 2.5rem);
+}
+.tv-header .brand-mark {
+  width: max(2rem, 3.1vw);
+  height: max(2rem, 3.1vw);
+}
+.tv-logo {
+  max-height: 6vh;
+  max-width: 10vw;
+  object-fit: contain;
+}
+.tv-meta {
+  display: flex;
+  align-items: center;
+  gap: 1.65vw;
+}
+.tv-clock {
+  display: grid;
+  text-align: right;
+}
+.tv-clock time {
+  font-size: clamp(1.3rem, 2.9vw, 4rem);
+  font-weight: 750;
+  line-height: 1;
+  color: white;
+}
+.tv-clock span,
+.tv-offline {
+  color: #bdcbe7;
+  font-size: clamp(0.8rem, 1.2vw, 1.5rem);
+}
+.tv-temperature {
+  font-size: clamp(1rem, 2vw, 2.6rem);
+}
+.tv-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 30%) minmax(0, 1fr);
+}
+.tv-queue {
+  background: #16264d;
+  border-right: 1px solid #354268;
+  min-width: 0;
+  padding: 2.5vh 1.9vw;
+  overflow: hidden;
+}
+.tv-current {
+  min-height: 29vh;
+  display: grid;
+  align-content: center;
+  gap: 0.45rem;
+  margin-bottom: 2.2vh;
+}
+.tv-topic {
+  color: #a8c7ff !important;
+  font-size: clamp(0.9rem, 1.3vw, 1.7rem);
+  font-weight: 700;
+}
+.tv-call-code {
+  font-size: clamp(1.5rem, min(8.4vw, 18vh), 14rem);
+  line-height: 1;
+  color: #fff;
+  letter-spacing: -0.075em;
+  overflow-wrap: anywhere;
+}
+.tv-destination {
+  font-size: clamp(1rem, 2.6vw, 4rem);
+  color: #e2ebff;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+.tv-call-name,
+.tv-awaiting {
+  font-size: clamp(1rem, 2.2vw, 3.25rem);
+  overflow-wrap: anywhere;
+}
+.tv-queue h2 {
+  color: #bdcbe7;
+  font-size: clamp(0.8rem, 1.38vw, 1.75rem);
+}
+.tv-queue ul {
+  list-style: none;
+  padding: 0;
+  margin: 0.7vh 0 0;
+}
+.tv-queue li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  border-top: 1px solid #354268;
+  padding: 1.1vh 0;
+  font-size: clamp(0.85rem, 1.5vw, 2rem);
+}
+.tv-queue li strong {
+  color: #fff;
+  font-size: 1.2em;
+}
+.tv-queue li span {
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+.tv-card {
+  display: grid;
+  align-items: center;
+  padding: 5vh 5vw;
+  overflow: hidden;
+  position: relative;
+  isolation: isolate;
+  background: radial-gradient(ellipse at 86% 25%, #2e4f93, #162647 66%);
+}
+.tv-card img {
+  height: 100%;
+  width: 100%;
+  position: absolute;
+  inset: 0;
+  object-fit: cover;
+  z-index: -2;
+}
+.tv-card.with-image::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(90deg, #102448ed, #10244866 78%);
+}
+.tv-card-copy {
+  display: grid;
+  gap: 1.5vh;
+}
+.tv-card h2 {
+  max-width: 19ch;
+  font-size: clamp(1.45rem, 4.5vw, 5.1rem);
+  line-height: 1.08;
+  overflow-wrap: anywhere;
+}
+.tv-card p {
+  max-width: 44ch;
+  font-size: clamp(0.95rem, 1.8vw, 2.2rem);
+}
+.tv-card p.tv-source {
+  font-size: clamp(0.8rem, 1.3vw, 1.65rem);
+  color: #d4e1f8;
+}
+.tv-ticker {
+  overflow: hidden;
+  white-space: nowrap;
+  background: #234578;
+  color: white;
+  padding: 1.1vh 0;
+  font-size: clamp(0.9rem, 1.65vw, 2rem);
+  font-weight: 650;
+}
+.tv-ticker span {
+  display: inline-block;
+  padding-left: 100%;
+  animation: tv-ticker 38s linear infinite;
+}
+.tv-screen:has(.tv-overlay) .tv-ticker span {
+  animation-play-state: paused;
+}
+@keyframes tv-ticker {
+  to {
+    transform: translateX(-100%);
+  }
+}
+.tv-overlay,
+.tv-start {
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 0.65rem;
+  text-align: center;
+  background: #132f68;
+}
+.tv-start > div {
+  display: grid;
+  justify-items: center;
+  gap: 1.1rem;
+}
+.tv-start h1 {
+  font-size: clamp(2.4rem, 6vw, 6rem);
+}
+.tv-start button {
+  padding: 1rem 1.5rem;
+  font-size: 1.2rem;
+}
+.tv-overlay {
+  position: absolute;
+  z-index: 2;
+  inset: 0;
+  padding: 1rem;
+  box-shadow: inset 0 0 0 0.75rem #7cafee;
+}
+.tv-overlay .tv-call-code {
+  font-size: clamp(3rem, min(20vw, 32vh), 24rem);
+  animation: tv-call 1.35s ease-in-out infinite alternate;
+}
+.tv-overlay .tv-destination {
+  font-size: clamp(1.6rem, 5vw, 7rem);
+}
+.tv-overlay .tv-call-name {
+  font-size: clamp(1.4rem, 4.7vw, 6rem);
+  font-weight: 650;
+}
+@keyframes tv-call {
+  to {
+    opacity: 0.72;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tv-overlay .tv-call-code {
+    animation: none;
+  }
+  .tv-ticker span {
+    animation: none;
+    padding-left: 1rem;
+  }
+}

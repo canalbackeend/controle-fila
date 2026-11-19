@@ -7,6 +7,7 @@ import { HttpError } from "./errors.js";
 import { authRoutes } from "./modules/auth/routes.js";
 import { attendantRoutes } from "./modules/attendant/routes.js";
 import { deviceRoutes } from "./modules/devices/routes.js";
+import { panelRoutes } from "./modules/panel/routes.js";
 import { attachRealtime } from "./realtime.js";
 import { queueRoutes } from "./modules/queue/routes.js";
 import { adminRoutes } from "./modules/admin/routes.js";
@@ -75,6 +76,7 @@ export function buildApp(
       const realtime = attachRealtime(api, settings.origin);
       queueRoutes(api, realtime.publish);
       deviceRoutes(api, realtime);
+      panelRoutes(api);
     });
   }
   return app;

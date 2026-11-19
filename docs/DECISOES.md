@@ -9,3 +9,5 @@
 - O encaminhamento mantém o código e entra no fim do grupo de prioridade da etapa de destino. A posição impressa representa a fila no momento da emissão.
 - Os códigos de pareamento são descartáveis, expiram em 15 minutos e incluem o identificador da empresa. Gerar outro código revoga o token anterior do dispositivo.
 - O comprovante do totem é enviado para impressão após a emissão. A tela permite reimprimir a mesma senha antes de voltar ao início.
+- O painel guarda o conteúdo do carrossel no dispositivo e limita o cache de imagens. O cache persistente não contém histórico de chamadas por nome.
+- O primeiro uso da TV pede um toque para liberar o áudio. Em quiosques dedicados, o Chrome oferece a flag `--autoplay-policy=no-user-gesture-required`.
