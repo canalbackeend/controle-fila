@@ -170,7 +170,6 @@ input[type="checkbox"] {
 }
 .login-aside .brand-logo {
   width: clamp(10rem, 18vw, 15rem);
-  filter: invert(1);
 }
 .login {
   min-height: 100svh;
@@ -595,12 +594,6 @@ input.code-input {
   max-width: 17vw;
   object-fit: contain;
 }
-.tv-header .brand-logo {
-  filter: invert(1);
-}
-.tv-logo {
-  filter: drop-shadow(0 0 1px #e4edff) drop-shadow(0 0 0.65px #e4edff);
-}
 .tv-meta {
   display: flex;
   align-items: center;
@@ -814,6 +807,15 @@ input.code-input {
   }
 }
 
+.content-logo {
+  width: auto;
+  max-width: 14rem;
+  height: 3.5rem;
+  object-fit: contain;
+  padding: 0.35rem 0.65rem;
+  border-radius: 0.45rem;
+  background: #101b39;
+}
 .content-thumb {
   width: 4rem;
   height: 3rem;

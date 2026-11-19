@@ -30,7 +30,7 @@ export function Login({ onLogin }: { onLogin: (actor: Actor) => void }) {
   return (
     <main className="login">
       <section className="login-aside">
-        <BrandLogo />
+        <BrandLogo onDark />
         <div className="login-pitch">
           <h1>
             Atendimento

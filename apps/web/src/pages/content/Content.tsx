@@ -129,16 +129,17 @@ export function Content({ actor }: { actor: Actor }) {
       )}
       <section className="surface">
         <div className="section-head">
-          <h2>Logotipo</h2>
+          <h2>Logotipo da TV</h2>
           {data?.logoUrl && (
             <img
-              className="content-thumb"
+              className="content-logo"
               src={data.logoUrl}
               alt="Logotipo atual"
             />
           )}
         </div>
         <form className="editor" onSubmit={logo}>
+          <p>Para o fundo escuro da TV, use uma versão clara da marca.</p>
           <label>
             Imagem do logotipo
             <input

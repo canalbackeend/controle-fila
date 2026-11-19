@@ -300,7 +300,7 @@ function PanelDevice({ id }: { id: string }) {
           {data?.logoUrl ? (
             <img className="tv-logo" src={data.logoUrl} alt="" />
           ) : (
-            <BrandLogo />
+            <BrandLogo onDark />
           )}
           {data?.unitName || "Beend Fila"}
         </span>
