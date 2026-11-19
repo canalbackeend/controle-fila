@@ -1,3 +1,4 @@
+import { BrandLogo } from "./components/BrandLogo";
 import { useEffect, useState } from "react";
 import { Link, Navigate, Route, Routes, useLocation } from "react-router-dom";
 import type { Actor } from "@beend/shared";
@@ -34,11 +35,8 @@ function Workspace({
   return (
     <>
       <header className="app-header">
-        <Link className="brand" to="/">
-          <span className="brand-mark" aria-hidden="true">
-            B
-          </span>{" "}
-          Beend Fila
+        <Link className="brand" to="/" aria-label="Beend Fila">
+          <BrandLogo />
         </Link>
         <nav aria-label="Navegação principal">
           {actor.role !== "ATTENDANT" && (

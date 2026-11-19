@@ -1,3 +1,4 @@
+import { BrandLogo } from "../../components/BrandLogo";
 import { useCallback, useMemo, useState, type FormEvent } from "react";
 import { api, message } from "../../api";
 
@@ -53,12 +54,7 @@ export function PairingForm({
     <main className="pairing-page">
       <section className="surface">
         <div className="section-head">
-          <span className="brand">
-            <span className="brand-mark" aria-hidden="true">
-              B
-            </span>{" "}
-            Beend Fila
-          </span>
+          <BrandLogo />
           <h1>Parear {label}</h1>
         </div>
         <form className="editor" onSubmit={(event) => void submit(event)}>

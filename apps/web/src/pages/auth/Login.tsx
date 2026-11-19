@@ -1,3 +1,4 @@
+import { BrandLogo } from "../../components/BrandLogo";
 import { useState, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import type { Actor } from "@beend/shared";
@@ -29,12 +30,7 @@ export function Login({ onLogin }: { onLogin: (actor: Actor) => void }) {
   return (
     <main className="login">
       <section className="login-aside">
-        <span className="brand">
-          <span className="brand-mark" aria-hidden="true">
-            B
-          </span>{" "}
-          Beend Fila
-        </span>
+        <BrandLogo />
         <div className="login-pitch">
           <h1>
             Atendimento

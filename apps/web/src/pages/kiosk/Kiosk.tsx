@@ -1,3 +1,4 @@
+import { BrandLogo } from "../../components/BrandLogo";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import type { Socket } from "socket.io-client";
@@ -106,9 +107,7 @@ function KioskDevice({ id }: { id: string }) {
     <main className="kiosk">
       <header>
         <span className="brand">
-          <span className="brand-mark" aria-hidden="true">
-            B
-          </span>{" "}
+          <BrandLogo />
           {data?.unitName || "Beend Fila"}
         </span>
         {!online && (

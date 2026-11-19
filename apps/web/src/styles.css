@@ -117,15 +117,17 @@ input[type="checkbox"] {
   text-decoration: none;
   white-space: nowrap;
 }
-.brand-mark {
-  display: inline-grid;
-  place-items: center;
-  width: 2.15rem;
-  height: 2.15rem;
-  background: #3563d4;
-  color: white;
-  border-radius: 0.6rem;
-  font-weight: 800;
+.brand-logo {
+  display: block;
+  width: clamp(7.25rem, 12vw, 10rem);
+  height: auto;
+  flex-shrink: 0;
+  padding: 0.2rem 0.25rem;
+  border-radius: 0.45rem;
+  background: #fff;
+}
+.login-aside .brand-logo {
+  width: clamp(10rem, 18vw, 15rem);
 }
 .login {
   min-height: 100svh;
@@ -542,14 +544,15 @@ input.code-input {
 .tv-header .brand {
   font-size: clamp(1rem, 2.1vw, 2.5rem);
 }
-.tv-header .brand-mark {
-  width: max(2rem, 3.1vw);
-  height: max(2rem, 3.1vw);
-}
+.tv-header .brand-logo,
 .tv-logo {
-  max-height: 6vh;
-  max-width: 10vw;
+  width: auto;
+  height: clamp(1.9rem, 6vh, 4.5rem);
+  max-width: 17vw;
   object-fit: contain;
+  padding: 0.2rem 0.35rem;
+  border-radius: 0.45rem;
+  background: #fff;
 }
 .tv-meta {
   display: flex;

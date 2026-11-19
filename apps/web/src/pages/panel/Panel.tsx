@@ -1,3 +1,4 @@
+import { BrandLogo } from "../../components/BrandLogo";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import type { Socket } from "socket.io-client";
@@ -299,9 +300,7 @@ function PanelDevice({ id }: { id: string }) {
           {data?.logoUrl ? (
             <img className="tv-logo" src={data.logoUrl} alt="" />
           ) : (
-            <span className="brand-mark" aria-hidden="true">
-              B
-            </span>
+            <BrandLogo />
           )}
           {data?.unitName || "Beend Fila"}
         </span>

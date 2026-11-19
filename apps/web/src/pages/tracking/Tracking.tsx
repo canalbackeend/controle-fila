@@ -1,3 +1,4 @@
+import { BrandLogo } from "../../components/BrandLogo";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import type { Socket } from "socket.io-client";
@@ -127,12 +128,7 @@ function Tracker({ token }: { token: string }) {
   return (
     <main className="tracking">
       <header className="tracking-header">
-        <span className="brand">
-          <span className="brand-mark" aria-hidden="true">
-            B
-          </span>{" "}
-          Beend Fila
-        </span>
+        <BrandLogo />
       </header>
       <h1>Acompanhe sua senha</h1>
       {status === "loading" && !data && (
