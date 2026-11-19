@@ -14,13 +14,15 @@ const password = "playwright-strong-password";
 const adminEmail = "admin@test.local";
 
 export const test = base.extend<{
+  templateId: string;
   unit: {
     slug: string;
     request: APIRequestContext;
     login: (page: Page, email?: string) => Promise<void>;
   };
 }>({
-  unit: async ({ baseURL }, use) => {
+  templateId: ["clinic", { option: true }],
+  unit: async ({ baseURL, templateId }, use) => {
     const slug = `e2e-${randomUUID()}`;
     const tenant = await createTenant({
       slug,
@@ -72,7 +74,7 @@ export const test = base.extend<{
       });
       expect(staff.ok(), await staff.text()).toBeTruthy();
       const applied = await request.post("/api/admin/template", {
-        data: { templateId: "clinic" },
+        data: { templateId },
       });
       expect(applied.ok(), await applied.text()).toBeTruthy();
       await use({
