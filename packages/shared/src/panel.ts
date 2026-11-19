@@ -69,7 +69,7 @@ export const panelInput = z.object({
 });
 export const assetUrlSchema = z
   .string()
-  .regex(/^\/api\/assets\/[a-f0-9]{64}\.webp$/);
+  .regex(/^\/api\/assets\/[a-f0-9]{64}\.(?:webp|png)$/);
 export const cardInput = z
   .object({
     type: z.enum(["NOTICE", "TIP"]),

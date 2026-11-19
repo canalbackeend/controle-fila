@@ -12,6 +12,9 @@
   --line: #dce5ef;
   --primary: #214fb5;
   --surface: #fff;
+  --field-height: 2.8rem;
+  --field-border: #cbd7e5;
+  --field-radius: 0.55rem;
 }
 
 * {
@@ -80,6 +83,7 @@ button.primary:hover {
 }
 label {
   display: grid;
+  align-content: start;
   gap: 0.4rem;
   color: var(--ink);
   font-size: 0.9rem;
@@ -89,14 +93,55 @@ input:not([type="checkbox"]),
 select,
 textarea {
   width: 100%;
-  min-height: 2.8rem;
+  min-width: 0;
+  min-height: var(--field-height);
   padding: 0.55rem 0.7rem;
-  border: 1px solid #cbd7e5;
-  border-radius: 0.55rem;
-  background: white;
+  border: 1px solid var(--field-border);
+  border-radius: var(--field-radius);
+  background-color: var(--surface);
   color: var(--ink);
-  font-weight: 400;
+  font: inherit;
   font-size: 1rem;
+  font-weight: 400;
+  line-height: 1.25;
+}
+input:not([type="checkbox"]),
+select {
+  height: var(--field-height);
+}
+select {
+  appearance: none;
+  padding-right: 2.25rem;
+  background-image:
+    linear-gradient(45deg, transparent 49%, var(--muted) 50%),
+    linear-gradient(135deg, var(--muted) 50%, transparent 51%);
+  background-position:
+    right 1.02rem center,
+    right 0.7rem center;
+  background-size: 0.32rem 0.32rem;
+  background-repeat: no-repeat;
+}
+textarea {
+  resize: vertical;
+}
+input:not([type="checkbox"])::placeholder,
+textarea::placeholder {
+  color: var(--muted);
+  opacity: 1;
+}
+input:not([type="checkbox"]):disabled,
+select:disabled,
+textarea:disabled {
+  background-color: #edf1f6;
+  color: var(--muted);
+  cursor: not-allowed;
+}
+@media (forced-colors: active) {
+  select {
+    appearance: auto;
+    background-image: none;
+    padding-right: 0.7rem;
+  }
 }
 input[type="checkbox"] {
   width: 1.1rem;
@@ -122,12 +167,10 @@ input[type="checkbox"] {
   width: clamp(7.25rem, 12vw, 10rem);
   height: auto;
   flex-shrink: 0;
-  padding: 0.2rem 0.25rem;
-  border-radius: 0.45rem;
-  background: #fff;
 }
 .login-aside .brand-logo {
   width: clamp(10rem, 18vw, 15rem);
+  filter: invert(1);
 }
 .login {
   min-height: 100svh;
@@ -317,6 +360,7 @@ input[type="checkbox"] {
 }
 .form-grid {
   display: grid;
+  align-items: start;
   gap: 1rem;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
 }
@@ -539,7 +583,9 @@ input.code-input {
   align-items: center;
   gap: 1rem;
   padding: 1.1vh 2.45vw;
-  border-bottom: 1px solid #354268;
+  border-bottom: 1px solid var(--line);
+  background: #f4f6fa;
+  color: var(--ink);
 }
 .tv-header .brand {
   font-size: clamp(1rem, 2.1vw, 2.5rem);
@@ -550,9 +596,6 @@ input.code-input {
   height: clamp(1.9rem, 6vh, 4.5rem);
   max-width: 17vw;
   object-fit: contain;
-  padding: 0.2rem 0.35rem;
-  border-radius: 0.45rem;
-  background: #fff;
 }
 .tv-meta {
   display: flex;
@@ -567,11 +610,11 @@ input.code-input {
   font-size: clamp(1.3rem, 2.9vw, 4rem);
   font-weight: 750;
   line-height: 1;
-  color: white;
+  color: var(--ink);
 }
 .tv-clock span,
 .tv-offline {
-  color: #bdcbe7;
+  color: var(--muted);
   font-size: clamp(0.8rem, 1.2vw, 1.5rem);
 }
 .tv-temperature {

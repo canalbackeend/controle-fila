@@ -10,12 +10,17 @@ import { api, message } from "../../api";
 type ContentData = { logoUrl: string | null; cards: ManagedCard[] };
 const labels = { TIP: "Curiosidade / dica", NOTICE: "Aviso / anúncio" };
 
-async function upload(file: FormDataEntryValue | null) {
+async function upload(file: FormDataEntryValue | null, format?: "png") {
   if (!(file instanceof File) || !file.size) return undefined;
   const body = new FormData();
   body.set("file", file);
-  return (await api<{ imageUrl: string }>("/admin/assets", "POST", body))
-    .imageUrl;
+  return (
+    await api<{ imageUrl: string }>(
+      format ? `/admin/assets?format=${format}` : "/admin/assets",
+      "POST",
+      body,
+    )
+  ).imageUrl;
 }
 
 function dateValue(iso: string | null | undefined, timeZone: string) {
@@ -98,7 +103,7 @@ export function Content({ actor }: { actor: Actor }) {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
     void action(async () => {
-      const imageUrl = await upload(form.get("file"));
+      const imageUrl = await upload(form.get("file"), "png");
       if (imageUrl) await api("/admin/logo", "PUT", { imageUrl });
     }, "Logotipo salvo.");
   }

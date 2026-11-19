@@ -88,7 +88,7 @@ self.addEventListener("message", (event) => {
     .filter(
       (path) =>
         typeof path === "string" &&
-        /^\/api\/assets\/[a-f0-9]{64}\.webp$/.test(path),
+        /^\/api\/assets\/[a-f0-9]{64}\.(?:webp|png)$/.test(path),
     )
     .slice(0, 48);
   event.waitUntil(

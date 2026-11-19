@@ -1,4 +1,4 @@
-import logo from "../assets/beend-tech.png";
+import logo from "../assets/beend-tech-transparente.png";
 
 export function BrandLogo() {
   return (
@@ -6,8 +6,8 @@ export function BrandLogo() {
       className="brand-logo"
       src={logo}
       alt="Beend.tech"
-      width={490}
-      height={148}
+      width={2168}
+      height={725}
     />
   );
 }
