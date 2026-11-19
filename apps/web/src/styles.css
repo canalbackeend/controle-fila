@@ -583,9 +583,7 @@ input.code-input {
   align-items: center;
   gap: 1rem;
   padding: 1.1vh 2.45vw;
-  border-bottom: 1px solid var(--line);
-  background: #f4f6fa;
-  color: var(--ink);
+  border-bottom: 1px solid #354268;
 }
 .tv-header .brand {
   font-size: clamp(1rem, 2.1vw, 2.5rem);
@@ -596,6 +594,12 @@ input.code-input {
   height: clamp(1.9rem, 6vh, 4.5rem);
   max-width: 17vw;
   object-fit: contain;
+}
+.tv-header .brand-logo {
+  filter: invert(1);
+}
+.tv-logo {
+  filter: drop-shadow(0 0 1px #e4edff) drop-shadow(0 0 0.65px #e4edff);
 }
 .tv-meta {
   display: flex;
@@ -610,11 +614,11 @@ input.code-input {
   font-size: clamp(1.3rem, 2.9vw, 4rem);
   font-weight: 750;
   line-height: 1;
-  color: var(--ink);
+  color: white;
 }
 .tv-clock span,
 .tv-offline {
-  color: var(--muted);
+  color: #bdcbe7;
   font-size: clamp(0.8rem, 1.2vw, 1.5rem);
 }
 .tv-temperature {
