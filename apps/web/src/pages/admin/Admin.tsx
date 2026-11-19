@@ -1,5 +1,6 @@
 import { Icon } from "../../components/Icon";
 import { useCallback, useEffect, useState, type FormEvent } from "react";
+import { Link } from "react-router-dom";
 import type { Socket } from "socket.io-client";
 import {
   ticketStatusLabels,
@@ -352,9 +353,16 @@ export function Admin({ actor }: { actor: Actor }) {
         <section className="surface">
           <div className="section-head">
             <h2>{sections[collection]}</h2>
-            <button className="primary" onClick={() => setEditor("new")}>
-              <Icon name="plus" /> Adicionar {singular[collection]}
-            </button>
+            <div className="actions">
+              {collection === "counters" && (
+                <Link className="action-link" to="/atendente#turno">
+                  <Icon name="headset" /> Gerenciar meu turno
+                </Link>
+              )}
+              <button className="primary" onClick={() => setEditor("new")}>
+                <Icon name="plus" /> Adicionar {singular[collection]}
+              </button>
+            </div>
           </div>
           {editor && (
             <form

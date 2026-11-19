@@ -592,6 +592,29 @@ describe.skipIf(!databaseTests)(
         counterId: counter.id,
         ticket: { id: ticketId, status: "CALLED", canRequeue: true },
       });
+      const foreignService = await tenantDb(
+        outsider.id,
+      ).service.findFirstOrThrow();
+      const configureShift = (cookie: string, serviceIds: string[]) =>
+        app.inject({
+          method: "PATCH",
+          url: "/attendant/shift",
+          headers: { cookie },
+          payload: { shiftId: shift!.id, serviceIds },
+        });
+      expect(
+        (await configureShift(outsider.cookie, [service.id])).statusCode,
+      ).toBe(404);
+      expect(
+        (await configureShift(owner.cookie, [service.id])).statusCode,
+      ).toBe(404);
+      expect(
+        (await configureShift(staffCookie, [foreignService.id])).statusCode,
+      ).toBe(404);
+      expect((await configureShift(staffCookie, [service.id])).statusCode).toBe(
+        204,
+      );
+      expect(await shifts(owner.cookie)).toEqual([shift]);
       const recover = (cookie: string, payload: object, id = shift!.id) =>
         app.inject({
           method: "POST",

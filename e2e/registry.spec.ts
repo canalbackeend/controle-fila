@@ -8,6 +8,7 @@ test("issues and displays preferential and 80+ registry tickets on separate devi
   unit,
   baseURL,
 }) => {
+  test.setTimeout(55_000);
   const kiosk = await browser.newPage({ baseURL });
   const tv = await browser.newPage({ baseURL });
   try {
@@ -47,13 +48,17 @@ test("issues and displays preferential and 80+ registry tickets on separate devi
     await expect(
       tv.getByRole("button", { name: "Tela cheia", exact: true }),
     ).toBeVisible();
-    await page.getByRole("link", { name: "Atendimento", exact: true }).click();
+    await page.getByRole("button", { name: "Guichês", exact: true }).click();
+    await page.getByRole("link", { name: "Gerenciar meu turno" }).click();
+    await expect(
+      page.getByRole("heading", { name: "Meu turno" }),
+    ).toBeVisible();
     await page
       .getByRole("combobox", { name: "Guichê", exact: true })
       .selectOption({ label: "Guichê 1" });
-    for (const service of ["Reconhecimento de firma", "Registros"]) {
-      await page.getByRole("checkbox", { name: service, exact: true }).check();
-    }
+    await page
+      .getByRole("checkbox", { name: "Reconhecimento de firma", exact: true })
+      .check();
     await page.getByRole("button", { name: "Iniciar turno" }).click();
 
     for (const [service, priority, code] of [
@@ -69,7 +74,11 @@ test("issues and displays preferential and 80+ registry tickets on separate devi
       ).toBeVisible();
       await kiosk.getByRole("button", { name: "Concluir" }).click();
       const waiting = page.getByRole("listitem").filter({ hasText: code });
-      await expect(waiting.getByText(`${service} · ${priority}`)).toBeVisible();
+      if (service === "Reconhecimento de firma")
+        await expect(
+          waiting.getByText(`${service} · ${priority}`),
+        ).toBeVisible();
+      else await expect(waiting).toHaveCount(0);
     }
     for (const code of ["FS002", "FP001", "GS002", "GP001"]) {
       await page.getByRole("button", { name: "Chamar próximo" }).click();
@@ -77,11 +86,49 @@ test("issues and displays preferential and 80+ registry tickets on separate devi
       await expect(tv.locator(".tv-overlay .tv-call-code")).toHaveText(code, {
         timeout: 10000,
       });
+      if (code === "FS002") {
+        await expect(
+          page.getByRole("button", { name: "Encerrar turno" }),
+        ).toBeDisabled();
+        await page.getByRole("button", { name: "Alterar serviços" }).click();
+        await expect(
+          page.getByRole("checkbox", {
+            name: "Reconhecimento de firma",
+            exact: true,
+          }),
+        ).toBeChecked();
+        await page
+          .getByRole("button", { name: "Marcar todos os serviços" })
+          .click();
+        await page.getByRole("button", { name: "Salvar serviços" }).click();
+        await expect(
+          page.getByRole("button", { name: "Alterar serviços" }),
+        ).toBeVisible();
+        await expect(page.locator(".current-code")).toHaveText(code);
+        await expect(
+          page.getByText("Registros · Prioridade 80+", { exact: true }),
+        ).toBeVisible();
+        await expect(
+          page.getByText("Registros · Preferencial", { exact: true }),
+        ).toBeVisible();
+      }
       await page.getByRole("button", { name: "Iniciar atendimento" }).click();
       await page
         .getByRole("button", { name: "Finalizar", exact: true })
         .click();
     }
+    await page.getByRole("button", { name: "Encerrar turno" }).click();
+    await expect(
+      page.getByText("Sem turno aberto", { exact: true }),
+    ).toBeVisible();
+    await page
+      .getByRole("combobox", { name: "Guichê", exact: true })
+      .selectOption({ label: "Guichê 2" });
+    await page
+      .getByRole("button", { name: "Marcar todos os serviços" })
+      .click();
+    await page.getByRole("button", { name: "Iniciar turno" }).click();
+    await expect(page.getByText("Turno aberto", { exact: true })).toBeVisible();
   } finally {
     await Promise.all([kiosk.close(), tv.close()]);
   }

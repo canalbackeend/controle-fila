@@ -18,6 +18,11 @@
 
 O plano comercial é um nome de referência. A contratação, o recebimento e a decisão de suspender ou reativar são manuais. Para disponibilizar o sistema aos clientes, configure um domínio HTTPS e a rotina de backup conforme o [guia de deploy](DEPLOY.md).
 
+## Gerenciar turnos
+
+- Em **Atendimento → Meu turno**, escolha um guichê livre e marque os serviços que vai atender. Use **Marcar todos os serviços** para atender todas as filas da unidade. Com o turno aberto, use **Alterar serviços** para ajustar a seleção sem encerrar o atendimento atual.
+- Para iniciar outro turno, use **Encerrar turno** na mesma seção depois de resolver a senha em atendimento. A área **Administração → Guichês** também tem um atalho para **Gerenciar meu turno**.
+
 ## Recuperar um guichê ou acesso da equipe
 
 - Em **Administração → Guichês**, selecione **Liberar guichê** no turno aberto. Se houver uma senha ativa, escolha se ela deve voltar à fila ou ser cancelada. Confirme para liberar o guichê para outro atendente. A senha que retorna mantém código, QR Code e prioridade.

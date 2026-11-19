@@ -2,15 +2,19 @@ import { z } from "zod";
 import { idSchema } from "./admin.js";
 import type { QueueStat, TicketSummary } from "./queue.js";
 
-export const shiftInput = z.object({
-  counterId: idSchema,
+const shiftServices = z.object({
   serviceIds: z
     .array(idSchema)
     .min(1)
     .max(100)
     .transform((ids) => [...new Set(ids)]),
 });
+export const shiftInput = shiftServices.extend({ counterId: idSchema });
+export const shiftServicesInput = shiftServices
+  .extend({ shiftId: idSchema })
+  .strict();
 export type ShiftInput = z.infer<typeof shiftInput>;
+export type ShiftServicesInput = z.infer<typeof shiftServicesInput>;
 const activeTicketStatus = z.enum(["CALLED", "IN_SERVICE"]);
 export const recoverShiftInput = z.strictObject({
   ticket: z
@@ -39,7 +43,12 @@ export type ServiceOption = {
   callMode: "TICKET" | "NAME";
   stageOrder: number;
 };
-export type CounterOption = { id: string; name: string; number: number };
+export type CounterOption = {
+  id: string;
+  name: string;
+  number: number;
+  occupied: boolean;
+};
 export type AttendantState = {
   services: ServiceOption[];
   counters: CounterOption[];

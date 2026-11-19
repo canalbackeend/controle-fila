@@ -6,6 +6,7 @@ import {
   useState,
   type FormEvent,
 } from "react";
+import { useLocation } from "react-router-dom";
 import type { Socket } from "socket.io-client";
 import {
   priorityLabels,
@@ -17,6 +18,7 @@ import {
 import { IssueAtDesk } from "../../components/IssueAtDesk";
 import { api, message } from "../../api";
 import { useRealtime } from "../../realtime";
+import { ShiftControls } from "./ShiftControls";
 
 function waitTime(value: string | null, now: number) {
   if (!value) return "—";
@@ -28,6 +30,7 @@ function waitTime(value: string | null, now: number) {
 }
 
 export function Attendant({ actor }: { actor: Actor }) {
+  const { hash } = useLocation();
   const [state, setState] = useState<AttendantState>();
   const [now, setNow] = useState(Date.now);
   const [error, setError] = useState("");
@@ -35,6 +38,12 @@ export function Attendant({ actor }: { actor: Actor }) {
   const [forward, setForward] = useState(false);
   const pending = useRef(false);
   const generation = useRef(0);
+  const shiftReady = Boolean(state);
+
+  useEffect(() => {
+    if (shiftReady && hash === "#turno")
+      document.getElementById("turno")?.scrollIntoView({ block: "start" });
+  }, [hash, shiftReady]);
 
   const load = useCallback(async () => {
     const index = ++generation.current;
@@ -64,7 +73,7 @@ export function Attendant({ actor }: { actor: Actor }) {
 
   const request = useCallback(
     async (path: string, method: string, body?: unknown) => {
-      if (pending.current) return;
+      if (pending.current) return false;
       pending.current = true;
       setBusy(true);
       setError("");
@@ -72,9 +81,11 @@ export function Attendant({ actor }: { actor: Actor }) {
         await api(path, method, body);
         setForward(false);
         await load();
+        return true;
       } catch (error) {
         setError(message(error));
         await load().catch(() => {});
+        return false;
       } finally {
         pending.current = false;
         setBusy(false);
@@ -125,15 +136,6 @@ export function Attendant({ actor }: { actor: Actor }) {
     return () => window.removeEventListener("keydown", keyDown);
   }, [call, forward, state, update]);
 
-  function start(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const form = new FormData(event.currentTarget);
-    void request("/attendant/shift", "POST", {
-      counterId: form.get("counter"),
-      serviceIds: form.getAll("service"),
-    });
-  }
-
   function submitForward(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
@@ -151,11 +153,6 @@ export function Attendant({ actor }: { actor: Actor }) {
         <div>
           <p className="eyebrow">{actor.tenantName}</p>
           <h1>Posto de atendimento</h1>
-          <p>
-            {state?.session
-              ? state.session.counterName
-              : "Selecione o guichê para iniciar seu turno."}
-          </p>
         </div>
         <span className={`pill ${online ? "" : "inactive"}`} role="status">
           {online ? "Conectado" : "Reconectando…"}
@@ -167,47 +164,20 @@ export function Attendant({ actor }: { actor: Actor }) {
         </p>
       )}
       {!state && !error && <p role="status">Carregando filas…</p>}
-      {state && !state.session && (
-        <section className="surface">
-          <div className="section-head">
-            <h2>Iniciar turno</h2>
-          </div>
-          <form className="editor" onSubmit={start}>
-            <label>
-              Guichê
-              <select required name="counter" defaultValue="">
-                <option value="" disabled>
-                  Selecione um guichê
-                </option>
-                {state.counters.map(({ id, name }) => (
-                  <option key={id} value={id}>
-                    {name}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <fieldset>
-              <legend>Serviços atendidos</legend>
-              <div className="check-grid">
-                {state.services.map(({ id, name }) => (
-                  <label key={id} className="checkbox">
-                    <input type="checkbox" name="service" value={id} />
-                    {name}
-                  </label>
-                ))}
-              </div>
-            </fieldset>
-            {!state.counters.length || !state.services.length ? (
-              <p>Cadastre guichês e serviços na administração para começar.</p>
-            ) : (
-              <div>
-                <button className="primary" disabled={busy}>
-                  <Icon name="unlock" /> Iniciar turno
-                </button>
-              </div>
-            )}
-          </form>
-        </section>
+      {state && (
+        <ShiftControls
+          key={state.session?.id ?? "new"}
+          counters={state.counters}
+          services={state.services}
+          session={state.session}
+          active={state.active}
+          busy={busy}
+          onStart={(input) => request("/attendant/shift", "POST", input)}
+          onChangeServices={(input) =>
+            request("/attendant/shift", "PATCH", input)
+          }
+          onEnd={() => request("/attendant/shift", "DELETE")}
+        />
       )}
       {state?.session && (
         <>
@@ -216,12 +186,6 @@ export function Attendant({ actor }: { actor: Actor }) {
             <section className="surface current-ticket">
               <div className="section-head">
                 <h2>Senha atual</h2>
-                <button
-                  disabled={busy || Boolean(state.active)}
-                  onClick={() => void request("/attendant/shift", "DELETE")}
-                >
-                  <Icon name="logout" /> Encerrar turno
-                </button>
               </div>
               <div className="current-body">
                 {state.active ? (

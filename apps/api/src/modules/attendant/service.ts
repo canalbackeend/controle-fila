@@ -4,8 +4,9 @@ import type {
   OpenShift,
   RecoverShiftInput,
   ShiftInput,
+  ShiftServicesInput,
 } from "@beend/shared";
-import { tenantDb } from "../../db.js";
+import { tenantDb, type TenantTransaction } from "../../db.js";
 import { HttpError, missing } from "../../errors.js";
 import { configureServices } from "../admin/service.js";
 import {
@@ -20,14 +21,23 @@ import {
 export async function attendantState(actor: Actor): Promise<AttendantState> {
   const db = tenantDb(actor.tenantId);
   const unitId = actor.unitId;
-  const [services, counters, session, stats] = await Promise.all([
+  const [services, unitCounters, session, stats] = await Promise.all([
     db.service.findMany({
       where: { unitId },
       orderBy: [{ stageOrder: "asc" }, { name: "asc" }],
     }),
     db.counter.findMany({
       where: { unitId, active: true },
-      select: { id: true, name: true, number: true },
+      select: {
+        id: true,
+        name: true,
+        number: true,
+        sessions: {
+          where: { unitId, endedAt: null },
+          select: { id: true },
+          take: 1,
+        },
+      },
       orderBy: { number: "asc" },
     }),
     db.counterSession.findFirst({
@@ -36,6 +46,10 @@ export async function attendantState(actor: Actor): Promise<AttendantState> {
     }),
     queueStats(actor),
   ]);
+  const counters = unitCounters.map(({ sessions, ...counter }) => ({
+    ...counter,
+    occupied: sessions.length > 0,
+  }));
   const options = services
     .filter(({ active }) => active)
     .map(({ id, name, stageOrder, callMode }) => ({
@@ -96,6 +110,18 @@ export async function attendantState(actor: Actor): Promise<AttendantState> {
   };
 }
 
+async function assertShiftServices(
+  db: TenantTransaction,
+  unitId: string,
+  serviceIds: string[],
+) {
+  const count = await db.service.count({
+    where: { id: { in: serviceIds }, unitId, active: true },
+  });
+  if (count !== serviceIds.length)
+    missing("Um dos serviços selecionados está indisponível.");
+}
+
 export async function startShift(actor: Actor, input: ShiftInput) {
   await configureServices(actor, async (db) => {
     const { unitId, tenantId } = actor;
@@ -113,19 +139,36 @@ export async function startShift(actor: Actor, input: ShiftInput) {
           ? "Encerre o turno atual antes de iniciar outro."
           : "Este guichê está em uso.",
       );
-    const [counter, services] = await Promise.all([
+    const [counter] = await Promise.all([
       db.counter.findFirst({
         where: { id: input.counterId, unitId, active: true },
       }),
-      db.service.count({
-        where: { id: { in: input.serviceIds }, unitId, active: true },
-      }),
+      assertShiftServices(db, unitId, input.serviceIds),
     ]);
-    if (!counter || services !== input.serviceIds.length)
-      missing("Guichê ou serviço indisponível.");
+    if (!counter) missing("Guichê indisponível.");
     await db.counterSession.create({
       data: { unitId, tenantId, userId: actor.id, ...input },
     });
+  });
+}
+
+export function updateShiftServices(
+  actor: Actor,
+  { shiftId, serviceIds }: ShiftServicesInput,
+) {
+  return configureServices(actor, async (db) => {
+    const where = {
+      id: shiftId,
+      unitId: actor.unitId,
+      userId: actor.id,
+      endedAt: null,
+    };
+    if (!(await db.counterSession.findFirst({ where, select: { id: true } })))
+      missing(
+        "Turno ativo não encontrado. Atualize o Atendimento e tente novamente.",
+      );
+    await assertShiftServices(db, actor.unitId, serviceIds);
+    await db.counterSession.update({ where, data: { serviceIds } });
   });
 }
 

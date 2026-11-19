@@ -443,6 +443,9 @@ input:is([type="checkbox"], [type="radio"]) {
   gap: 0.8rem;
   margin-top: 0.6rem;
 }
+.shift-select-all {
+  margin-top: 0.75rem;
+}
 .current-body {
   padding: 1rem 1.4rem 1.5rem;
   min-height: 9rem;
@@ -990,7 +993,7 @@ fieldset .form-grid {
 }
 
 .action-link {
-  display: inline-block;
+  display: inline-flex;
   flex-shrink: 0;
   text-decoration: none;
   font-weight: 650;
