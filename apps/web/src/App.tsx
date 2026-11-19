@@ -1,5 +1,5 @@
 import { BrandLogo } from "./components/BrandLogo";
-import { useCallback, useEffect, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useState } from "react";
 import { Link, Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { readTheme, type Actor, type TenantTheme } from "@beend/shared";
 import type { Socket } from "socket.io-client";
@@ -18,6 +18,12 @@ import { Kiosk } from "./pages/kiosk/Kiosk";
 import { Devices } from "./pages/devices/Devices";
 import { Attendant } from "./pages/attendant/Attendant";
 import { Admin } from "./pages/admin/Admin";
+
+const Companies = lazy(() =>
+  import("./pages/platform/Companies").then(({ Companies }) => ({
+    default: Companies,
+  })),
+);
 
 function Workspace({
   actor,
@@ -47,16 +53,25 @@ function Workspace({
           <BrandLogo />
         </Link>
         <nav aria-label="Navegação principal">
-          {actor.role !== "ATTENDANT" && (
+          {!actor.mustChangePassword && actor.role === "SUPERADMIN" && (
+            <Link to="/plataforma/empresas">Empresas</Link>
+          )}
+          {!actor.mustChangePassword && actor.role !== "ATTENDANT" && (
             <>
-              <Link to="/admin">Administração</Link>
+              <Link to="/admin">
+                {actor.role === "SUPERADMIN"
+                  ? "Operação Beend"
+                  : "Administração"}
+              </Link>
               <Link to="/admin/dispositivos">Dispositivos</Link>
               <Link to="/admin/conteudo">Conteúdo</Link>
               <Link to="/admin/relatorios">Relatórios</Link>
               <Link to="/admin/configuracoes">Configurações</Link>
             </>
           )}
-          <Link to="/atendente">Atendimento</Link>
+          {!actor.mustChangePassword && (
+            <Link to="/atendente">Atendimento</Link>
+          )}
           <Link to="/perfil" title={actor.name}>
             Meu perfil
           </Link>
@@ -98,6 +113,8 @@ export function App() {
   }, []);
   const followTheme = useCallback(
     (socket: Socket) => {
+      socket.on("tenant.suspended", () => setActor(null));
+      socket.on("account.credentials", () => setActor(null));
       socket.on("tenant.theme", (theme: unknown) =>
         updateTheme(readTheme(theme)),
       );
@@ -111,7 +128,11 @@ export function App() {
     },
     [updateTheme],
   );
-  useRealtime(followTheme, undefined, Boolean(actor) && !publicPage);
+  useRealtime(
+    followTheme,
+    undefined,
+    Boolean(actor && !actor.mustChangePassword) && !publicPage,
+  );
 
   function protectedPage(children: (actor: Actor) => React.ReactNode) {
     if (actor === undefined)
@@ -122,6 +143,8 @@ export function App() {
         </main>
       );
     if (!actor) return <Navigate to="/entrar" replace />;
+    if (actor.mustChangePassword && pathname !== "/perfil")
+      return <Navigate to="/perfil" replace />;
     return (
       <Workspace actor={actor} onLogout={() => setActor(null)}>
         {children(actor)}
@@ -135,7 +158,13 @@ export function App() {
         path="/"
         element={protectedPage((actor) => (
           <Navigate
-            to={actor.role === "ATTENDANT" ? "/atendente" : "/admin"}
+            to={
+              actor.role === "SUPERADMIN"
+                ? "/plataforma/empresas"
+                : actor.role === "ATTENDANT"
+                  ? "/atendente"
+                  : "/admin"
+            }
             replace
           />
         ))}
@@ -145,6 +174,24 @@ export function App() {
         element={
           actor ? <Navigate to="/" replace /> : <Login onLogin={setActor} />
         }
+      />
+      <Route
+        path="/plataforma/empresas"
+        element={protectedPage((actor) =>
+          actor.role === "SUPERADMIN" ? (
+            <Suspense
+              fallback={
+                <main className="workspace">
+                  <p role="status">Carregando plataforma…</p>
+                </main>
+              }
+            >
+              <Companies />
+            </Suspense>
+          ) : (
+            <Navigate to="/" replace />
+          ),
+        )}
       />
       <Route
         path="/admin"

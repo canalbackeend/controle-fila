@@ -40,9 +40,7 @@ export function Login({ onLogin }: { onLogin: (actor: Actor) => void }) {
     try {
       const actor = await api<Actor>("/auth/login", "POST", fields);
       onLogin(actor);
-      navigate(actor.role === "ATTENDANT" ? "/atendente" : "/admin", {
-        replace: true,
-      });
+      navigate("/", { replace: true });
     } catch (error) {
       setError(message(error));
     } finally {

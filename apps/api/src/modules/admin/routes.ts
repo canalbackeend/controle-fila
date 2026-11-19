@@ -7,18 +7,16 @@ import {
   idParams,
   serviceInput,
   templateInput,
-  tenantInput,
   tenantSettings,
   userInput,
   userUpdate,
 } from "@beend/shared";
-import { prisma, tenantDb } from "../../db.js";
+import { tenantDb } from "../../db.js";
 import { HttpError } from "../../errors.js";
 import type { Realtime } from "../../realtime.js";
 import { requireActor } from "../auth/service.js";
 import {
   configureServices,
-  createTenant,
   manageUsers,
   updateTenantSettings,
   userFields,
@@ -212,16 +210,5 @@ export function adminRoutes(app: FastifyInstance, realtime: Realtime) {
     const actor = await requireActor(request, ["SUPERADMIN"]);
     const { name } = customTemplateInput.parse(request.body);
     return reply.code(201).send(await saveTemplate(actor, name));
-  });
-
-  app.get("/admin/tenants", async (request) => {
-    await requireActor(request, ["SUPERADMIN"]);
-    return prisma.tenant.findMany({ orderBy: { name: "asc" } });
-  });
-  app.post("/admin/tenants", async (request, reply) => {
-    await requireActor(request, ["SUPERADMIN"]);
-    return reply
-      .code(201)
-      .send(await createTenant(tenantInput.parse(request.body)));
   });
 }

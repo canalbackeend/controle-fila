@@ -37,7 +37,7 @@ export function authRoutes(app: FastifyInstance, secure: boolean) {
         .send(actor);
     },
   );
-  app.get("/auth/session", (request) => requireActor(request));
+  app.get("/auth/session", (request) => requireActor(request, undefined, true));
   app.get(
     "/auth/branding/:slug",
     { config: { rateLimit: { max: 60, timeWindow: "1 minute" } } },
@@ -56,7 +56,7 @@ export function authRoutes(app: FastifyInstance, secure: boolean) {
     "/auth/profile",
     { config: { rateLimit: { max: 12, timeWindow: "1 minute" } } },
     async (request, reply) => {
-      const actor = await requireActor(request);
+      const actor = await requireActor(request, undefined, true);
       const updated = await updateProfile(
         actor,
         profileInput.parse(request.body),

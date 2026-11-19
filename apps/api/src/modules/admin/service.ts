@@ -28,8 +28,12 @@ export async function createTenant(
     timeZone?: string;
     resetTime?: string;
     retentionDays?: number;
+    kioskLimit?: number | null;
+    panelLimit?: number | null;
+    planName?: string | null;
   },
   role: "ADMIN" | "SUPERADMIN" = "ADMIN",
+  mustChangePassword = false,
 ) {
   const { unitName, adminName, email, password, ...tenant } = input;
   const passwordHash = await hash(password, 12);
@@ -37,7 +41,15 @@ export async function createTenant(
     data: {
       ...tenant,
       units: { create: { name: unitName } },
-      users: { create: { name: adminName, email, passwordHash, role } },
+      users: {
+        create: {
+          name: adminName,
+          email,
+          passwordHash,
+          role,
+          mustChangePassword,
+        },
+      },
     },
   });
 }

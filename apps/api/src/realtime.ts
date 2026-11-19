@@ -18,6 +18,8 @@ const unitRoom = (scope: Pick<QueueScope, "tenantId" | "unitId">) =>
 const trackingRoom = (scope: QueueScope, date: string) =>
   `tracking:${scope.tenantId}:${scope.unitId}:${date}`;
 const ticketRoom = (token: string) => `ticket:${token}`;
+const accountRoom = (tenantId: string, userId: string) =>
+  `account:${tenantId}:${userId}`;
 const themeRoom = (tenantId: string) => `theme:${tenantId}`;
 export const deviceRoom = (id: string) => `panel:${id}`;
 
@@ -51,7 +53,8 @@ export function attachRealtime(app: FastifyInstance, origin: string) {
       }
       if (auth.deviceToken) {
         const device = await deviceIdentity(auth.deviceToken);
-        if (!device) return next(new Error("Dispositivo não autorizado."));
+        if (!device || device.unit.tenant.suspendedAt)
+          return next(new Error("Dispositivo não autorizado."));
         socket.data.deviceId = device.id;
         await socket.join([deviceRoom(device.id), themeRoom(device.tenantId)]);
         return next();
@@ -61,8 +64,13 @@ export function attachRealtime(app: FastifyInstance, origin: string) {
         cookies[sessionCookie],
         app.unsignCookie.bind(app),
       );
-      if (!actor) return next(new Error("Sessão não autorizada."));
-      await socket.join([unitRoom(actor), themeRoom(actor.tenantId)]);
+      if (!actor || actor.mustChangePassword)
+        return next(new Error("Sessão não autorizada."));
+      await socket.join([
+        unitRoom(actor),
+        themeRoom(actor.tenantId),
+        accountRoom(actor.tenantId, actor.id),
+      ]);
       return next();
     } catch {
       return next(new Error("Conexão indisponível."));
@@ -118,6 +126,16 @@ export function attachRealtime(app: FastifyInstance, origin: string) {
 
   return {
     io,
+    closeAccountSessions: (tenantId: string, userId: string) => {
+      const room = io.in(accountRoom(tenantId, userId));
+      room.emit("account.credentials");
+      room.disconnectSockets(true);
+    },
+    suspendTenant: (tenantId: string) => {
+      const room = io.in(themeRoom(tenantId));
+      room.emit("tenant.suspended");
+      room.disconnectSockets(true);
+    },
     publishTheme: (tenantId: string, theme: TenantTheme) =>
       io.to(themeRoom(tenantId)).emit("tenant.theme", theme),
     publish: (scope: QueueScope, change: QueueChange) => {

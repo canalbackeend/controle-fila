@@ -16,10 +16,17 @@ export async function resolveTracking(token: string) {
     db.ticket.findUnique({ where: { id: reference.id, publicToken: token } }),
     db.tenant.findUniqueOrThrow({
       where: { id: reference.tenantId },
-      select: { timeZone: true, resetTime: true, theme: true },
+      select: {
+        timeZone: true,
+        resetTime: true,
+        theme: true,
+        suspendedAt: true,
+      },
     }),
   ]);
   if (!ticket) missing("Esta senha não foi encontrada.");
+  if (tenant.suspendedAt)
+    throw new HttpError(403, "O acompanhamento desta empresa está suspenso.");
   const scope = {
     tenantId: reference.tenantId,
     unitId: ticket.unitId,

@@ -1,20 +1,35 @@
 import { Link } from "react-router-dom";
 import { useCallback, useEffect, useState, type FormEvent } from "react";
-import type { DevicePairing, DeviceRecord } from "@beend/shared";
+import type {
+  DeviceAllowance,
+  DevicePairing,
+  DeviceRecord,
+  DeviceType,
+} from "@beend/shared";
 import { devicePath } from "../../device-links";
 import { api, message } from "../../api";
 
 const labels = { KIOSK: "Totem", PANEL: "Painel de TV" };
 export function Devices() {
   const [devices, setDevices] = useState<DeviceRecord[]>([]);
+  const [allowance, setAllowance] = useState<DeviceAllowance>();
+  const [type, setType] = useState<DeviceType>("KIOSK");
+  const selected = allowance?.[type];
+  const full = Boolean(
+    selected && selected.limit !== null && selected.used >= selected.limit,
+  );
   const [pairing, setPairing] = useState<DevicePairing>();
   const [editor, setEditor] = useState<DeviceRecord>();
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
-  const load = useCallback(
-    async () => setDevices(await api<DeviceRecord[]>("/admin/devices")),
-    [],
-  );
+  const load = useCallback(async () => {
+    const [list, quota] = await Promise.all([
+      api<DeviceRecord[]>("/admin/devices"),
+      api<DeviceAllowance>("/admin/devices/allowance"),
+    ]);
+    setDevices(list);
+    setAllowance(quota);
+  }, []);
   useEffect(() => {
     void load().catch((error) => setError(message(error)));
   }, [load]);
@@ -99,14 +114,38 @@ export function Devices() {
             </label>
             <label>
               Tipo
-              <select name="type">
+              <select
+                name="type"
+                value={type}
+                onChange={(event) =>
+                  setType(event.currentTarget.value as DeviceType)
+                }
+              >
                 <option value="KIOSK">Totem</option>
                 <option value="PANEL">Painel de TV</option>
               </select>
             </label>
           </div>
+          {allowance && (
+            <p>
+              Totens {allowance.KIOSK.used}
+              {allowance.KIOSK.limit === null
+                ? " · sem limite"
+                : ` de ${allowance.KIOSK.limit}`}{" "}
+              · TVs {allowance.PANEL.used}
+              {allowance.PANEL.limit === null
+                ? " · sem limite"
+                : ` de ${allowance.PANEL.limit}`}
+            </p>
+          )}
+          {full && (
+            <p>
+              O limite deste tipo de dispositivo foi atingido. Fale com a Beend
+              para ampliar a liberação.
+            </p>
+          )}
           <div>
-            <button className="primary" disabled={busy}>
+            <button className="primary" disabled={busy || full || !allowance}>
               Gerar código de pareamento
             </button>
           </div>

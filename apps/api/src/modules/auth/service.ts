@@ -32,12 +32,13 @@ export async function getActor(
         email: true,
         credentialsChangedAt: true,
         personalTheme: true,
+        mustChangePassword: true,
       },
     }),
     db.unit.findFirst({ orderBy: { id: "asc" }, select: { id: true } }),
     db.tenant.findUnique({ where: { id: tenantId } }),
   ]);
-  if (!user || !unit || !tenant) return null;
+  if (!user || !unit || !tenant || tenant.suspendedAt) return null;
   const { credentialsChangedAt, personalTheme, ...account } = user;
   if (
     issuedAt !== undefined &&
@@ -64,7 +65,7 @@ export async function authenticate(
 ) {
   const tenant = await prisma.tenant.findUnique({
     where: { slug: tenantSlug },
-    select: { id: true },
+    select: { id: true, suspendedAt: true },
   });
   const user = tenant
     ? await tenantDb(tenant.id).user.findFirst({
@@ -74,6 +75,11 @@ export async function authenticate(
   const valid = await compare(password, user?.passwordHash ?? dummyHash);
   if (!user || !valid)
     throw new HttpError(401, "Empresa, e-mail ou senha inválidos.");
+  if (tenant?.suspendedAt)
+    throw new HttpError(
+      403,
+      "O acesso desta empresa está suspenso. Fale com a Beend.",
+    );
   const actor = await getActor(user.tenantId, user.id);
   if (!actor) throw new HttpError(401, "Conta indisponível.");
   return actor;
@@ -87,6 +93,15 @@ export async function updateProfile(
   const user = await db.user.findUniqueOrThrow({
     where: { id: actor.id, active: true },
   });
+  if (
+    user.mustChangePassword &&
+    (!input.newPassword || input.newPassword === input.currentPassword)
+  ) {
+    throw new HttpError(
+      400,
+      "Escolha uma nova senha diferente da senha inicial.",
+    );
+  }
   const sensitive = input.email !== user.email || Boolean(input.newPassword);
   if (
     sensitive &&
@@ -112,6 +127,7 @@ export async function updateProfile(
       name: input.name,
       email: input.email,
       passwordHash,
+      mustChangePassword: passwordHash ? false : undefined,
       credentialsChangedAt: sensitive ? new Date() : undefined,
     },
   });
@@ -145,12 +161,21 @@ export async function sessionActor(
   return getActor(tenantId, userId, expiry - sessionSeconds * 1000);
 }
 
-export async function requireActor(request: FastifyRequest, roles?: Role[]) {
+export async function requireActor(
+  request: FastifyRequest,
+  roles?: Role[],
+  allowInitialPassword = false,
+) {
   const actor = await sessionActor(
     request.cookies[sessionCookie],
     request.unsignCookie,
   );
   if (!actor) throw new HttpError(401, "Entre na sua conta para continuar.");
+  if (actor.mustChangePassword && !allowInitialPassword)
+    throw new HttpError(
+      403,
+      "Troque a senha inicial em Meu perfil para continuar.",
+    );
   if (roles && !roles.includes(actor.role))
     throw new HttpError(403, "Você não tem acesso a esta área.");
   return actor;

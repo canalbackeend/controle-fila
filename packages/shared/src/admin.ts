@@ -14,7 +14,7 @@ export const passwordSchema = z
   .string()
   .min(12)
   .refine((value) => new TextEncoder().encode(value).length <= 72);
-const email = z.email().trim().toLowerCase().max(160);
+export const emailSchema = z.email().trim().toLowerCase().max(160);
 const prefix = z
   .string()
   .trim()
@@ -42,7 +42,7 @@ export const tenantInput = z.object({
   retentionDays: z.coerce.number().int().min(1).max(365).default(30),
   unitName: nameSchema,
   adminName: nameSchema,
-  email,
+  email: emailSchema,
   password: passwordSchema,
 });
 export const tenantSettings = tenantInput.pick({
@@ -54,12 +54,12 @@ export const tenantSettings = tenantInput.pick({
 });
 export const loginInput = z.object({
   tenant: slugSchema,
-  email,
+  email: emailSchema,
   password: z.string().min(1).max(72),
 });
 export const profileInput = z.strictObject({
   name: nameSchema,
-  email,
+  email: emailSchema,
   currentPassword: z.string().min(1).max(72).optional(),
   newPassword: passwordSchema.optional(),
 });
@@ -81,7 +81,7 @@ export const counterInput = z.object({
 });
 export const userInput = z.object({
   name: nameSchema,
-  email,
+  email: emailSchema,
   role: z.enum(["ADMIN", "ATTENDANT"]),
   password: passwordSchema,
   active: z.boolean().default(true),
@@ -108,6 +108,7 @@ export type Actor = {
   email: string;
   theme: TenantTheme;
   personalTheme: TenantTheme | null;
+  mustChangePassword: boolean;
   timeZone: string;
   resetTime: string;
 };

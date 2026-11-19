@@ -13,6 +13,9 @@ export async function deviceIdentity(token: unknown) {
   const [tenantId, id] = parsed.data.split(".") as [string, string];
   return tenantDb(tenantId).device.findFirst({
     where: { id, tokenHash: digest(parsed.data) },
+    include: {
+      unit: { select: { tenant: { select: { suspendedAt: true } } } },
+    },
   });
 }
 
@@ -31,6 +34,8 @@ export async function requireDevice(
   const tenant = await db.tenant.findUniqueOrThrow({
     where: { id: device.tenantId },
   });
+  if (tenant.suspendedAt)
+    throw new HttpError(403, "O acesso desta empresa está suspenso.");
   if (!device.lastSeenAt || Date.now() - device.lastSeenAt.getTime() > 30_000) {
     await db.device.updateMany({
       where: { id, tokenHash: device.tokenHash },

@@ -57,15 +57,19 @@ enum CardType {
 }
 
 model Tenant {
-  id            String   @id @default(uuid())
-  slug          String   @unique
+  id            String    @id @default(uuid())
+  slug          String    @unique
   name          String
-  timeZone      String   @default("America/Sao_Paulo")
-  resetTime     String   @default("00:00")
-  retentionDays Int      @default(30)
+  timeZone      String    @default("America/Sao_Paulo")
+  resetTime     String    @default("00:00")
+  retentionDays Int       @default(30)
   logoUrl       String?
-  theme         Json     @default("{\"preset\":\"blue\"}")
-  createdAt     DateTime @default(now())
+  planName      String?
+  kioskLimit    Int?
+  panelLimit    Int?
+  suspendedAt   DateTime?
+  theme         Json      @default("{\"preset\":\"blue\"}")
+  createdAt     DateTime  @default(now())
   units         Unit[]
   users         User[]
   cards         Card[]
@@ -90,6 +94,7 @@ model User {
   email                String
   passwordHash         String
   credentialsChangedAt DateTime?
+  mustChangePassword   Boolean          @default(false)
   personalTheme        Json?
   role                 Role             @default(ATTENDANT)
   active               Boolean          @default(true)

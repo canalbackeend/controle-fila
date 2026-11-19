@@ -138,6 +138,7 @@ function PanelDevice({ id }: { id: string }) {
         data?.config.weights ?? defaultPanelSettings.weights,
       )?.id,
   );
+  const [suspended, setSuspended] = useState(false);
   const [started, setStarted] = useState(false);
   const [audioError, setAudioError] = useState("");
   const audio = useRef<AudioContext | null>(null);
@@ -167,6 +168,7 @@ function PanelDevice({ id }: { id: string }) {
         undefined,
         token,
       );
+      setSuspended(false);
       const content = { ...next, calls: [] };
       setData((previous) =>
         JSON.stringify(previous) === JSON.stringify(content)
@@ -185,6 +187,11 @@ function PanelDevice({ id }: { id: string }) {
         /* Memory remains available. */
       }
     } catch (error) {
+      if (error instanceof ApiError && error.status === 403) {
+        setSuspended(true);
+        setOverlay([]);
+        setHistory([]);
+      }
       if (error instanceof ApiError && error.status === 401) {
         clear();
         localStorage.removeItem(key);
@@ -196,6 +203,11 @@ function PanelDevice({ id }: { id: string }) {
   }, [clear, id, key, merge, token]);
   const configure = useCallback(
     (socket: Socket) => {
+      socket.on("tenant.suspended", () => {
+        setSuspended(true);
+        setOverlay([]);
+        setHistory([]);
+      });
       socket.on("tenant.theme", () => void refresh());
       socket.on("connect", () => void refresh());
       socket.on("disconnect", () => void refresh());
@@ -278,6 +290,15 @@ function PanelDevice({ id }: { id: string }) {
   }
 
   if (!token) return <PairingForm label="painel de TV" pair={pair} />;
+  if (suspended)
+    return (
+      <main className="tv-screen tv-start">
+        <div>
+          <h1>Painel indisponível</h1>
+          <p>O acesso desta empresa está suspenso.</p>
+        </div>
+      </main>
+    );
   if (!started)
     return (
       <main

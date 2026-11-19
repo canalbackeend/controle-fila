@@ -170,8 +170,7 @@ function Fields({
 
 export function Admin({ actor }: { actor: Actor }) {
   const [data, setData] = useState<AdminData>();
-  const [tenants, setTenants] = useState<Tenant[]>([]);
-  const [section, setSection] = useState<Collection | "settings" | "tenants">(
+  const [section, setSection] = useState<Collection | "settings" | "templates">(
     "services",
   );
   const [editor, setEditor] = useState<Entity | "new" | null>(null);
@@ -181,9 +180,7 @@ export function Admin({ actor }: { actor: Actor }) {
 
   const load = useCallback(async () => {
     setData(await api<AdminData>("/admin"));
-    if (actor.role === "SUPERADMIN")
-      setTenants(await api<Tenant[]>("/admin/tenants"));
-  }, [actor.role]);
+  }, []);
 
   useEffect(() => {
     void load().catch((error) => setError(message(error)));
@@ -241,7 +238,7 @@ export function Admin({ actor }: { actor: Actor }) {
       </main>
     );
   const collection =
-    section === "settings" || section === "tenants" ? null : section;
+    section === "settings" || section === "templates" ? null : section;
   const existing = editor && editor !== "new" ? editor : undefined;
   return (
     <main className="workspace">
@@ -270,10 +267,10 @@ export function Admin({ actor }: { actor: Actor }) {
         </button>
         {actor.role === "SUPERADMIN" && (
           <button
-            aria-current={section === "tenants" ? "page" : undefined}
-            onClick={() => select("tenants")}
+            aria-current={section === "templates" ? "page" : undefined}
+            onClick={() => select("templates")}
           >
-            Empresas
+            Modelos
           </button>
         )}
       </nav>
@@ -407,57 +404,7 @@ export function Admin({ actor }: { actor: Actor }) {
           </form>
         </section>
       )}
-      {section === "tenants" && (
-        <section className="surface">
-          <div className="section-head">
-            <h2>Empresas</h2>
-            <button className="primary" onClick={() => setEditor("new")}>
-              Adicionar empresa
-            </button>
-          </div>
-          {editor && (
-            <form
-              className="editor"
-              onSubmit={(event) => submit(event, "/admin/tenants", "POST")}
-            >
-              <div className="form-grid">
-                <Fields
-                  items={[
-                    ...settingFields,
-                    { name: "slug", label: "Identificador para login" },
-                    { name: "adminName", label: "Nome do administrador" },
-                    {
-                      name: "email",
-                      label: "E-mail do administrador",
-                      type: "email",
-                    },
-                    fields.users[3]!,
-                  ]}
-                />
-              </div>
-              <div className="actions">
-                <button type="button" onClick={() => setEditor(null)}>
-                  Cancelar
-                </button>
-                <button className="primary" disabled={busy}>
-                  Criar empresa
-                </button>
-              </div>
-            </form>
-          )}
-          <ul className="records">
-            {tenants.map((tenant) => (
-              <li key={tenant.id}>
-                <div>
-                  <strong>{tenant.name}</strong>
-                  <p>{tenant.slug}</p>
-                </div>
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
-      {section === "tenants" && actor.role === "SUPERADMIN" && (
+      {section === "templates" && actor.role === "SUPERADMIN" && (
         <section className="surface">
           <div className="section-head">
             <div>

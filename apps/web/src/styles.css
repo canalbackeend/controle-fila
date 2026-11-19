@@ -1076,3 +1076,16 @@ input[type="color"] {
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+.platform-access {
+  display: grid;
+  gap: 0.65rem;
+  margin: 0;
+}
+.platform-access dt {
+  font-weight: 650;
+}
+.platform-access dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}

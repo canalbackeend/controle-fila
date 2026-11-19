@@ -9,3 +9,4 @@ export * from "./panel.js";
 export * from "./tracking.js";
 export * from "./reports.js";
 export * from "./theme.js";
+export * from "./platform.js";

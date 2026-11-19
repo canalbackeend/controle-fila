@@ -67,3 +67,7 @@ export function tenantTransaction<T>(
     timeout: 20000,
   });
 }
+
+export async function lockTenant(db: TenantTransaction, tenantId: string) {
+  await db.$queryRaw`SELECT id FROM "Tenant" WHERE id = ${tenantId} FOR UPDATE`;
+}

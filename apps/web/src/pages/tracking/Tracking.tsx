@@ -33,7 +33,7 @@ async function sendNotification(title: string, body: string, tag: string) {
 function Tracker({ token }: { token: string }) {
   const [data, setData] = useState<TrackingData>();
   const [status, setStatus] = useState<
-    "loading" | "ok" | "expired" | "missing" | "offline"
+    "loading" | "ok" | "expired" | "missing" | "offline" | "suspended"
   >("loading");
   const [permission, setPermission] = useState(notificationPermission);
   const [threshold, setThreshold] = useState(3);
@@ -56,6 +56,9 @@ function Tracker({ token }: { token: string }) {
       if (error instanceof ApiError && [400, 404, 410].includes(error.status)) {
         setData(undefined);
         setStatus(error.status === 410 ? "expired" : "missing");
+      } else if (error instanceof ApiError && error.status === 403) {
+        setData(undefined);
+        setStatus("suspended");
       } else setStatus("offline");
     }
   }, [token]);
@@ -65,6 +68,11 @@ function Tracker({ token }: { token: string }) {
       const update = () => void refresh();
       socket.on("connect", update);
       socket.on("tenant.theme", update);
+      socket.on("tenant.suspended", () => {
+        generation.current++;
+        setData(undefined);
+        setStatus("suspended");
+      });
       socket.on("queue.changed", update);
       socket.on("ticket.updated", update);
     },
@@ -147,6 +155,11 @@ function Tracker({ token }: { token: string }) {
           <h2>Senha indisponível</h2>
           <p>Confira o QR Code do comprovante.</p>
         </section>
+      )}
+      {status === "suspended" && (
+        <p className="error" role="status">
+          O acompanhamento desta empresa está suspenso.
+        </p>
       )}
       {status === "offline" && (
         <p className="error" role="alert">

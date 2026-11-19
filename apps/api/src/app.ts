@@ -15,6 +15,7 @@ import { trackingRoutes } from "./modules/tracking/routes.js";
 import { reportsRoutes } from "./modules/reports/routes.js";
 import { attachRealtime } from "./realtime.js";
 import { queueRoutes } from "./modules/queue/routes.js";
+import { platformRoutes } from "./modules/platform/routes.js";
 import { adminRoutes } from "./modules/admin/routes.js";
 
 export function buildApp(
@@ -80,6 +81,7 @@ export function buildApp(
       attendantRoutes(api);
       const realtime = attachRealtime(api, settings.origin);
       adminRoutes(api, realtime);
+      platformRoutes(api, realtime);
       queueRoutes(api, realtime.publish);
       deviceRoutes(api, realtime);
       panelRoutes(api);

@@ -21,7 +21,9 @@ export function Profile({
 }) {
   const [name, setName] = useState(actor.name);
   const [email, setEmail] = useState(actor.email);
-  const [changePassword, setChangePassword] = useState(false);
+  const [changePassword, setChangePassword] = useState(
+    actor.mustChangePassword,
+  );
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [saved, setSaved] = useState(false);
@@ -70,7 +72,13 @@ export function Profile({
           <p>Gerencie os dados da sua conta em {actor.tenantName}.</p>
         </div>
       </div>
-      <ProfileDeviceLinks />
+      {actor.mustChangePassword ? (
+        <p className="confirmation" role="status">
+          Troque a senha inicial para liberar o acesso à sua empresa.
+        </p>
+      ) : (
+        <ProfileDeviceLinks />
+      )}
       <section className="surface">
         <div className="section-head">
           <h2>Dados da conta</h2>
@@ -110,6 +118,7 @@ export function Profile({
             <input
               type="checkbox"
               checked={changePassword}
+              disabled={actor.mustChangePassword}
               onChange={(event) => {
                 setChangePassword(event.currentTarget.checked);
                 setSaved(false);
@@ -177,18 +186,20 @@ export function Profile({
           </div>
         </form>
       </section>
-      <ThemeEditor
-        current={actor.personalTheme ?? null}
-        inherited={actor.theme}
-        onSave={async (theme) => {
-          const saved = await api<{ theme: TenantTheme | null }>(
-            "/auth/profile/theme",
-            "PUT",
-            { theme },
-          );
-          onThemeSave(saved.theme);
-        }}
-      />
+      {!actor.mustChangePassword && (
+        <ThemeEditor
+          current={actor.personalTheme ?? null}
+          inherited={actor.theme}
+          onSave={async (theme) => {
+            const saved = await api<{ theme: TenantTheme | null }>(
+              "/auth/profile/theme",
+              "PUT",
+              { theme },
+            );
+            onThemeSave(saved.theme);
+          }}
+        />
+      )}
     </main>
   );
 }

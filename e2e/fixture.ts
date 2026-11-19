@@ -1,10 +1,12 @@
 import { randomUUID } from "node:crypto";
 import {
   expect,
+  request as playwrightRequest,
   test as base,
   type APIRequestContext,
   type Page,
 } from "@playwright/test";
+import { buildApp } from "../apps/api/src/app";
 import { tenantDb } from "../apps/api/src/db";
 import { createTenant } from "../apps/api/src/modules/admin/service";
 
@@ -18,7 +20,7 @@ export const test = base.extend<{
     login: (page: Page, email?: string) => Promise<void>;
   };
 }>({
-  unit: async ({ request }, use) => {
+  unit: async ({ baseURL }, use) => {
     const slug = `e2e-${randomUUID()}`;
     const tenant = await createTenant({
       slug,
@@ -29,11 +31,37 @@ export const test = base.extend<{
       password,
     });
     const db = tenantDb(tenant.id);
+    let request: APIRequestContext | undefined;
     try {
-      const authenticated = await request.post("/api/auth/login", {
-        data: { tenant: slug, email: adminEmail, password },
-      });
-      expect(authenticated.ok(), await authenticated.text()).toBeTruthy();
+      if (!baseURL || !process.env.SESSION_SECRET)
+        throw new Error(
+          "The Playwright fixture needs a base URL and SESSION_SECRET.",
+        );
+      const setup = buildApp(
+        {},
+        {
+          secret: process.env.SESSION_SECRET,
+          origin: new URL(baseURL).origin,
+          secure: baseURL.startsWith("https:"),
+        },
+      );
+      try {
+        const authenticated = await setup.inject({
+          method: "POST",
+          url: "/auth/login",
+          payload: { tenant: slug, email: adminEmail, password },
+        });
+        expect(authenticated.statusCode, authenticated.body).toBe(200);
+        const cookie = String(authenticated.headers["set-cookie"]).split(
+          ";",
+        )[0]!;
+        request = await playwrightRequest.newContext({
+          baseURL,
+          extraHTTPHeaders: { cookie },
+        });
+      } finally {
+        await setup.close();
+      }
       const staff = await request.post("/api/admin/users", {
         data: {
           name: "Segundo Atendente",
@@ -64,6 +92,7 @@ export const test = base.extend<{
         },
       });
     } finally {
+      await request?.dispose();
       await db.ticketEvent.deleteMany({});
       await db.ticket.deleteMany({});
       await db.queueSequence.deleteMany({});

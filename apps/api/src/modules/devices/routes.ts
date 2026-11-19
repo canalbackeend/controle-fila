@@ -11,6 +11,7 @@ import { tenantDb } from "../../db.js";
 import { deviceRoom, type Realtime } from "../../realtime.js";
 import { requireActor } from "../auth/service.js";
 import { issueTicket } from "../queue/service.js";
+import { allowance } from "./limits.js";
 import { requireDevice } from "./auth.js";
 import { deviceRecord, newPairing, pairDevice } from "./service.js";
 
@@ -31,6 +32,19 @@ export function deviceRoutes(app: FastifyInstance, realtime: Realtime) {
       orderBy: { name: "asc" },
     });
     return devices.map(deviceRecord);
+  });
+  app.get("/admin/devices/allowance", async (request) => {
+    const actor = await requireActor(request, ["ADMIN", "SUPERADMIN"]);
+    const db = tenantDb(actor.tenantId);
+    const [limits, kiosks, panels] = await Promise.all([
+      db.tenant.findUniqueOrThrow({
+        where: { id: actor.tenantId },
+        select: { kioskLimit: true, panelLimit: true },
+      }),
+      db.device.count({ where: { type: "KIOSK" } }),
+      db.device.count({ where: { type: "PANEL" } }),
+    ]);
+    return allowance(limits, kiosks, panels);
   });
   app.post("/admin/devices", async (request, reply) => {
     const actor = await requireActor(request, ["ADMIN", "SUPERADMIN"]);

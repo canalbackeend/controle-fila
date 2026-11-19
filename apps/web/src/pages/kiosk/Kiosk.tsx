@@ -17,6 +17,7 @@ import { PairingForm, usePairing } from "../devices/pairing";
 
 function KioskDevice({ id }: { id: string }) {
   const { auth, token, pair, clear } = usePairing(id);
+  const [suspended, setSuspended] = useState(false);
   const [data, setData] = useState<KioskData>();
   const [service, setService] = useState<ServiceOption>();
   const [ticket, setTicket] = useState<IssuedTicket>();
@@ -32,7 +33,9 @@ function KioskDevice({ id }: { id: string }) {
     if (!token) return;
     try {
       setData(await api<KioskData>(`/kiosk/${id}`, "GET", undefined, token));
+      setSuspended(false);
     } catch (error) {
+      if (error instanceof ApiError && error.status === 403) setSuspended(true);
       if (error instanceof ApiError && error.status === 401) {
         clear();
         setData(undefined);
@@ -41,6 +44,7 @@ function KioskDevice({ id }: { id: string }) {
   }, [clear, id, token]);
   const configure = useCallback(
     (socket: Socket) => {
+      socket.on("tenant.suspended", () => setSuspended(true));
       socket.on("tenant.theme", () => void refresh());
       socket.on("connect", () => void refresh());
       socket.on("disconnect", () => void refresh());
@@ -105,6 +109,15 @@ function KioskDevice({ id }: { id: string }) {
   }
 
   if (!token) return <PairingForm label="totem" pair={pair} />;
+  if (suspended)
+    return (
+      <main className="kiosk">
+        <section className="kiosk-content">
+          <h1>Totem indisponível</h1>
+          <p>O acesso desta empresa está suspenso.</p>
+        </section>
+      </main>
+    );
   return (
     <main className="kiosk theme" style={themeStyle(data?.theme)}>
       <header>
