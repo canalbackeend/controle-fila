@@ -11,6 +11,28 @@ export const shiftInput = z.object({
     .transform((ids) => [...new Set(ids)]),
 });
 export type ShiftInput = z.infer<typeof shiftInput>;
+const activeTicketStatus = z.enum(["CALLED", "IN_SERVICE"]);
+export const recoverShiftInput = z.strictObject({
+  ticket: z
+    .strictObject({
+      id: idSchema,
+      status: activeTicketStatus,
+      action: z.enum(["REQUEUE", "CANCEL"]),
+    })
+    .optional(),
+});
+export type RecoverShiftInput = z.infer<typeof recoverShiftInput>;
+export type OpenShift = {
+  id: string;
+  counterId: string;
+  attendant: string;
+  ticket: {
+    id: string;
+    code: string;
+    status: z.infer<typeof activeTicketStatus>;
+    canRequeue: boolean;
+  } | null;
+};
 export type ServiceOption = {
   id: string;
   name: string;

@@ -55,6 +55,7 @@ export function Attendant({ actor }: { actor: Actor }) {
       socket.on("ticket.issued", refresh);
       socket.on("ticket.updated", refresh);
       socket.on("queue.stats", refresh);
+      socket.on("shift.changed", refresh);
     },
     [load],
   );

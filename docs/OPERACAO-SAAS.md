@@ -16,3 +16,8 @@
 - **Recuperar acesso** gera uma nova senha inicial para o e-mail de um administrador ativo do cliente. A senha anterior perde a validade e esse administrador precisa trocar a nova senha inicial no próximo acesso.
 
 O plano comercial é um nome de referência. A contratação, o recebimento e a decisão de suspender ou reativar são manuais. Para disponibilizar o sistema aos clientes, configure um domínio HTTPS e a rotina de backup conforme o [guia de deploy](DEPLOY.md).
+
+## Recuperar um guichê ou acesso da equipe
+
+- Em **Administração → Guichês**, selecione **Liberar guichê** no turno aberto. Se houver uma senha ativa, escolha se ela deve voltar à fila ou ser cancelada. Confirme para liberar o guichê para outro atendente. A senha que retorna mantém código, QR Code e prioridade.
+- Em **Administração → Equipe**, edite a pessoa e salve a nova senha. A conta afetada precisa entrar novamente com a nova senha. A troca encerra as sessões anteriores em todos os navegadores.

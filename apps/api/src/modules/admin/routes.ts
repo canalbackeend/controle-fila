@@ -5,6 +5,7 @@ import {
   themeSchema,
   customTemplateInput,
   idParams,
+  recoverShiftInput,
   serviceInput,
   templateInput,
   tenantSettings,
@@ -23,6 +24,7 @@ import {
   validatePrefixes,
 } from "./service.js";
 import { findTemplate, saveTemplate, templateCatalog } from "./templates.js";
+import { openShifts, recoverShift } from "../attendant/service.js";
 
 export function adminRoutes(app: FastifyInstance, realtime: Realtime) {
   app.put("/admin/theme", async (request) => {
@@ -129,6 +131,21 @@ export function adminRoutes(app: FastifyInstance, realtime: Realtime) {
     });
     return reply.code(204).send();
   });
+  app.get("/admin/shifts", async (request) =>
+    openShifts(await requireActor(request, ["ADMIN", "SUPERADMIN"])),
+  );
+  app.post("/admin/shifts/:id/recover", async (request, reply) => {
+    const actor = await requireActor(request, ["ADMIN", "SUPERADMIN"]);
+    const { id } = idParams.parse(request.params);
+    const change = await recoverShift(
+      actor,
+      id,
+      recoverShiftInput.parse(request.body),
+    );
+    if (change) realtime.publish(actor, change);
+    realtime.publishShift(actor);
+    return reply.code(204).send();
+  });
 
   app.post("/admin/users", async (request, reply) => {
     const actor = await requireActor(request, ["ADMIN", "SUPERADMIN"]);
@@ -152,24 +169,45 @@ export function adminRoutes(app: FastifyInstance, realtime: Realtime) {
         409,
         "Peça a outro administrador para alterar sua conta.",
       );
-    return manageUsers(actor).update({
-      where: { id, role: { not: "SUPERADMIN" } },
-      data: {
-        ...fields,
-        ...(password ? { passwordHash: await hash(password, 12) } : {}),
-      },
-      select: userFields,
+    const passwordHash = password ? await hash(password, 12) : undefined;
+    const { user, revoke } = await configureServices(actor, async (db) => {
+      const where = { id, role: { not: "SUPERADMIN" as const } };
+      const current = await db.user.findUniqueOrThrow({
+        where,
+        select: { role: true, active: true, email: true },
+      });
+      const revoke =
+        Boolean(passwordHash) ||
+        current.role !== fields.role ||
+        current.active !== fields.active ||
+        current.email !== fields.email;
+      const user = await db.user.update({
+        where,
+        data: {
+          ...fields,
+          passwordHash,
+          credentialsChangedAt: revoke ? new Date() : undefined,
+        },
+        select: userFields,
+      });
+      return { user, revoke };
     });
+    if (revoke) realtime.closeAccountSessions(actor.tenantId, id);
+    return user;
   });
   app.delete("/admin/users/:id", async (request, reply) => {
     const actor = await requireActor(request, ["ADMIN", "SUPERADMIN"]);
     const { id } = idParams.parse(request.params);
     if (id === actor.id)
       throw new HttpError(409, "Você não pode desativar sua própria conta.");
-    await manageUsers(actor).update({
-      where: { id, role: { not: "SUPERADMIN" } },
-      data: { active: false },
-    });
+    await configureServices(actor, (db) =>
+      db.user.update({
+        where: { id, role: { not: "SUPERADMIN" } },
+        data: { active: false, credentialsChangedAt: new Date() },
+        select: { id: true },
+      }),
+    );
+    realtime.closeAccountSessions(actor.tenantId, id);
     return reply.code(204).send();
   });
 

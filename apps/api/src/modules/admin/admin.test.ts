@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import type { Actor, OpenShift } from "@beend/shared";
 import { afterAll, beforeAll, describe, expect, test } from "vitest";
 import { buildApp } from "../../app.js";
 import { prisma, tenantDb } from "../../db.js";
@@ -58,6 +59,7 @@ describe.skipIf(!databaseTests)(
         await db.queueSequence.deleteMany({});
         await db.card.deleteMany({});
         await db.device.deleteMany({});
+        await db.counterSession.deleteMany({});
         await db.counter.deleteMany({});
         await db.service.deleteMany({});
         await db.tenant.delete({ where: { id } });
@@ -508,6 +510,231 @@ describe.skipIf(!databaseTests)(
       });
       expect((await put({ theme: null })).statusCode).toBe(200);
       expect(await session(cookie)).toMatchObject({ personalTheme: null });
+    });
+
+    test("recovers only local shifts and records the explicit resolution of the ticket", async () => {
+      const owner = actors[0]!;
+      const outsider = actors[1]!;
+      const db = tenantDb(owner.id);
+      const { slug } = await db.tenant.findUniqueOrThrow({
+        where: { id: owner.id },
+      });
+      const headers = { cookie: owner.cookie };
+      const admin = (
+        await app.inject({ url: "/auth/session", headers })
+      ).json<Actor>();
+      const scope = { tenantId: owner.id, unitId: admin.unitId };
+      const staff = {
+        name: "Atendente de recuperação",
+        email: "recovery@test.local",
+        role: "ATTENDANT",
+      };
+      const created = await app.inject({
+        method: "POST",
+        url: "/admin/users",
+        headers,
+        payload: { ...staff, password: input.password },
+      });
+      expect(created.statusCode, created.body).toBe(201);
+      const staffId = created.json().id;
+      const login = await app.inject({
+        method: "POST",
+        url: "/auth/login",
+        payload: { tenant: slug, email: staff.email, password: input.password },
+      });
+      expect(login.statusCode, login.body).toBe(200);
+      const staffCookie = String(login.headers["set-cookie"]).split(";")[0]!;
+      const counter = await db.counter.create({
+        data: { ...scope, name: "Guichê da recuperação", number: 89 },
+      });
+      const service = await db.service.create({
+        data: {
+          ...scope,
+          name: "Recuperação",
+          prefix: "GX",
+          preferentialPrefix: "GXP",
+          priority80Prefix: "GXI",
+        },
+      });
+      const start = (cookie: string) =>
+        app.inject({
+          method: "POST",
+          url: "/attendant/shift",
+          headers: { cookie },
+          payload: { counterId: counter.id, serviceIds: [service.id] },
+        });
+      expect((await start(staffCookie)).statusCode).toBe(204);
+      const issued = await app.inject({
+        method: "POST",
+        url: "/queue/tickets",
+        headers,
+        payload: { serviceId: service.id, priority: "PRIORITY80" },
+      });
+      expect(issued.statusCode, issued.body).toBe(201);
+      const ticketId = issued.json().id;
+      const call = (cookie: string) =>
+        app.inject({
+          method: "POST",
+          url: "/queue/call",
+          headers: { cookie },
+          payload: {},
+        });
+      expect((await call(staffCookie)).json()).toMatchObject({
+        id: ticketId,
+        status: "CALLED",
+      });
+      const shifts = async (cookie: string) =>
+        (await app.inject({ url: "/admin/shifts", headers: { cookie } })).json<
+          OpenShift[]
+        >();
+      const [shift] = await shifts(owner.cookie);
+      expect(shift).toMatchObject({
+        counterId: counter.id,
+        ticket: { id: ticketId, status: "CALLED", canRequeue: true },
+      });
+      const recover = (cookie: string, payload: object, id = shift!.id) =>
+        app.inject({
+          method: "POST",
+          url: `/admin/shifts/${id}/recover`,
+          headers: { cookie },
+          payload,
+        });
+      const resolution = {
+        ticket: { id: ticketId, status: "CALLED", action: "REQUEUE" },
+      };
+      expect(await shifts(outsider.cookie)).toEqual([]);
+      expect((await recover(outsider.cookie, resolution)).statusCode).toBe(404);
+      expect((await recover(staffCookie, resolution)).statusCode).toBe(403);
+      expect((await recover(owner.cookie, {})).statusCode).toBe(409);
+      expect(
+        (
+          await recover(owner.cookie, {
+            ticket: { ...resolution.ticket, status: "IN_SERVICE" },
+          })
+        ).statusCode,
+      ).toBe(409);
+      expect(
+        (
+          await app.inject({
+            method: "DELETE",
+            url: `/admin/users/${staffId}`,
+            headers,
+          })
+        ).statusCode,
+      ).toBe(204);
+      expect((await start(owner.cookie)).statusCode).toBe(409);
+      expect((await recover(owner.cookie, resolution)).statusCode).toBe(204);
+      expect((await recover(owner.cookie, resolution)).statusCode).toBe(409);
+      expect(
+        await db.ticket.findUnique({ where: { id: ticketId } }),
+      ).toMatchObject({
+        status: "WAITING",
+        priority: "PRIORITY80",
+        sessionId: null,
+        counterId: null,
+        startedAt: null,
+      });
+      expect((await start(owner.cookie)).statusCode).toBe(204);
+      expect((await call(owner.cookie)).json()).toMatchObject({
+        id: ticketId,
+        status: "CALLED",
+      });
+      const [next] = await shifts(owner.cookie);
+      await db.ticket.update({
+        where: { id: ticketId },
+        data: { businessDate: "2000-01-01" },
+      });
+      expect(
+        (await recover(owner.cookie, resolution, next!.id)).statusCode,
+      ).toBe(409);
+      expect(
+        (
+          await recover(
+            owner.cookie,
+            { ticket: { ...resolution.ticket, action: "CANCEL" } },
+            next!.id,
+          )
+        ).statusCode,
+      ).toBe(204);
+      expect(await shifts(owner.cookie)).toEqual([]);
+      expect(
+        await db.ticket.findUnique({ where: { id: ticketId } }),
+      ).toMatchObject({ status: "CANCELED" });
+      const events = await db.ticketEvent.findMany({
+        where: { ticketId, type: { in: ["QUEUED", "CANCELED"] } },
+      });
+      expect(events).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            type: "QUEUED",
+            userId: admin.id,
+            counterId: counter.id,
+          }),
+          expect.objectContaining({
+            type: "CANCELED",
+            userId: admin.id,
+            counterId: counter.id,
+          }),
+        ]),
+      );
+      expect((await start(owner.cookie)).statusCode).toBe(204);
+      const [idle] = await shifts(owner.cookie);
+      expect(idle?.ticket).toBeNull();
+      expect((await recover(owner.cookie, {}, idle!.id)).statusCode).toBe(204);
+    });
+
+    test("revokes old team cookies after a password reset and deactivation", async () => {
+      const owner = actors[0]!;
+      const { slug } = await tenantDb(owner.id).tenant.findUniqueOrThrow({
+        where: { id: owner.id },
+      });
+      const headers = { cookie: owner.cookie };
+      const user = {
+        name: "Usuário de teste",
+        email: "reset@test.local",
+        role: "ATTENDANT",
+      };
+      const created = await app.inject({
+        method: "POST",
+        url: "/admin/users",
+        headers,
+        payload: { ...user, password: input.password },
+      });
+      expect(created.statusCode, created.body).toBe(201);
+      const url = `/admin/users/${created.json().id}`;
+      const login = (password: string) =>
+        app.inject({
+          method: "POST",
+          url: "/auth/login",
+          payload: { tenant: slug, email: user.email, password },
+        });
+      const old = await login(input.password);
+      expect(old.statusCode, old.body).toBe(200);
+      const session = (response: typeof old) =>
+        app.inject({
+          url: "/auth/session",
+          headers: {
+            cookie: String(response.headers["set-cookie"]).split(";")[0]!,
+          },
+        });
+      const edit = (payload: object) =>
+        app.inject({ method: "PUT", url, headers, payload });
+      expect((await edit({ ...user, name: "Novo nome" })).statusCode).toBe(200);
+      expect((await session(old)).statusCode).toBe(200);
+      const password = "updated-integration-test-password";
+      expect((await edit({ ...user, password })).statusCode).toBe(200);
+      expect((await session(old)).statusCode).toBe(401);
+      expect((await login(input.password)).statusCode).toBe(401);
+      const fresh = await login(password);
+      expect(fresh.statusCode, fresh.body).toBe(200);
+      expect(
+        (await app.inject({ method: "DELETE", url, headers })).statusCode,
+      ).toBe(204);
+      expect((await edit({ ...user, active: true })).statusCode).toBe(200);
+      expect((await session(fresh)).statusCode).toBe(401);
+      expect(
+        (await app.inject({ url: "/auth/session", headers })).statusCode,
+      ).toBe(200);
     });
 
     test("lets administrators edit their own profile and renews the session after changing credentials", async () => {

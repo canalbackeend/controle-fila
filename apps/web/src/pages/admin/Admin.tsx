@@ -1,6 +1,15 @@
 import { useCallback, useEffect, useState, type FormEvent } from "react";
-import type { Actor, CounterInput, ServiceInput } from "@beend/shared";
-import { api, message } from "../../api";
+import type { Socket } from "socket.io-client";
+import {
+  ticketStatusLabels,
+  type Actor,
+  type CounterInput,
+  type OpenShift,
+  type RecoverShiftInput,
+  type ServiceInput,
+} from "@beend/shared";
+import { ApiError, api, message } from "../../api";
+import { useRealtime } from "../../realtime";
 
 type Entity = { id: string; name: string; active?: boolean };
 type Service = ServiceInput & Entity;
@@ -174,6 +183,8 @@ export function Admin({ actor }: { actor: Actor }) {
     "services",
   );
   const [editor, setEditor] = useState<Entity | "new" | null>(null);
+  const [recovering, setRecovering] = useState<OpenShift | null>(null);
+  const [shifts, setShifts] = useState<OpenShift[]>([]);
   const [error, setError] = useState("");
   const [confirmation, setConfirmation] = useState("");
   const [busy, setBusy] = useState(false);
@@ -181,10 +192,28 @@ export function Admin({ actor }: { actor: Actor }) {
   const load = useCallback(async () => {
     setData(await api<AdminData>("/admin"));
   }, []);
+  const loadShifts = useCallback(async () => {
+    setShifts(await api<OpenShift[]>("/admin/shifts"));
+  }, []);
 
   useEffect(() => {
     void load().catch((error) => setError(message(error)));
   }, [load]);
+  useEffect(() => {
+    if (section === "counters")
+      void loadShifts().catch((error) => setError(message(error)));
+  }, [loadShifts, section]);
+  const followShifts = useCallback(
+    (socket: Socket) => {
+      const refresh = () =>
+        void loadShifts().catch((error) => setError(message(error)));
+      socket.on("connect", refresh);
+      socket.on("shift.changed", refresh);
+      socket.on("ticket.updated", refresh);
+    },
+    [loadShifts],
+  );
+  useRealtime(followShifts, undefined, section === "counters");
 
   async function act(
     path: string,
@@ -198,10 +227,16 @@ export function Admin({ actor }: { actor: Actor }) {
     try {
       await api(path, method, body);
       setEditor(null);
+      setRecovering(null);
       await load();
+      if (section === "counters") await loadShifts();
       setConfirmation(success);
     } catch (error) {
       setError(message(error));
+      if (error instanceof ApiError && error.status === 409) {
+        setRecovering(null);
+        if (section === "counters") await loadShifts().catch(() => {});
+      }
     } finally {
       setBusy(false);
     }
@@ -225,8 +260,30 @@ export function Admin({ actor }: { actor: Actor }) {
   function select(next: typeof section) {
     setSection(next);
     setEditor(null);
+    setRecovering(null);
     setError("");
     setConfirmation("");
+  }
+
+  function submitRecovery(event: FormEvent<HTMLFormElement>, shift: OpenShift) {
+    event.preventDefault();
+    const action = new FormData(event.currentTarget).get("action");
+    const body: RecoverShiftInput =
+      shift.ticket && (action === "REQUEUE" || action === "CANCEL")
+        ? {
+            ticket: {
+              id: shift.ticket.id,
+              status: shift.ticket.status,
+              action,
+            },
+          }
+        : {};
+    void act(
+      `/admin/shifts/${shift.id}/recover`,
+      "POST",
+      body,
+      "Turno encerrado. Guichê liberado.",
+    );
   }
 
   if (!data)
@@ -315,6 +372,12 @@ export function Admin({ actor }: { actor: Actor }) {
                   editing={Boolean(existing)}
                 />
               </div>
+              {existing && collection === "users" && (
+                <p>
+                  Ao definir uma nova senha, os acessos anteriores da conta
+                  serão encerrados.
+                </p>
+              )}
               <label className="checkbox">
                 <input
                   name="active"
@@ -333,50 +396,111 @@ export function Admin({ actor }: { actor: Actor }) {
               </div>
             </form>
           )}
+          {collection === "counters" && recovering && (
+            <form
+              key={recovering.id}
+              className="editor"
+              onSubmit={(event) => submitRecovery(event, recovering)}
+            >
+              <h3>
+                Liberar{" "}
+                {data.counters.find(({ id }) => id === recovering.counterId)
+                  ?.name ?? "guichê"}
+              </h3>
+              <p>O turno de {recovering.attendant} será encerrado.</p>
+              {recovering.ticket && (
+                <>
+                  <p>
+                    Senha {recovering.ticket.code} ·{" "}
+                    {ticketStatusLabels[recovering.ticket.status]}
+                  </p>
+                  <label>
+                    O que fazer com a senha?
+                    <select name="action" defaultValue="" required>
+                      <option value="" disabled>
+                        Selecione uma ação
+                      </option>
+                      {recovering.ticket.canRequeue && (
+                        <option value="REQUEUE">
+                          Devolver ao fim da fila da mesma prioridade
+                        </option>
+                      )}
+                      <option value="CANCEL">Cancelar a senha</option>
+                    </select>
+                  </label>
+                </>
+              )}
+              <div className="actions">
+                <button type="button" onClick={() => setRecovering(null)}>
+                  Voltar
+                </button>
+                <button className="primary" disabled={busy}>
+                  Confirmar liberação
+                </button>
+              </div>
+            </form>
+          )}
           {data[collection].length === 0 ? (
             <p className="empty">Nenhum cadastro nesta área.</p>
           ) : (
             <ul className="records">
-              {data[collection].map((entity) => (
-                <li key={entity.id}>
-                  <div>
-                    <strong>{entity.name}</strong>
-                    <p>
-                      {"prefix" in entity
-                        ? `Etapa ${entity.stageOrder} · ${entity.prefix} / ${entity.preferentialPrefix} / ${entity.priority80Prefix}`
-                        : "number" in entity
-                          ? `Guichê ${entity.number}`
-                          : `${roles[entity.role]} · ${entity.email}`}
-                    </p>
-                  </div>
-                  <span className={entity.active ? "pill" : "pill inactive"}>
-                    {entity.active ? "Ativo" : "Inativo"}
-                  </span>
-                  {entity.id !== actor.id &&
-                    (!("role" in entity) || entity.role !== "SUPERADMIN") && (
-                      <div className="actions">
-                        <button onClick={() => setEditor(entity)}>
-                          Editar
-                        </button>
-                        {entity.active && (
-                          <button
-                            disabled={busy}
-                            onClick={() =>
-                              void act(
-                                `/admin/${collection}/${entity.id}`,
-                                "DELETE",
-                                undefined,
-                                "Cadastro desativado.",
-                              )
-                            }
-                          >
-                            Desativar
+              {data[collection].map((entity) => {
+                const shift =
+                  collection === "counters" &&
+                  shifts.find(({ counterId }) => counterId === entity.id);
+                return (
+                  <li key={entity.id}>
+                    <div>
+                      <strong>{entity.name}</strong>
+                      <p>
+                        {"prefix" in entity
+                          ? `Etapa ${entity.stageOrder} · ${entity.prefix} / ${entity.preferentialPrefix} / ${entity.priority80Prefix}`
+                          : "number" in entity
+                            ? `Guichê ${entity.number}`
+                            : `${roles[entity.role]} · ${entity.email}`}
+                      </p>
+                      {shift && <p>Turno aberto · {shift.attendant}</p>}
+                    </div>
+                    <span className={entity.active ? "pill" : "pill inactive"}>
+                      {entity.active ? "Ativo" : "Inativo"}
+                    </span>
+                    {entity.id !== actor.id &&
+                      (!("role" in entity) || entity.role !== "SUPERADMIN") && (
+                        <div className="actions">
+                          <button onClick={() => setEditor(entity)}>
+                            Editar
                           </button>
-                        )}
-                      </div>
-                    )}
-                </li>
-              ))}
+                          {shift && (
+                            <button
+                              disabled={busy}
+                              onClick={() => {
+                                setEditor(null);
+                                setRecovering(shift);
+                              }}
+                            >
+                              Liberar guichê
+                            </button>
+                          )}
+                          {entity.active && (
+                            <button
+                              disabled={busy}
+                              onClick={() =>
+                                void act(
+                                  `/admin/${collection}/${entity.id}`,
+                                  "DELETE",
+                                  undefined,
+                                  "Cadastro desativado.",
+                                )
+                              }
+                            >
+                              Desativar
+                            </button>
+                          )}
+                        </div>
+                      )}
+                  </li>
+                );
+              })}
             </ul>
           )}
         </section>

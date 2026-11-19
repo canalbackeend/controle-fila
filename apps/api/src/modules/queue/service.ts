@@ -76,7 +76,7 @@ export function nameFor(
     : undefined;
 }
 
-async function event(
+export async function recordTicketEvent(
   db: QueueDb,
   scope: QueueScope,
   ticket: Ticket,
@@ -252,7 +252,7 @@ export function issueTicket(
         publicToken: randomBytes(24).toString("base64url"),
       },
     });
-    await event(db, scope, ticket, "ISSUED", {
+    await recordTicketEvent(db, scope, ticket, "ISSUED", {
       userId,
       toServiceId: service.id,
     });
@@ -354,7 +354,7 @@ export function callTicket(actor: Actor, code?: string): Promise<QueueChange> {
         sessionId: session.id,
       },
     });
-    const logged = await event(db, actor, called, "CALLED", {
+    const logged = await recordTicketEvent(db, actor, called, "CALLED", {
       userId: actor.id,
       counterId: session.counterId,
       fromServiceId: service.id,
@@ -434,7 +434,7 @@ export function updateTicket(
         );
       const data = { ...context, toServiceId: service.id };
       await db.ticket.update({ where: { id }, data: { status: "FORWARDED" } });
-      await event(db, actor, ticket, "FORWARDED", data);
+      await recordTicketEvent(db, actor, ticket, "FORWARDED", data);
       const forwarded = await db.ticket.update({
         where: { id },
         data: {
@@ -448,7 +448,7 @@ export function updateTicket(
           queuedAt: now,
         },
       });
-      await event(db, actor, forwarded, "QUEUED", data);
+      await recordTicketEvent(db, actor, forwarded, "QUEUED", data);
       return { ticket: forwarded, type: "FORWARDED" };
     }
     const transition = transitions[input.action];
@@ -468,7 +468,13 @@ export function updateTicket(
           : undefined,
       },
     });
-    const logged = await event(db, actor, changed, transition.type, context);
+    const logged = await recordTicketEvent(
+      db,
+      actor,
+      changed,
+      transition.type,
+      context,
+    );
     const service = await db.service.findUniqueOrThrow({
       where: { id: changed.serviceId },
     });

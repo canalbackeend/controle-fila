@@ -138,6 +138,8 @@ export function attachRealtime(app: FastifyInstance, origin: string) {
     },
     publishTheme: (tenantId: string, theme: TenantTheme) =>
       io.to(themeRoom(tenantId)).emit("tenant.theme", theme),
+    publishShift: (scope: QueueScope) =>
+      io.to(unitRoom(scope)).emit("shift.changed"),
     publish: (scope: QueueScope, change: QueueChange) => {
       void publish(scope, change).catch(() =>
         app.log.error("Could not publish queue change"),

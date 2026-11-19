@@ -62,6 +62,7 @@ export async function authenticate(
   tenantSlug: string,
   email: string,
   password: string,
+  issuedAt: number,
 ) {
   const tenant = await prisma.tenant.findUnique({
     where: { slug: tenantSlug },
@@ -80,7 +81,7 @@ export async function authenticate(
       403,
       "O acesso desta empresa está suspenso. Fale com a Beend.",
     );
-  const actor = await getActor(user.tenantId, user.id);
+  const actor = await getActor(user.tenantId, user.id, issuedAt);
   if (!actor) throw new HttpError(401, "Conta indisponível.");
   return actor;
 }
@@ -135,8 +136,8 @@ export async function updateProfile(
   if (!updated) throw new HttpError(401, "Conta indisponível.");
   return updated;
 }
-export function sessionValue(actor: Actor) {
-  return `${actor.tenantId}.${actor.id}.${Date.now() + sessionSeconds * 1000}`;
+export function sessionValue(actor: Actor, issuedAt = Date.now()) {
+  return `${actor.tenantId}.${actor.id}.${issuedAt + sessionSeconds * 1000}`;
 }
 
 export const cookieOptions = {

@@ -24,13 +24,15 @@ export function authRoutes(app: FastifyInstance, secure: boolean) {
     { config: { rateLimit: { max: 12, timeWindow: "1 minute" } } },
     async (request, reply) => {
       const input = loginInput.parse(request.body);
+      const issuedAt = Date.now();
       const actor = await authenticate(
         input.tenant,
         input.email,
         input.password,
+        issuedAt,
       );
       return reply
-        .setCookie(sessionCookie, sessionValue(actor), {
+        .setCookie(sessionCookie, sessionValue(actor, issuedAt), {
           ...cookieOptions,
           secure,
         })

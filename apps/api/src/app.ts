@@ -78,8 +78,8 @@ export function buildApp(
         }
       });
       authRoutes(api, settings.secure);
-      attendantRoutes(api);
       const realtime = attachRealtime(api, settings.origin);
+      attendantRoutes(api, realtime);
       adminRoutes(api, realtime);
       platformRoutes(api, realtime);
       queueRoutes(api, realtime.publish);
