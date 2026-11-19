@@ -11,10 +11,12 @@ const presets = Object.entries(themePresets) as [
 export function ThemeEditor({
   current,
   inherited,
+  tenantName,
   onSave,
 }: {
   current: TenantTheme | null;
   inherited?: TenantTheme;
+  tenantName: string;
   onSave: (theme: TenantTheme | null) => Promise<void>;
 }) {
   const [preset, setPreset] = useState<TenantTheme["preset"] | "company">(
@@ -67,8 +69,8 @@ export function ThemeEditor({
         <div className="editor">
           <p>
             {inherited
-              ? "Ajuste as cores do seu guichê. Para acompanhar a paleta da TV e do totem, use o tema da empresa."
-              : "O tema da empresa é aplicado ao guichê, à TV e ao totem. Atendentes podem escolher uma paleta pessoal para seu guichê."}
+              ? `Sua paleta pessoal muda apenas o seu guichê. Selecione “Usar tema da empresa” para acompanhar as cores que o administrador de ${tenantName} definiu para a TV e o totem.`
+              : `Esta paleta vale para o guichê, a TV e o totem de ${tenantName}. Atendentes com paleta pessoal podem escolher “Usar tema da empresa” para acompanhar a mudança.`}
           </p>
           <fieldset>
             <legend>Perfil de cores</legend>

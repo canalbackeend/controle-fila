@@ -145,7 +145,7 @@ export function Attendant({ actor }: { actor: Actor }) {
 
   return (
     <main className="workspace">
-      <div className="page-title">
+      <div className="page-title attendant-title">
         <div>
           <p className="eyebrow">{actor.tenantName}</p>
           <h1>Posto de atendimento</h1>

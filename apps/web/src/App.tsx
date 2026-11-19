@@ -256,6 +256,7 @@ export function App() {
             <ThemeSettings
               key={actor.tenantId}
               current={actor.theme}
+              tenantName={actor.tenantName}
               onSave={updateTheme}
             />
           ),

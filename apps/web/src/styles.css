@@ -414,6 +414,10 @@ input:is([type="checkbox"], [type="radio"]) {
   }
 }
 
+.attendant-title {
+  border-inline-start: 0.25rem solid var(--primary);
+  padding-inline-start: 1rem;
+}
 .attendant-grid {
   display: grid;
   grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
@@ -593,7 +597,7 @@ input.code-input {
   align-items: center;
   gap: 1rem;
   padding: 1.1vh 2.45vw;
-  border-bottom: 1px solid var(--theme-divider);
+  border-bottom: 0.2rem solid var(--primary);
 }
 .tv-header .brand {
   font-size: clamp(1rem, 2.1vw, 2.5rem);

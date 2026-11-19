@@ -4,16 +4,19 @@ import { ThemeEditor } from "./ThemeEditor";
 
 type CompanyThemeProps = {
   current: TenantTheme;
+  tenantName: string;
   onSave: (theme: TenantTheme) => void;
 };
 
 export function CompanyThemeEditor({
   current,
+  tenantName,
   onSave,
 }: CompanyThemeProps) {
   return (
     <ThemeEditor
       current={current}
+      tenantName={tenantName}
       onSave={async (theme) => {
         if (theme) onSave(await api<TenantTheme>("/admin/theme", "PUT", theme));
       }}

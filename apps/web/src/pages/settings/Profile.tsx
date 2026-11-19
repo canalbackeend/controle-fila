@@ -192,6 +192,7 @@ export function Profile({
       {!actor.mustChangePassword && actor.role !== "ATTENDANT" && (
         <CompanyThemeEditor
           current={actor.theme}
+          tenantName={actor.tenantName}
           onSave={onCompanyThemeSave}
         />
       )}
@@ -199,6 +200,7 @@ export function Profile({
         <ThemeEditor
           current={actor.personalTheme ?? null}
           inherited={actor.theme}
+          tenantName={actor.tenantName}
           onSave={async (theme) => {
             const saved = await api<{ theme: TenantTheme | null }>(
               "/auth/profile/theme",

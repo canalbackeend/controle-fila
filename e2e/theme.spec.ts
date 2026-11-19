@@ -6,6 +6,7 @@ test("applies the company theme to existing devices, tracking, sign-in and staff
   unit,
 }) => {
   const devices = await browser.newContext();
+  const staff = await browser.newContext();
   try {
     async function pair(type: "KIOSK" | "PANEL") {
       const result = await unit.request.post("/api/admin/devices", {
@@ -39,6 +40,12 @@ test("applies the company theme to existing devices, tracking, sign-in and staff
     const { publicToken } = await issued.json();
     await phone.goto(`/t/${publicToken}`);
     await expect(phone.getByText("Aguardando chamada")).toBeVisible();
+    const desk = await staff.newPage();
+    await unit.login(desk, "staff@test.local");
+    const deskAccent = desk.locator(".attendant-title");
+    const tvAccent = tv.locator(".tv-header");
+    await expect(deskAccent).toHaveCSS("border-inline-start-color", "rgb(33, 79, 181)");
+    await expect(tvAccent).toHaveCSS("border-bottom-color", "rgb(33, 79, 181)");
     await unit.login(page);
     await page.getByRole("link", { name: "Meu perfil", exact: true }).click();
     await page.getByRole("radio", { name: "Vermelho", exact: true }).check();
@@ -70,6 +77,8 @@ test("applies the company theme to existing devices, tracking, sign-in and staff
       theme(tv, ".tv-screen", "#B22540"),
       theme(kiosk, ".kiosk", "#B22540"),
       theme(phone, ".tracking", "#B22540"),
+      expect(deskAccent).toHaveCSS("border-inline-start-color", "rgb(178, 37, 64)"),
+      expect(tvAccent).toHaveCSS("border-bottom-color", "rgb(178, 37, 64)"),
     ]);
     await page
       .getByRole("link", { name: "Configurações", exact: true })
@@ -99,6 +108,7 @@ test("applies the company theme to existing devices, tracking, sign-in and staff
     ).toHaveAttribute("title", "Administrador de teste");
   } finally {
     await devices.close();
+    await staff.close();
   }
 });
 
