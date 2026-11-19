@@ -1,0 +1,23 @@
+{
+  "name": "api",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "start": "tsx src/server.ts",
+    "typecheck": "tsc --noEmit",
+    "prisma": "dotenv -e ../../.env -- prisma"
+  },
+  "dependencies": {
+    "@beend/shared": "workspace:*",
+    "@prisma/client": "6.19.0",
+    "dotenv": "^17.2.3",
+    "fastify": "^5.6.2",
+    "tsx": "^4.20.6",
+    "zod": "^4.1.12"
+  },
+  "devDependencies": {
+    "dotenv-cli": "^10.0.0",
+    "prisma": "6.19.0"
+  }
+}
