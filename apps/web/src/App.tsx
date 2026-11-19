@@ -46,7 +46,11 @@ function Workspace({
   return (
     <div
       className="theme workspace-theme"
-      style={themeStyle(actor.personalTheme ?? actor.theme)}
+      style={themeStyle(
+        actor.role === "ATTENDANT"
+          ? actor.personalTheme ?? actor.theme
+          : actor.theme,
+      )}
     >
       <header className="app-header">
         <Link className="brand" to="/" aria-label="Beend Fila">
@@ -264,7 +268,8 @@ export function App() {
             key={actor.id}
             actor={actor}
             onSave={setActor}
-            onThemeSave={(personalTheme) =>
+            onCompanyThemeSave={updateTheme}
+            onPersonalThemeSave={(personalTheme) =>
               setActor((known) =>
                 known?.id === actor.id ? { ...known, personalTheme } : known,
               )

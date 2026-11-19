@@ -18,6 +18,6 @@
 - O superadministrador pode salvar serviços e guichês ativos da unidade Beend como modelo global. Os modelos podem ser aplicados a unidades sem cadastros prévios.
 - O tema é uma preferência da empresa, com cinco paletas e uma cor hexadecimal personalizada. Azul é o padrão dos cadastros existentes. O servidor divulga apenas a paleta das telas públicas e aplica a mudança em tempo real às sessões da mesma empresa.
 - O perfil pessoal pertence à conta autenticada. Alterar o e-mail ou a senha exige a senha atual e invalida os cookies anteriores da conta. As permissões são gerenciadas no cadastro de equipe.
-- Cada pessoa pode salvar um tema pessoal em Meu perfil. A preferência só estiliza as telas autenticadas da própria conta e pode ser removida para acompanhar o tema da empresa novamente.
+- Administradores gerenciam o mesmo tema da empresa em Meu perfil ou Configurações. O tema é compartilhado entre guichê, TV e totem. Atendentes podem salvar uma paleta pessoal para suas telas autenticadas e voltar a acompanhar o tema da empresa a qualquer momento.
 - A plataforma usa quotas independentes para totens e painéis. As empresas anteriores à cobrança por dispositivo começam sem limite até a Beend definir a liberação. Empresas novas começam com um totem e um painel, salvo escolha da operação.
 - A suspensão é reversível. O cadastro e a gestão comercial ficam com o superadministrador Beend, e as filas, a equipe, os dispositivos e os relatórios ficam no painel da empresa.

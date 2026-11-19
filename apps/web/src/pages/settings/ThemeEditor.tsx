@@ -65,9 +65,11 @@ export function ThemeEditor({
           <h2>{inherited ? "Tema pessoal" : "Tema da empresa"}</h2>
         </div>
         <div className="editor">
-          {inherited && (
-            <p>Escolha a aparência das telas em que você usa esta conta.</p>
-          )}
+          <p>
+            {inherited
+              ? "Ajuste as cores do seu guichê. Para acompanhar a paleta da TV e do totem, use o tema da empresa."
+              : "O tema da empresa é aplicado ao guichê, à TV e ao totem. Atendentes podem escolher uma paleta pessoal para seu guichê."}
+          </p>
           <fieldset>
             <legend>Perfil de cores</legend>
             <div className="theme-preset-list">
@@ -181,14 +183,20 @@ export function ThemeEditor({
         </div>
         <div className="theme-preview">
           <div className="theme-preview-light">
-            <strong>Telas de atendimento</strong>
+            <strong>Guichê</strong>
             <span className="theme-preview-action">Chamar próximo</span>
           </div>
           {!inherited && (
-            <div className="theme-preview-dark">
-              <strong>Painel de TV</strong>
-              <span>R001</span>
-            </div>
+            <>
+              <div className="theme-preview-dark">
+                <strong>Painel de TV</strong>
+                <span>R001</span>
+              </div>
+              <div className="theme-preview-light">
+                <strong>Totem</strong>
+                <span className="theme-preview-action">Retirar senha</span>
+              </div>
+            </>
           )}
         </div>
       </section>

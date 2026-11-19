@@ -2,13 +2,26 @@ import type { TenantTheme } from "@beend/shared";
 import { api } from "../../api";
 import { ThemeEditor } from "./ThemeEditor";
 
-export function ThemeSettings({
-  current,
-  onSave,
-}: {
+type CompanyThemeProps = {
   current: TenantTheme;
   onSave: (theme: TenantTheme) => void;
-}) {
+};
+
+export function CompanyThemeEditor({
+  current,
+  onSave,
+}: CompanyThemeProps) {
+  return (
+    <ThemeEditor
+      current={current}
+      onSave={async (theme) => {
+        if (theme) onSave(await api<TenantTheme>("/admin/theme", "PUT", theme));
+      }}
+    />
+  );
+}
+
+export function ThemeSettings(props: CompanyThemeProps) {
   return (
     <main className="workspace">
       <div className="page-title">
@@ -19,13 +32,7 @@ export function ThemeSettings({
           </p>
         </div>
       </div>
-      <ThemeEditor
-        current={current}
-        onSave={async (theme) => {
-          if (theme)
-            onSave(await api<TenantTheme>("/admin/theme", "PUT", theme));
-        }}
-      />
+      <CompanyThemeEditor {...props} />
     </main>
   );
 }

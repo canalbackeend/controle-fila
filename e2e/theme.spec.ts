@@ -40,12 +40,14 @@ test("applies the company theme to existing devices, tracking, sign-in and staff
     await phone.goto(`/t/${publicToken}`);
     await expect(phone.getByText("Aguardando chamada")).toBeVisible();
     await unit.login(page);
-    await page
-      .getByRole("link", { name: "Configurações", exact: true })
-      .click();
+    await page.getByRole("link", { name: "Meu perfil", exact: true }).click();
     await page.getByRole("radio", { name: "Vermelho", exact: true }).check();
     await page.getByRole("button", { name: "Salvar tema" }).click();
     await expect(page.getByText("Tema da empresa salvo.")).toBeVisible();
+    await page.getByRole("link", { name: "Atendimento", exact: true }).click();
+    await expect(
+      page.getByRole("heading", { name: "Posto de atendimento" }),
+    ).toBeVisible();
     const theme = async (
       surface: typeof page,
       selector: string,
@@ -69,6 +71,12 @@ test("applies the company theme to existing devices, tracking, sign-in and staff
       theme(kiosk, ".kiosk", "#B22540"),
       theme(phone, ".tracking", "#B22540"),
     ]);
+    await page
+      .getByRole("link", { name: "Configurações", exact: true })
+      .click();
+    await expect(
+      page.getByRole("radio", { name: "Vermelho", exact: true }),
+    ).toBeChecked();
     await page
       .getByRole("radio", { name: "Personalizado", exact: true })
       .check();

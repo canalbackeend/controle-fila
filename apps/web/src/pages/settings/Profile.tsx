@@ -2,6 +2,7 @@ import { useState, type FormEvent } from "react";
 import type { Actor, TenantTheme } from "@beend/shared";
 import { ProfileDeviceLinks } from "./ProfileDeviceLinks";
 import { ThemeEditor } from "./ThemeEditor";
+import { CompanyThemeEditor } from "./ThemeSettings";
 import { api, message } from "../../api";
 
 const roles = {
@@ -13,11 +14,13 @@ const roles = {
 export function Profile({
   actor,
   onSave,
-  onThemeSave,
+  onCompanyThemeSave,
+  onPersonalThemeSave,
 }: {
   actor: Actor;
   onSave: (actor: Actor) => void;
-  onThemeSave: (theme: TenantTheme | null) => void;
+  onCompanyThemeSave: (theme: TenantTheme) => void;
+  onPersonalThemeSave: (theme: TenantTheme | null) => void;
 }) {
   const [name, setName] = useState(actor.name);
   const [email, setEmail] = useState(actor.email);
@@ -186,7 +189,13 @@ export function Profile({
           </div>
         </form>
       </section>
-      {!actor.mustChangePassword && (
+      {!actor.mustChangePassword && actor.role !== "ATTENDANT" && (
+        <CompanyThemeEditor
+          current={actor.theme}
+          onSave={onCompanyThemeSave}
+        />
+      )}
+      {!actor.mustChangePassword && actor.role === "ATTENDANT" && (
         <ThemeEditor
           current={actor.personalTheme ?? null}
           inherited={actor.theme}
@@ -196,7 +205,7 @@ export function Profile({
               "PUT",
               { theme },
             );
-            onThemeSave(saved.theme);
+            onPersonalThemeSave(saved.theme);
           }}
         />
       )}
