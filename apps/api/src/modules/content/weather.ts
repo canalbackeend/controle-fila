@@ -76,6 +76,10 @@ class WeatherApi implements WeatherProvider {
 
   private async coordinates({ city, state }: WeatherLocation) {
     if (!state) return city;
+    // WeatherAPI search misses this locality. GeoNames: https://www.geonames.org/13450916
+    if (state === "DF" && normalize(city) === "recantodasemas")
+      return "-15.90864,-48.06447";
+
     const candidates = locationsSchema.parse(
       await this.fetchJson("search", { q: city }),
     );

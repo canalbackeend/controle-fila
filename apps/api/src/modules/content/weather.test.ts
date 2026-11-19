@@ -88,3 +88,34 @@ test("does not fall back to a city in another state", async () => {
   ).rejects.toThrow("City not found");
   expect(weather).toHaveBeenCalledTimes(1);
 });
+
+test("uses Recanto das Emas coordinates for the Federal District", async () => {
+  vi.stubEnv("WEATHER_PROVIDER", "weatherapi");
+  vi.stubEnv("WEATHER_API_KEY", "test-key");
+  const weather = vi.mocked(remoteContent);
+  weather.mockResolvedValueOnce(
+    Buffer.from(
+      JSON.stringify({
+        current: { temp_c: 25, condition: { text: "Ensolarado" } },
+        forecast: {
+          forecastday: [
+            {
+              date: "2026-11-19",
+              day: { mintemp_c: 17, maxtemp_c: 28 },
+            },
+          ],
+        },
+      }),
+    ),
+  );
+
+  const result = await configuredWeatherProvider()!.current({
+    city: "Recanto das emas",
+    state: "DF",
+  });
+  expect(result.locationQuery).toBe("-15.90864,-48.06447");
+  expect(weather).toHaveBeenCalledTimes(1);
+  const [url] = weather.mock.calls[0]!;
+  expect(url.pathname).toBe("/v1/forecast.json");
+  expect(url.searchParams.get("q")).toBe("-15.90864,-48.06447");
+});
