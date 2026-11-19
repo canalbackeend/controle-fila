@@ -6,3 +6,281 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+enum Role {
+  SUPERADMIN
+  ADMIN
+  ATTENDANT
+}
+
+enum CallMode {
+  TICKET
+  NAME
+}
+
+enum Priority {
+  NORMAL
+  PREFERENTIAL
+  PRIORITY80
+}
+
+enum TicketStatus {
+  WAITING
+  CALLED
+  IN_SERVICE
+  FINISHED
+  FORWARDED
+  NO_SHOW
+  CANCELED
+}
+
+enum TicketEventType {
+  ISSUED
+  CALLED
+  RECALLED
+  STARTED
+  FORWARDED
+  QUEUED
+  FINISHED
+  NO_SHOW
+  CANCELED
+}
+
+enum DeviceType {
+  PANEL
+  KIOSK
+}
+
+enum CardType {
+  TIP
+  NOTICE
+}
+
+model Tenant {
+  id            String   @id @default(uuid())
+  slug          String   @unique
+  name          String
+  timeZone      String   @default("America/Sao_Paulo")
+  resetTime     String   @default("00:00")
+  retentionDays Int      @default(30)
+  logoUrl       String?
+  createdAt     DateTime @default(now())
+  units         Unit[]
+  users         User[]
+  cards         Card[]
+}
+
+model Unit {
+  id       String    @id @default(uuid())
+  tenantId String
+  name     String
+  tenant   Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  services Service[]
+  counters Counter[]
+  devices  Device[]
+
+  @@unique([tenantId, id])
+}
+
+model User {
+  id           String           @id @default(uuid())
+  tenantId     String
+  name         String
+  email        String
+  passwordHash String
+  role         Role             @default(ATTENDANT)
+  active       Boolean          @default(true)
+  tenant       Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  sessions     CounterSession[]
+
+  @@unique([tenantId, email])
+  @@unique([tenantId, id])
+}
+
+model Service {
+  id                 String   @id @default(uuid())
+  tenantId           String
+  unitId             String
+  name               String
+  prefix             String
+  preferentialPrefix String
+  priority80Prefix   String
+  callMode           CallMode @default(TICKET)
+  ratioNormal        Int      @default(2)
+  ratioPreferential  Int      @default(1)
+  stageOrder         Int      @default(1)
+  active             Boolean  @default(true)
+  unit               Unit     @relation(fields: [tenantId, unitId], references: [tenantId, id])
+
+  @@unique([tenantId, id])
+  @@unique([tenantId, unitId, name])
+}
+
+model Counter {
+  id       String           @id @default(uuid())
+  tenantId String
+  unitId   String
+  name     String
+  number   Int
+  active   Boolean          @default(true)
+  unit     Unit             @relation(fields: [tenantId, unitId], references: [tenantId, id])
+  sessions CounterSession[]
+
+  @@unique([tenantId, id])
+  @@unique([tenantId, unitId, number])
+}
+
+model CounterSession {
+  id         String    @id @default(uuid())
+  tenantId   String
+  unitId     String
+  userId     String
+  counterId  String
+  serviceIds String[]
+  startedAt  DateTime  @default(now())
+  endedAt    DateTime?
+  user       User      @relation(fields: [tenantId, userId], references: [tenantId, id])
+  counter    Counter   @relation(fields: [tenantId, counterId], references: [tenantId, id])
+
+  @@index([tenantId, userId, endedAt])
+}
+
+model Ticket {
+  id              String        @id @default(uuid())
+  tenantId        String
+  unitId          String
+  issuedServiceId String
+  serviceId       String
+  code            String
+  number          Int
+  priority        Priority
+  status          TicketStatus  @default(WAITING)
+  customerName    String?
+  publicToken     String        @unique
+  businessDate    String
+  issuedAt        DateTime      @default(now())
+  queuedAt        DateTime      @default(now())
+  calledAt        DateTime?
+  startedAt       DateTime?
+  finishedAt      DateTime?
+  counterId       String?
+  targetCounterId String?
+  sessionId       String?
+  events          TicketEvent[]
+
+  @@unique([tenantId, id])
+  @@unique([unitId, issuedServiceId, businessDate, number])
+  @@unique([unitId, businessDate, code])
+  @@index([tenantId, unitId, serviceId, businessDate, status, queuedAt])
+}
+
+model TicketEvent {
+  id            String          @id @default(uuid())
+  tenantId      String
+  unitId        String
+  ticketId      String
+  type          TicketEventType
+  userId        String?
+  counterId     String?
+  fromServiceId String?
+  toServiceId   String?
+  at            DateTime        @default(now())
+  ticket        Ticket          @relation(fields: [tenantId, ticketId], references: [tenantId, id])
+
+  @@index([tenantId, unitId, at])
+  @@index([tenantId, ticketId, at])
+}
+
+model QueueSequence {
+  tenantId     String
+  unitId       String
+  serviceId    String
+  businessDate String
+  number       Int    @default(0)
+  turn         Int    @default(0)
+
+  @@id([tenantId, unitId, serviceId, businessDate])
+}
+
+model Device {
+  id               String       @id @default(uuid())
+  tenantId         String
+  unitId           String
+  name             String
+  type             DeviceType
+  pairingCodeHash  String?
+  pairingExpiresAt DateTime?
+  tokenHash        String?
+  lastSeenAt       DateTime?
+  unit             Unit         @relation(fields: [tenantId, unitId], references: [tenantId, id])
+  config           PanelConfig?
+
+  @@unique([tenantId, id])
+  @@index([tenantId, unitId, type])
+}
+
+model PanelConfig {
+  deviceId           String   @id
+  tenantId           String
+  serviceIds         String[] @default([])
+  weights            Json     @default("{\"NOTICE\":50,\"NEWS\":30,\"WEATHER\":20,\"TIP\":20}")
+  cardSeconds        Int      @default(10)
+  newsCategories     String[] @default([])
+  city               String   @default("São Paulo")
+  callDisplaySeconds Int      @default(5)
+  ticker             String   @default("")
+  device             Device   @relation(fields: [tenantId, deviceId], references: [tenantId, id], onDelete: Cascade)
+
+  @@unique([tenantId, deviceId])
+}
+
+model Card {
+  id        String    @id @default(uuid())
+  tenantId  String?
+  type      CardType
+  imageUrl  String?
+  title     String
+  text      String
+  validFrom DateTime?
+  validTo   DateTime?
+  active    Boolean   @default(true)
+  tenant    Tenant?   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, active])
+}
+
+model FeedSource {
+  id       String     @id @default(uuid())
+  url      String     @unique
+  category String
+  active   Boolean    @default(true)
+  global   Boolean    @default(true)
+  items    NewsItem[]
+}
+
+model NewsItem {
+  id          String     @id @default(uuid())
+  sourceId    String
+  externalId  String
+  title       String
+  imageUrl    String?
+  source      String
+  category    String
+  publishedAt DateTime
+  feed        FeedSource @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+
+  @@unique([sourceId, externalId])
+  @@index([category, publishedAt])
+}
+
+model WeatherCache {
+  city      String   @id
+  payload   Json
+  fetchedAt DateTime @default(now())
+}
+
+model Template {
+  id     String @id
+  name   String
+  config Json
+}

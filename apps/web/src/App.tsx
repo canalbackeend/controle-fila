@@ -1,21 +1,126 @@
-import { Link, Route, Routes } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link, Navigate, Route, Routes } from "react-router-dom";
+import type { Actor } from "@beend/shared";
+import { api, message } from "./api";
+import { Login } from "./pages/auth/Login";
+import { Admin } from "./pages/admin/Admin";
+
+function Workspace({
+  actor,
+  onLogout,
+  children,
+}: {
+  actor: Actor;
+  onLogout: () => void;
+  children: React.ReactNode;
+}) {
+  const [error, setError] = useState("");
+  async function logout() {
+    try {
+      await api("/auth/logout", "POST");
+      onLogout();
+    } catch (error) {
+      setError(message(error));
+    }
+  }
+  return (
+    <>
+      <header className="app-header">
+        <Link className="brand" to="/">
+          <span className="brand-mark" aria-hidden="true">
+            B
+          </span>{" "}
+          Beend Fila
+        </Link>
+        <nav aria-label="Navegação principal">
+          {actor.role !== "ATTENDANT" && <Link to="/admin">Administração</Link>}
+          <span>{actor.name}</span>
+          <button onClick={() => void logout()}>Sair</button>
+        </nav>
+      </header>
+      {error && (
+        <p role="alert" className="error">
+          {error}
+        </p>
+      )}
+      {children}
+    </>
+  );
+}
 
 export function App() {
+  const [actor, setActor] = useState<Actor | null | undefined>(undefined);
+  useEffect(() => {
+    let active = true;
+    void api<Actor>("/auth/session").then(
+      (actor) => {
+        if (active) setActor(actor);
+      },
+      () => {
+        if (active) setActor(null);
+      },
+    );
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  function protectedPage(children: (actor: Actor) => React.ReactNode) {
+    if (actor === undefined)
+      return (
+        <main className="workspace">
+          <h1>Beend Fila</h1>
+          <p role="status">Carregando…</p>
+        </main>
+      );
+    if (!actor) return <Navigate to="/entrar" replace />;
+    return (
+      <Workspace actor={actor} onLogout={() => setActor(null)}>
+        {children(actor)}
+      </Workspace>
+    );
+  }
+
   return (
     <Routes>
       <Route
         path="/"
+        element={protectedPage((actor) => (
+          <Navigate
+            to={actor.role === "ATTENDANT" ? "/atendente" : "/admin"}
+            replace
+          />
+        ))}
+      />
+      <Route
+        path="/entrar"
         element={
-          <main className="mx-auto max-w-3xl px-6 py-16">
-            <h1 className="text-4xl font-bold">Beend Fila</h1>
-          </main>
+          actor ? <Navigate to="/" replace /> : <Login onLogin={setActor} />
         }
+      />
+      <Route
+        path="/admin"
+        element={protectedPage((actor) =>
+          actor.role === "ATTENDANT" ? (
+            <Navigate to="/atendente" replace />
+          ) : (
+            <Admin actor={actor} />
+          ),
+        )}
+      />
+      <Route
+        path="/atendente"
+        element={protectedPage(() => (
+          <main className="workspace">
+            <h1>Atendimento</h1>
+          </main>
+        ))}
       />
       <Route
         path="*"
         element={
-          <main className="mx-auto max-w-3xl px-6 py-16">
-            <h1 className="text-2xl font-bold">Página indisponível</h1>
+          <main className="workspace">
+            <h1>Página indisponível</h1>
             <Link to="/">Voltar ao início</Link>
           </main>
         }

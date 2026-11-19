@@ -1,13 +1,8 @@
 import { LogController } from "fastify";
-import { config } from "dotenv";
-import { fileURLToPath } from "node:url";
 import { z } from "zod";
+import { prisma } from "./db.js";
 import { buildApp } from "./app.js";
 
-config({
-  path: fileURLToPath(new URL("../../../.env", import.meta.url)),
-  quiet: true,
-});
 const port = z.coerce
   .number()
   .int()
@@ -15,10 +10,21 @@ const port = z.coerce
   .max(65535)
   .default(3000)
   .parse(process.env.API_PORT);
-const app = buildApp({
-  logger: true,
-  logController: new LogController({ disableRequestLogging: true }),
-});
+const settings = z
+  .object({ SESSION_SECRET: z.string().min(32), APP_ORIGIN: z.url() })
+  .parse(process.env);
+const app = buildApp(
+  {
+    logger: true,
+    logController: new LogController({ disableRequestLogging: true }),
+  },
+  {
+    secret: settings.SESSION_SECRET,
+    origin: new URL(settings.APP_ORIGIN).origin,
+    secure: settings.APP_ORIGIN.startsWith("https:"),
+  },
+);
+app.addHook("onClose", () => prisma.$disconnect());
 
 for (const signal of ["SIGTERM", "SIGINT"] as const) {
   process.once(signal, () => void app.close());

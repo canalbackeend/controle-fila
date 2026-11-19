@@ -5,3 +5,355 @@
   background: #f4f6fa;
   font-family: system-ui, sans-serif;
 }
+
+:root {
+  --ink: #15263e;
+  --muted: #52647a;
+  --line: #dce5ef;
+  --primary: #214fb5;
+  --surface: #fff;
+}
+
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  min-width: 280px;
+}
+h1,
+h2,
+h3,
+p {
+  margin: 0;
+}
+h1,
+h2,
+h3 {
+  color: var(--ink);
+  font-weight: 720;
+  letter-spacing: -0.035em;
+}
+h1 {
+  font-size: clamp(2.1rem, 5vw, 3.2rem);
+  line-height: 1.05;
+}
+h2 {
+  font-size: 1.35rem;
+}
+h3 {
+  font-size: 1.1rem;
+}
+p {
+  color: var(--muted);
+}
+a {
+  color: var(--primary);
+}
+button {
+  border: 1px solid var(--line);
+  padding: 0.65rem 0.95rem;
+  border-radius: 0.65rem;
+  background: white;
+  color: var(--ink);
+  font-weight: 650;
+  cursor: pointer;
+}
+button:hover {
+  background: #eff4fc;
+}
+button:disabled {
+  opacity: 0.55;
+  cursor: wait;
+}
+button.primary {
+  border-color: var(--primary);
+  background: var(--primary);
+  color: white;
+}
+button.primary:hover {
+  background: #183e96;
+}
+:focus-visible {
+  outline: 3px solid #638bf1;
+  outline-offset: 3px;
+}
+label {
+  display: grid;
+  gap: 0.4rem;
+  color: var(--ink);
+  font-size: 0.9rem;
+  font-weight: 650;
+}
+input:not([type="checkbox"]),
+select,
+textarea {
+  width: 100%;
+  min-height: 2.8rem;
+  padding: 0.55rem 0.7rem;
+  border: 1px solid #cbd7e5;
+  border-radius: 0.55rem;
+  background: white;
+  color: var(--ink);
+  font-weight: 400;
+  font-size: 1rem;
+}
+input[type="checkbox"] {
+  width: 1.1rem;
+  height: 1.1rem;
+  accent-color: var(--primary);
+}
+.checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.72rem;
+  font-weight: 750;
+  color: inherit;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.brand-mark {
+  display: inline-grid;
+  place-items: center;
+  width: 2.15rem;
+  height: 2.15rem;
+  background: #3563d4;
+  color: white;
+  border-radius: 0.6rem;
+  font-weight: 800;
+}
+.login {
+  min-height: 100svh;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+.login-aside {
+  display: grid;
+  align-content: space-between;
+  gap: 3rem;
+  min-height: 100%;
+  padding: clamp(2rem, 7vw, 6rem);
+  background: radial-gradient(
+    ellipse at 100% 100%,
+    #294e9a,
+    #172b55 57%,
+    #142448
+  );
+  color: white;
+}
+.login-pitch {
+  padding-bottom: clamp(2rem, 12vh, 7rem);
+}
+.login-pitch h1 {
+  color: white;
+  font-size: clamp(3rem, 6.2vw, 6rem);
+}
+.login-pitch p {
+  color: #d9e7ff;
+  font-size: 1.15rem;
+  margin-top: 1.25rem;
+}
+.login-main {
+  display: grid;
+  align-items: center;
+  justify-items: center;
+  padding: 2rem;
+  background: white;
+}
+.login-form {
+  max-width: 26rem;
+  width: 100%;
+}
+.login-form h2 {
+  font-size: 2rem;
+}
+.login-form > p {
+  margin-top: 0.35rem;
+}
+.login-form form {
+  display: grid;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+.login-form button {
+  min-height: 2.9rem;
+}
+.app-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  padding: 0.9rem clamp(1rem, 5vw, 4rem);
+  background: white;
+  border-bottom: 1px solid var(--line);
+}
+.app-header nav {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.app-header nav a {
+  font-weight: 650;
+  text-decoration: none;
+}
+.app-header nav span {
+  color: var(--muted);
+}
+.workspace {
+  max-width: 78rem;
+  margin: 0 auto;
+  padding: clamp(1rem, 4vw, 3rem);
+}
+.page-title {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: flex-end;
+  margin-bottom: 1.75rem;
+}
+.page-title h1 {
+  margin: 0.35rem 0 0.7rem;
+}
+.eyebrow {
+  font-size: 0.85rem;
+  color: var(--primary);
+  font-weight: 750;
+}
+.tabs {
+  display: flex;
+  gap: 0.25rem;
+  overflow-x: auto;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 1.2rem;
+}
+.tabs button {
+  white-space: nowrap;
+  border: 0;
+  border-bottom: 3px solid transparent;
+  border-radius: 0;
+  background: transparent;
+}
+.tabs button[aria-current] {
+  color: var(--primary);
+  border-bottom-color: var(--primary);
+}
+.surface {
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+  background: var(--surface);
+  overflow: hidden;
+  margin-bottom: 1rem;
+  box-shadow: 0 3px 10px #15263e07;
+}
+.section-head,
+.templates {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: center;
+  flex-wrap: wrap;
+  padding: 1.2rem 1.4rem;
+}
+.templates p {
+  margin-top: 0.35rem;
+}
+.records {
+  margin: 0;
+  padding: 0;
+}
+.records li {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+  padding: 0.95rem 1.4rem;
+  border-top: 1px solid #edf1f6;
+}
+.records li > div:first-child {
+  flex: 1 1 14rem;
+}
+.records li p {
+  margin-top: 0.15rem;
+  font-size: 0.9rem;
+  overflow-wrap: anywhere;
+}
+.pill {
+  background: #dff4eb;
+  color: #175344;
+  border-radius: 2rem;
+  padding: 0.23rem 0.65rem;
+  font-size: 0.85rem;
+  font-weight: 650;
+}
+.pill.inactive {
+  color: #4c5a6d;
+  background: #e9edf3;
+}
+.actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+}
+.empty {
+  padding: 1.6rem 1.4rem;
+  border-top: 1px solid #edf1f6;
+}
+.editor {
+  display: grid;
+  gap: 1rem;
+  padding: 1.25rem 1.4rem;
+  border-top: 1px solid var(--line);
+  background: #fbfdff;
+}
+.form-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
+}
+.error,
+.confirmation {
+  border-radius: 0.6rem;
+  padding: 0.7rem 0.9rem;
+  margin-bottom: 1rem;
+}
+.error {
+  color: #8e2031;
+  background: #feeaed;
+}
+.confirmation {
+  color: #175344;
+  background: #e0f4eb;
+}
+@media (max-width: 700px) {
+  .login {
+    grid-template-columns: 1fr;
+  }
+  .login-aside {
+    padding: 1.5rem;
+    gap: 1.5rem;
+  }
+  .login-pitch {
+    padding: 0;
+  }
+  .login-pitch h1 {
+    font-size: 2.25rem;
+  }
+  .login-main {
+    padding: 1.5rem;
+    align-items: start;
+  }
+  .app-header nav {
+    gap: 0.65rem;
+  }
+  .app-header nav span {
+    display: none;
+  }
+}
