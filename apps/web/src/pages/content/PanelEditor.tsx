@@ -11,7 +11,6 @@ import { api, message } from "../../api";
 const labels = {
   NOTICE: "Avisos",
   NEWS: "Notícias",
-  WEATHER: "Clima",
   TIP: "Curiosidades e dicas",
 };
 
@@ -59,7 +58,7 @@ export function PanelEditor() {
       <div className="page-title">
         <div>
           <Link to="/admin/dispositivos">Dispositivos</Link>
-          <h1>{data?.name || "Configurar painel"}</h1>
+          <h1>{data?.name || "Configurar TV e clima"}</h1>
           <p>Defina quais chamadas e conteúdos aparecem na TV.</p>
         </div>
       </div>
@@ -76,6 +75,50 @@ export function PanelEditor() {
       {data && (
         <section className="surface">
           <form className="editor" onSubmit={(event) => void save(event)}>
+            <fieldset>
+              <legend>Previsão do tempo</legend>
+              <p>
+                Defina a localização da TV. Use peso 0 para ocultar a previsão
+                no carrossel.
+              </p>
+              <div className="form-grid">
+                <label>
+                  Cidade
+                  <input
+                    name="city"
+                    maxLength={100}
+                    required
+                    defaultValue={data.config.city}
+                  />
+                </label>
+                <label>
+                  Estado
+                  <select
+                    name="state"
+                    required
+                    defaultValue={data.config.state ?? ""}
+                  >
+                    <option value="">Selecione o estado</option>
+                    {Object.entries(brazilianStates).map(([uf, name]) => (
+                      <option key={uf} value={uf}>
+                        {name} ({uf})
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label>
+                  Peso do clima
+                  <input
+                    name="WEATHER"
+                    type="number"
+                    min={0}
+                    max={100}
+                    required
+                    defaultValue={data.config.weights.WEATHER}
+                  />
+                </label>
+              </div>
+            </fieldset>
             <fieldset>
               <legend>Serviços exibidos</legend>
               <p>Nenhum selecionado exibe todos os serviços.</p>
@@ -97,19 +140,21 @@ export function PanelEditor() {
               <legend>Pesos do carrossel</legend>
               <p>Use peso 0 para desativar uma categoria.</p>
               <div className="form-grid">
-                {contentTypes.map((type) => (
-                  <label key={type}>
-                    {labels[type]}
-                    <input
-                      name={type}
-                      type="number"
-                      min={0}
-                      max={100}
-                      required
-                      defaultValue={data.config.weights[type]}
-                    />
-                  </label>
-                ))}
+                {contentTypes
+                  .filter((type) => type !== "WEATHER")
+                  .map((type) => (
+                    <label key={type}>
+                      {labels[type]}
+                      <input
+                        name={type}
+                        type="number"
+                        min={0}
+                        max={100}
+                        required
+                        defaultValue={data.config.weights[type]}
+                      />
+                    </label>
+                  ))}
               </div>
             </fieldset>
             <fieldset>
@@ -134,30 +179,6 @@ export function PanelEditor() {
               </div>
             </fieldset>
             <div className="form-grid">
-              <label>
-                Cidade para o clima
-                <input
-                  name="city"
-                  maxLength={100}
-                  required
-                  defaultValue={data.config.city}
-                />
-              </label>
-              <label>
-                Estado para o clima
-                <select
-                  name="state"
-                  required
-                  defaultValue={data.config.state ?? ""}
-                >
-                  <option value="">Selecione o estado</option>
-                  {Object.entries(brazilianStates).map(([uf, name]) => (
-                    <option key={uf} value={uf}>
-                      {name} ({uf})
-                    </option>
-                  ))}
-                </select>
-              </label>
               <label>
                 Segundos por cartão
                 <input

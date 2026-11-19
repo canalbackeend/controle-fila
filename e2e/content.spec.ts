@@ -3,6 +3,7 @@ import { weatherCacheKey } from "../apps/api/src/modules/content/weather";
 import { expect, test } from "./fixture";
 
 test("shows notices, tips, headlines and weather according to panel weights", async ({
+  browser,
   page,
   unit,
 }) => {
@@ -81,12 +82,35 @@ test("shows notices, tips, headlines and weather according to panel weights", as
     for (const [type, title] of [
       ["TIP", "Dica da unidade"],
       ["NEWS", "Notícia do dia"],
-      ["WEATHER", `${city}, SP`],
     ] as const) {
       await setWeight(type);
       await expect(page.getByRole("heading", { name: title })).toBeVisible();
     }
-    await expect(page.locator(".tv-temperature")).toContainText("24°C");
+    const admin = await browser.newPage({
+      baseURL: new URL(page.url()).origin,
+    });
+    try {
+      await unit.login(admin);
+      await admin
+        .getByRole("link", { name: "Dispositivos", exact: true })
+        .click();
+      await admin.getByRole("link", { name: "Configurar TV e clima" }).click();
+      const weather = admin.getByRole("group", { name: "Previsão do tempo" });
+      await weather.getByLabel("Cidade", { exact: true }).fill(city);
+      await weather
+        .getByRole("combobox", { name: /^Estado/ })
+        .selectOption("MG");
+      await weather.getByLabel("Peso do clima").fill("100");
+      await admin.getByLabel("Notícias", { exact: true }).fill("0");
+      await admin.getByRole("button", { name: "Salvar painel" }).click();
+      await expect(admin.getByText("Configuração salva.")).toBeVisible();
+    } finally {
+      await admin.close();
+    }
+    await expect(
+      page.getByRole("heading", { name: `${city}, MG` }),
+    ).toBeVisible();
+    await expect(page.locator(".tv-temperature")).toContainText("31°C");
     await expect(page.locator(".tv-temperature")).toContainText(
       "Fonte simulada",
     );

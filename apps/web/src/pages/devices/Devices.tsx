@@ -207,14 +207,17 @@ export function Devices() {
                   {device.paired ? "Pareado" : "Aguardando pareamento"}
                 </span>
                 <div className="actions">
+                  {device.type === "PANEL" && (
+                    <Link
+                      className="action-link"
+                      to={`/admin/painel/${device.id}`}
+                    >
+                      <Icon name="settings" /> Configurar TV e clima
+                    </Link>
+                  )}
                   <button type="button" onClick={() => setEditor(device)}>
                     <Icon name="edit" /> Editar nome
                   </button>
-                  {device.type === "PANEL" && (
-                    <Link to={`/admin/painel/${device.id}`}>
-                      <Icon name="settings" /> Configurar painel
-                    </Link>
-                  )}
                   <a href={devicePath(device)} target="_blank" rel="noreferrer">
                     <Icon name="external" /> Abrir dispositivo
                   </a>
