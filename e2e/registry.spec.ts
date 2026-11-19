@@ -28,7 +28,25 @@ test("issues and displays preferential and 80+ registry tickets on separate devi
       pair(tv, "PANEL"),
       unit.login(page),
     ]);
+    await kiosk
+      .getByRole("button", { name: "Tela cheia", exact: true })
+      .click();
+    await expect(
+      kiosk.getByRole("button", { name: "Sair da tela cheia" }),
+    ).toBeVisible();
+    await kiosk.getByRole("button", { name: "Sair da tela cheia" }).click();
+    await expect(
+      kiosk.getByRole("button", { name: "Tela cheia", exact: true }),
+    ).toBeVisible();
+    await tv.getByRole("button", { name: "Tela cheia", exact: true }).click();
+    await expect(
+      tv.getByRole("button", { name: "Sair da tela cheia" }),
+    ).toBeVisible();
     await tv.getByRole("button", { name: "Toque para iniciar" }).click();
+    await tv.getByRole("button", { name: "Sair da tela cheia" }).click();
+    await expect(
+      tv.getByRole("button", { name: "Tela cheia", exact: true }),
+    ).toBeVisible();
     await page.getByRole("link", { name: "Atendimento", exact: true }).click();
     await page
       .getByRole("combobox", { name: "Guichê", exact: true })

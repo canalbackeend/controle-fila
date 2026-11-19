@@ -14,6 +14,7 @@ import { ApiError, api } from "../../api";
 import { Receipt } from "../../components/Receipt";
 import { useRealtime } from "../../realtime";
 import { PairingForm, usePairing } from "../devices/pairing";
+import { FullscreenButton } from "../devices/FullscreenButton";
 
 function KioskDevice({ id }: { id: string }) {
   const { auth, token, pair, clear } = usePairing(id);
@@ -112,6 +113,7 @@ function KioskDevice({ id }: { id: string }) {
   if (suspended)
     return (
       <main className="kiosk">
+        <FullscreenButton floating />
         <section className="kiosk-content">
           <h1>Totem indisponível</h1>
           <p>O acesso desta empresa está suspenso.</p>
@@ -125,11 +127,14 @@ function KioskDevice({ id }: { id: string }) {
           <BrandLogo />
           {data?.unitName || "Beend Fila"}
         </span>
-        {!online && (
-          <span className="pill inactive" role="status">
-            Reconectando…
-          </span>
-        )}
+        <div className="device-screen-actions">
+          {!online && (
+            <span className="pill inactive" role="status">
+              Reconectando…
+            </span>
+          )}
+          <FullscreenButton />
+        </div>
       </header>
       {ticket ? (
         <div className="kiosk-receipt">

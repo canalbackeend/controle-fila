@@ -798,6 +798,55 @@ input.code-input {
   padding: 1rem 1.5rem;
   font-size: 1.2rem;
 }
+.device-screen-actions {
+  margin-inline-start: auto;
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+.device-fullscreen {
+  position: relative;
+  flex: 0 0 auto;
+}
+.device-fullscreen.floating {
+  position: fixed;
+  inset-block-start: 0.75rem;
+  inset-inline-end: 0.75rem;
+  z-index: 3;
+}
+button.device-fullscreen-button {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  background: transparent;
+}
+.device-fullscreen-button svg {
+  width: 19px;
+  height: 19px;
+}
+.device-fullscreen.dark button {
+  border-color: var(--theme-divider);
+  color: var(--theme-topic);
+}
+.device-fullscreen.dark button:hover {
+  background: var(--theme-panel);
+}
+.device-fullscreen .device-fullscreen-notice {
+  position: absolute;
+  inset-block-start: calc(100% + 0.5rem);
+  inset-inline-end: 0;
+  z-index: 3;
+  width: min(17rem, 80vw);
+  padding: 0.65rem;
+  border-radius: 0.65rem;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--ink);
+  text-align: start;
+  font-size: 0.9rem;
+}
 .tv-overlay {
   position: absolute;
   z-index: 2;

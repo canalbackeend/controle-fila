@@ -1,6 +1,7 @@
 import { BrandLogo } from "../../components/BrandLogo";
 import { useCallback, useMemo, useState, type FormEvent } from "react";
 import { api, message } from "../../api";
+import { FullscreenButton } from "./FullscreenButton";
 
 export function usePairing(id: string) {
   const key = `beend-device:${id}`;
@@ -52,6 +53,7 @@ export function PairingForm({
   }
   return (
     <main className="pairing-page">
+      <FullscreenButton floating />
       <section className="surface">
         <div className="section-head">
           <BrandLogo />

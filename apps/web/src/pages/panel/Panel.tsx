@@ -13,6 +13,7 @@ import {
 import { ApiError, api } from "../../api";
 import { useRealtime } from "../../realtime";
 import { PairingForm, usePairing } from "../devices/pairing";
+import { FullscreenButton } from "../devices/FullscreenButton";
 import { playAlert } from "./sound";
 
 const cardLabels = {
@@ -293,6 +294,7 @@ function PanelDevice({ id }: { id: string }) {
   if (suspended)
     return (
       <main className="tv-screen tv-start">
+        <FullscreenButton floating dark />
         <div>
           <h1>Painel indisponível</h1>
           <p>O acesso desta empresa está suspenso.</p>
@@ -305,6 +307,7 @@ function PanelDevice({ id }: { id: string }) {
         className="tv-screen tv-start theme"
         style={themeStyle(data?.theme)}
       >
+        <FullscreenButton floating dark />
         <div>
           <p>{data?.unitName || "Beend Fila"}</p>
           <h1>Painel de chamadas</h1>
@@ -342,6 +345,7 @@ function PanelDevice({ id }: { id: string }) {
             </span>
           )}
           <Clock timeZone={data?.timeZone || zone} />
+          <FullscreenButton dark />
         </div>
       </header>
       <div className="tv-layout">

@@ -2,6 +2,8 @@
 
 Use o mesmo domínio HTTPS da aplicação em todos os dispositivos. Em **Administração → Dispositivos**, cadastre o tipo desejado, abra seu endereço no equipamento e informe o código de pareamento. O código é válido por 15 minutos e pode ser usado uma vez. Gerar um novo código desconecta a instalação anterior.
 
+No totem e no painel de TV, toque no ícone de quatro cantos no topo à direita para entrar em tela cheia. Toque no mesmo botão para sair. O painel ainda pode pedir **Toque para iniciar** para liberar o som.
+
 ## Totem e impressão
 
 1. Instale a impressora térmica no sistema operacional via driver ou fila compatível com o modelo ESC/POS. Faça um teste pelo sistema e selecione a impressora como padrão.
