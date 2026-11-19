@@ -134,7 +134,7 @@ function KioskDevice({ id }: { id: string }) {
       {ticket ? (
         <div className="kiosk-receipt">
           <h1>Senha emitida</h1>
-          <Receipt ticket={ticket} close={reset} autoPrint />
+          <Receipt ticket={ticket} close={reset} autoPrint={false} />
         </div>
       ) : (
         <section className="kiosk-content">

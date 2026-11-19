@@ -1,6 +1,6 @@
 import { expect, test } from "./fixture";
 
-test("pairs the kiosk and prints a QR receipt after two selections", async ({
+test("pairs the kiosk and shows the QR receipt without printing automatically", async ({
   page,
   unit,
 }) => {
@@ -9,6 +9,7 @@ test("pairs the kiosk and prints a QR receipt after two selections", async ({
   });
   expect(result.ok(), await result.text()).toBeTruthy();
   const { device, code } = await result.json();
+  await page.clock.install();
   await page.addInitScript(() => {
     window.print = () => {
       document.body.dataset.printed = "yes";
@@ -29,6 +30,9 @@ test("pairs the kiosk and prints a QR receipt after two selections", async ({
   await expect(
     page.getByRole("link", { name: "Acompanhar no celular" }),
   ).toHaveAttribute("href", /\/t\/[\w-]{32}$/);
+  await page.clock.runFor(500);
+  expect(await page.locator("body").getAttribute("data-printed")).toBeNull();
+  await page.getByRole("button", { name: "Imprimir senha" }).click();
   await expect(page.locator("body")).toHaveAttribute("data-printed", "yes");
   await page.getByRole("button", { name: "Concluir" }).click();
   await expect(
