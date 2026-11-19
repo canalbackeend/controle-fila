@@ -3,6 +3,7 @@ import { Link, Navigate, Route, Routes } from "react-router-dom";
 import type { Actor } from "@beend/shared";
 import { api, message } from "./api";
 import { Login } from "./pages/auth/Login";
+import { Attendant } from "./pages/attendant/Attendant";
 import { Admin } from "./pages/admin/Admin";
 
 function Workspace({
@@ -34,6 +35,7 @@ function Workspace({
         </Link>
         <nav aria-label="Navegação principal">
           {actor.role !== "ATTENDANT" && <Link to="/admin">Administração</Link>}
+          <Link to="/atendente">Atendimento</Link>
           <span>{actor.name}</span>
           <button onClick={() => void logout()}>Sair</button>
         </nav>
@@ -110,10 +112,8 @@ export function App() {
       />
       <Route
         path="/atendente"
-        element={protectedPage(() => (
-          <main className="workspace">
-            <h1>Atendimento</h1>
-          </main>
+        element={protectedPage((actor) => (
+          <Attendant actor={actor} />
         ))}
       />
       <Route

@@ -357,3 +357,50 @@ input[type="checkbox"] {
     display: none;
   }
 }
+
+.attendant-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+  align-items: start;
+  gap: 1rem;
+}
+.check-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+  gap: 0.8rem;
+  margin-top: 0.6rem;
+}
+.current-body {
+  padding: 1rem 1.4rem 1.5rem;
+  min-height: 9rem;
+  display: grid;
+  align-content: center;
+  gap: 0.25rem;
+}
+.current-code {
+  font-size: clamp(3.5rem, 10vw, 6rem);
+  letter-spacing: -0.075em;
+  color: var(--ink);
+  line-height: 1;
+}
+kbd {
+  border-radius: 0.3rem;
+  padding: 0.18rem 0.3rem;
+  border: 1px solid currentColor;
+  margin-left: 0.35rem;
+  font-size: 0.72rem;
+}
+.forward {
+  display: grid;
+  gap: 0.75rem;
+}
+input.code-input {
+  width: 8rem;
+  text-transform: uppercase;
+}
+@media (max-width: 720px) {
+  .attendant-grid {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+}

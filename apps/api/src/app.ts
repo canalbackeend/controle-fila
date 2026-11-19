@@ -5,6 +5,8 @@ import { Prisma } from "@prisma/client";
 import { ZodError } from "zod";
 import { HttpError } from "./errors.js";
 import { authRoutes } from "./modules/auth/routes.js";
+import { attendantRoutes } from "./modules/attendant/routes.js";
+import { attachRealtime } from "./realtime.js";
 import { queueRoutes } from "./modules/queue/routes.js";
 import { adminRoutes } from "./modules/admin/routes.js";
 
@@ -68,7 +70,8 @@ export function buildApp(
       });
       authRoutes(api, settings.secure);
       adminRoutes(api);
-      queueRoutes(api);
+      attendantRoutes(api);
+      queueRoutes(api, attachRealtime(api, settings.origin).publish);
     });
   }
   return app;

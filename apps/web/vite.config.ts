@@ -13,7 +13,10 @@ export default defineConfig(({ mode }) => {
     server: {
       port: Number(env.WEB_PORT || 5180),
       strictPort: true,
-      proxy: { "/api": { target, rewrite: (path) => path.slice(4) } },
+      proxy: {
+        "/api": { target, rewrite: (path) => path.slice(4) },
+        "/socket.io": { target, ws: true },
+      },
     },
   };
 });
