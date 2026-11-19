@@ -1,3 +1,4 @@
+import { Icon } from "../../components/Icon";
 import { Link } from "react-router-dom";
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import type {
@@ -146,7 +147,7 @@ export function Devices() {
           )}
           <div>
             <button className="primary" disabled={busy || full || !allowance}>
-              Gerar código de pareamento
+              <Icon name="key" /> Gerar código de pareamento
             </button>
           </div>
         </form>
@@ -189,7 +190,7 @@ export function Devices() {
                 Cancelar
               </button>
               <button className="primary" disabled={busy}>
-                Salvar nome
+                <Icon name="check" /> Salvar nome
               </button>
             </div>
           </form>
@@ -207,15 +208,15 @@ export function Devices() {
                 </span>
                 <div className="actions">
                   <button type="button" onClick={() => setEditor(device)}>
-                    Editar nome
+                    <Icon name="edit" /> Editar nome
                   </button>
                   {device.type === "PANEL" && (
                     <Link to={`/admin/painel/${device.id}`}>
-                      Configurar painel
+                      <Icon name="settings" /> Configurar painel
                     </Link>
                   )}
                   <a href={devicePath(device)} target="_blank" rel="noreferrer">
-                    Abrir dispositivo
+                    <Icon name="external" /> Abrir dispositivo
                   </a>
                   <button
                     disabled={busy}
@@ -232,7 +233,7 @@ export function Devices() {
                         );
                     }}
                   >
-                    Novo código
+                    <Icon name="key" /> Novo código
                   </button>
                   <button
                     disabled={busy}
@@ -241,7 +242,7 @@ export function Devices() {
                         void mutate(`/admin/devices/${device.id}`, "DELETE");
                     }}
                   >
-                    Remover
+                    <Icon name="trash" /> Remover
                   </button>
                 </div>
               </li>

@@ -251,15 +251,31 @@ input:is([type="checkbox"], [type="radio"]) {
 .app-header nav {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 0.3rem;
   flex-wrap: wrap;
 }
 .app-header nav a {
+  padding: 0.55rem 0.6rem;
+  border-radius: 0.55rem;
+  color: var(--muted);
   font-weight: 650;
   text-decoration: none;
 }
-.app-header nav span {
-  color: var(--muted);
+.app-header nav a:hover,
+.app-header nav a[aria-current="page"] {
+  background: var(--theme-wash);
+  color: var(--primary);
+}
+:where(a, button):has(> .ui-icon) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+}
+.ui-icon {
+  flex: none;
+  width: 1.05em;
+  height: 1.05em;
 }
 .workspace {
   max-width: 78rem;
@@ -408,9 +424,6 @@ input:is([type="checkbox"], [type="radio"]) {
   }
   .app-header nav {
     gap: 0.65rem;
-  }
-  .app-header nav span {
-    display: none;
   }
 }
 

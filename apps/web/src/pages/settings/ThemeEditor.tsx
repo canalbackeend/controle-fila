@@ -1,3 +1,4 @@
+import { Icon } from "../../components/Icon";
 import { useState, type FormEvent } from "react";
 import { hexColor, themePresets, type TenantTheme } from "@beend/shared";
 import { message } from "../../api";
@@ -170,7 +171,7 @@ export function ThemeEditor({
                 busy || !changed || (preset === "custom" && !custom.success)
               }
             >
-              {busy ? "Salvando…" : "Salvar tema"}
+              <Icon name="check" /> {busy ? "Salvando…" : "Salvar tema"}
             </button>
           </div>
         </div>

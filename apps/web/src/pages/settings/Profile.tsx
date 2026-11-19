@@ -1,3 +1,4 @@
+import { Icon } from "../../components/Icon";
 import { useState, type FormEvent } from "react";
 import type { Actor, TenantTheme } from "@beend/shared";
 import { ProfileDeviceLinks } from "./ProfileDeviceLinks";
@@ -184,7 +185,7 @@ export function Profile({
           )}
           <div>
             <button className="primary" disabled={busy}>
-              {busy ? "Salvando…" : "Salvar perfil"}
+              <Icon name="check" /> {busy ? "Salvando…" : "Salvar perfil"}
             </button>
           </div>
         </form>

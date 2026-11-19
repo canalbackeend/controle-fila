@@ -1,3 +1,4 @@
+import { Icon } from "../../components/Icon";
 import { useEffect, useState, type FormEvent } from "react";
 import { Link, useParams } from "react-router-dom";
 import { contentTypes, type PanelEditorData } from "@beend/shared";
@@ -171,7 +172,7 @@ export function PanelEditor() {
             </label>
             <div>
               <button className="primary" disabled={busy}>
-                Salvar painel
+                <Icon name="check" /> Salvar painel
               </button>
             </div>
           </form>

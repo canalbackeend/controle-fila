@@ -1,6 +1,14 @@
 import { BrandLogo } from "./components/BrandLogo";
+import { Icon } from "./components/Icon";
 import { lazy, Suspense, useCallback, useEffect, useState } from "react";
-import { Link, Navigate, Route, Routes, useLocation } from "react-router-dom";
+import {
+  Link,
+  NavLink,
+  Navigate,
+  Route,
+  Routes,
+  useLocation,
+} from "react-router-dom";
 import { readTheme, type Actor, type TenantTheme } from "@beend/shared";
 import type { Socket } from "socket.io-client";
 import { useRealtime } from "./realtime";
@@ -64,32 +72,49 @@ function Workspace({
         <nav aria-label="Navegação principal">
           {!actor.mustChangePassword && actor.role === "SUPERADMIN" && (
             <>
-              <Link to="/plataforma/empresas">Empresas</Link>
-              <Link to="/plataforma/dispositivos">
+              <NavLink to="/plataforma/empresas">
+                <Icon name="building" /> Empresas
+              </NavLink>
+              <NavLink to="/plataforma/dispositivos">
+                <Icon name="devices" />
                 Dispositivos dos clientes
-              </Link>
+              </NavLink>
             </>
           )}
           {!actor.mustChangePassword && actor.role !== "ATTENDANT" && (
             <>
-              <Link to="/admin">
+              <NavLink to="/admin" end>
+                <Icon name="dashboard" />
                 {actor.role === "SUPERADMIN"
                   ? "Operação Beend"
                   : "Administração"}
-              </Link>
-              <Link to="/admin/dispositivos">Dispositivos</Link>
-              <Link to="/admin/conteudo">Conteúdo</Link>
-              <Link to="/admin/relatorios">Relatórios</Link>
-              <Link to="/admin/configuracoes">Configurações</Link>
+              </NavLink>
+              <NavLink to="/admin/dispositivos">
+                <Icon name="devices" /> Dispositivos
+              </NavLink>
+              <NavLink to="/admin/conteudo">
+                <Icon name="content" /> Conteúdo
+              </NavLink>
+              <NavLink to="/admin/relatorios">
+                <Icon name="chart" /> Relatórios
+              </NavLink>
+              <NavLink to="/admin/configuracoes">
+                <Icon name="settings" /> Configurações
+              </NavLink>
             </>
           )}
           {!actor.mustChangePassword && (
-            <Link to="/atendente">Atendimento</Link>
+            <NavLink to="/atendente">
+              <Icon name="headset" /> Atendimento
+            </NavLink>
           )}
-          <Link to="/perfil" title={actor.name}>
+          <NavLink to="/perfil" title={actor.name}>
+            <Icon name="user" />
             Meu perfil
-          </Link>
-          <button onClick={() => void logout()}>Sair</button>
+          </NavLink>
+          <button onClick={() => void logout()}>
+            <Icon name="logout" /> Sair
+          </button>
         </nav>
       </header>
       {error && (

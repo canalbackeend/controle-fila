@@ -34,6 +34,12 @@ test("the Beend operator provisions a client who activates and operates within i
     await page.getByLabel("Senha", { exact: true }).fill(operatorPassword);
     await page.getByRole("button", { name: "Entrar", exact: true }).click();
     await page.waitForURL("**/plataforma/empresas");
+    const companies = page.getByRole("link", { name: "Empresas", exact: true });
+    await expect(companies).toHaveAttribute("aria-current", "page");
+    await expect(companies.locator("svg")).toHaveAttribute(
+      "aria-hidden",
+      "true",
+    );
     await page.getByRole("button", { name: "Cadastrar empresa" }).click();
     await page.getByLabel("Nome da empresa").fill("Clínica de teste");
     await page.getByLabel("Identificador da empresa").fill(customerSlug);
@@ -74,6 +80,11 @@ test("the Beend operator provisions a client who activates and operates within i
     await customer
       .getByRole("link", { name: "Administração", exact: true })
       .click();
+    await expect(
+      customer
+        .getByRole("button", { name: "Serviços", exact: true })
+        .locator("svg"),
+    ).toHaveAttribute("aria-hidden", "true");
     await customer
       .getByRole("button", { name: "Clínica", exact: true })
       .click();

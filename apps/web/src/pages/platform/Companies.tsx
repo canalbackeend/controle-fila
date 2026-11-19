@@ -1,3 +1,4 @@
+import { Icon } from "../../components/Icon";
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import type { PlatformCompany } from "@beend/shared";
 import { api, message } from "../../api";
@@ -217,7 +218,7 @@ export function Companies() {
           <p>Cadastre clientes e gerencie seus planos, limites e acesso.</p>
         </div>
         <button className="primary" onClick={() => setEditor("new")}>
-          Cadastrar empresa
+          <Icon name="plus" /> Cadastrar empresa
         </button>
       </div>
       {error && (
@@ -241,7 +242,7 @@ export function Companies() {
               </p>
             </div>
             <button onClick={() => setAccess(undefined)}>
-              Fechar dados de acesso
+              <Icon name="close" /> Fechar dados de acesso
             </button>
           </div>
           <div className="editor">
@@ -271,7 +272,7 @@ export function Companies() {
             </dl>
             <div>
               <button onClick={() => void copyAccess()}>
-                Copiar dados de acesso
+                <Icon name="copy" /> Copiar dados de acesso
               </button>
             </div>
           </div>
@@ -339,6 +340,7 @@ export function Companies() {
                 Cancelar
               </button>
               <button className="primary" disabled={busy}>
+                <Icon name="check" />{" "}
                 {editor === "new" ? "Criar empresa" : "Salvar alterações"}
               </button>
             </div>
@@ -394,7 +396,7 @@ export function Companies() {
                 </span>
                 <div className="actions">
                   <button disabled={busy} onClick={() => setEditor(company)}>
-                    Editar plano e limites
+                    <Icon name="edit" /> Editar plano e limites
                   </button>
                   <button
                     disabled={busy}
@@ -403,10 +405,11 @@ export function Companies() {
                       setRecovery(company);
                     }}
                   >
-                    Ver acessos
+                    <Icon name="key" /> Ver acessos
                   </button>
 
                   <button disabled={busy} onClick={() => toggle(company)}>
+                    <Icon name={company.active ? "lock" : "unlock"} />{" "}
                     {company.active ? "Suspender" : "Reativar"}
                   </button>
                 </div>

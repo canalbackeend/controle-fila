@@ -1,3 +1,4 @@
+import { Icon } from "../../components/Icon";
 import { useEffect, useState, type FormEvent } from "react";
 import {
   localDay,
@@ -78,7 +79,7 @@ export function Reports({ actor }: { actor: Actor }) {
             href={`/api/reports.csv?${activeQuery}`}
             download
           >
-            Exportar CSV
+            <Icon name="download" /> Exportar CSV
           </a>
         )}
       </div>
@@ -118,7 +119,7 @@ export function Reports({ actor }: { actor: Actor }) {
           </div>
           <div>
             <button className="primary" disabled={busy || !options}>
-              {busy ? "Atualizando…" : "Aplicar filtros"}
+              <Icon name="filter" /> {busy ? "Atualizando…" : "Aplicar filtros"}
             </button>
           </div>
         </form>

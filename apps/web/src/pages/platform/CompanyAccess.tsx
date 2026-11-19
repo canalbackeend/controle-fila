@@ -1,3 +1,4 @@
+import { Icon } from "../../components/Icon";
 import { useEffect, useState } from "react";
 import type { CompanyAdministrator, PlatformCompany } from "@beend/shared";
 import { api, message } from "../../api";
@@ -88,7 +89,7 @@ export function CompanyAccess({
               </span>
               {active && (
                 <button disabled={busy} onClick={() => onReset(email)}>
-                  Gerar senha provisória
+                  <Icon name="key" /> Gerar senha provisória
                 </button>
               )}
             </li>

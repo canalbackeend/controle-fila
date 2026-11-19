@@ -1,3 +1,4 @@
+import { Icon } from "../../components/Icon";
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import type { Socket } from "socket.io-client";
 import {
@@ -44,6 +45,11 @@ type Field = {
 };
 
 const sections = { services: "Serviços", counters: "Guichês", users: "Equipe" };
+const sectionIcons = {
+  services: "services",
+  counters: "desk",
+  users: "team",
+} as const;
 const singular = { services: "serviço", counters: "guichê", users: "usuário" };
 const roles = {
   SUPERADMIN: "Superadministrador",
@@ -313,6 +319,7 @@ export function Admin({ actor }: { actor: Actor }) {
             aria-current={section === key ? "page" : undefined}
             onClick={() => select(key)}
           >
+            <Icon name={sectionIcons[key]} />
             {sections[key]}
           </button>
         ))}
@@ -320,14 +327,14 @@ export function Admin({ actor }: { actor: Actor }) {
           aria-current={section === "settings" ? "page" : undefined}
           onClick={() => select("settings")}
         >
-          Unidade
+          <Icon name="building" /> Unidade
         </button>
         {actor.role === "SUPERADMIN" && (
           <button
             aria-current={section === "templates" ? "page" : undefined}
             onClick={() => select("templates")}
           >
-            Modelos
+            <Icon name="layers" /> Modelos
           </button>
         )}
       </nav>
@@ -346,7 +353,7 @@ export function Admin({ actor }: { actor: Actor }) {
           <div className="section-head">
             <h2>{sections[collection]}</h2>
             <button className="primary" onClick={() => setEditor("new")}>
-              Adicionar {singular[collection]}
+              <Icon name="plus" /> Adicionar {singular[collection]}
             </button>
           </div>
           {editor && (
@@ -391,7 +398,7 @@ export function Admin({ actor }: { actor: Actor }) {
                   Cancelar
                 </button>
                 <button className="primary" disabled={busy}>
-                  Salvar
+                  <Icon name="check" /> Salvar
                 </button>
               </div>
             </form>
@@ -435,7 +442,7 @@ export function Admin({ actor }: { actor: Actor }) {
                   Voltar
                 </button>
                 <button className="primary" disabled={busy}>
-                  Confirmar liberação
+                  <Icon name="check" /> Confirmar liberação
                 </button>
               </div>
             </form>
@@ -468,7 +475,7 @@ export function Admin({ actor }: { actor: Actor }) {
                       (!("role" in entity) || entity.role !== "SUPERADMIN") && (
                         <div className="actions">
                           <button onClick={() => setEditor(entity)}>
-                            Editar
+                            <Icon name="edit" /> Editar
                           </button>
                           {shift && (
                             <button
@@ -478,7 +485,7 @@ export function Admin({ actor }: { actor: Actor }) {
                                 setRecovering(shift);
                               }}
                             >
-                              Liberar guichê
+                              <Icon name="unlock" /> Liberar guichê
                             </button>
                           )}
                           {entity.active && (
@@ -493,7 +500,7 @@ export function Admin({ actor }: { actor: Actor }) {
                                 )
                               }
                             >
-                              Desativar
+                              <Icon name="lock" /> Desativar
                             </button>
                           )}
                         </div>
@@ -522,7 +529,7 @@ export function Admin({ actor }: { actor: Actor }) {
             </div>
             <div className="actions">
               <button className="primary" disabled={busy}>
-                Salvar configuração
+                <Icon name="check" /> Salvar configuração
               </button>
             </div>
           </form>
@@ -549,7 +556,7 @@ export function Admin({ actor }: { actor: Actor }) {
             </label>
             <div>
               <button className="primary" disabled={busy}>
-                Salvar modelo
+                <Icon name="check" /> Salvar modelo
               </button>
             </div>
           </form>

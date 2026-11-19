@@ -1,3 +1,4 @@
+import { Icon } from "../../components/Icon";
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import {
   dayStartUtc,
@@ -151,7 +152,7 @@ export function Content({ actor }: { actor: Actor }) {
           </label>
           <div className="actions">
             <button className="primary" disabled={busy}>
-              Salvar logotipo
+              <Icon name="check" /> Salvar logotipo
             </button>
             {data?.logoUrl && (
               <button
@@ -174,7 +175,7 @@ export function Content({ actor }: { actor: Actor }) {
         <div className="section-head">
           <h2>Avisos e dicas</h2>
           <button className="primary" onClick={() => setEditor("new")}>
-            Adicionar conteúdo
+            <Icon name="plus" /> Adicionar conteúdo
           </button>
         </div>
         {editor && (
@@ -260,7 +261,7 @@ export function Content({ actor }: { actor: Actor }) {
                 Cancelar
               </button>
               <button className="primary" disabled={busy}>
-                Salvar conteúdo
+                <Icon name="check" /> Salvar conteúdo
               </button>
             </div>
           </form>

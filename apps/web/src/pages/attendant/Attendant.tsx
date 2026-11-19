@@ -1,3 +1,4 @@
+import { Icon } from "../../components/Icon";
 import {
   useCallback,
   useEffect,
@@ -201,7 +202,7 @@ export function Attendant({ actor }: { actor: Actor }) {
             ) : (
               <div>
                 <button className="primary" disabled={busy}>
-                  Iniciar turno
+                  <Icon name="unlock" /> Iniciar turno
                 </button>
               </div>
             )}
@@ -219,7 +220,7 @@ export function Attendant({ actor }: { actor: Actor }) {
                   disabled={busy || Boolean(state.active)}
                   onClick={() => void request("/attendant/shift", "DELETE")}
                 >
-                  Encerrar turno
+                  <Icon name="logout" /> Encerrar turno
                 </button>
               </div>
               <div className="current-body">
@@ -254,7 +255,7 @@ export function Attendant({ actor }: { actor: Actor }) {
                           update(state.active!.id, { action: "START" })
                         }
                       >
-                        Iniciar atendimento
+                        <Icon name="headset" /> Iniciar atendimento
                       </button>
                       <button
                         disabled={busy}
@@ -282,7 +283,7 @@ export function Attendant({ actor }: { actor: Actor }) {
                           update(state.active!.id, { action: "FINISH" })
                         }
                       >
-                        Finalizar
+                        <Icon name="check" /> Finalizar
                       </button>
                       <button
                         disabled={busy}
@@ -298,7 +299,7 @@ export function Attendant({ actor }: { actor: Actor }) {
                     disabled={busy}
                     onClick={() => call()}
                   >
-                    Chamar próximo <kbd>Espaço</kbd>
+                    <Icon name="headset" /> Chamar próximo <kbd>Espaço</kbd>
                   </button>
                 )}
                 {forward && state.active && (
