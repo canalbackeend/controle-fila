@@ -70,7 +70,7 @@ export async function validatePrefixes(
 }
 
 export async function configureServices<T>(
-  actor: Actor,
+  actor: Pick<Actor, "tenantId" | "unitId">,
   work: (db: TenantTransaction) => Promise<T>,
 ) {
   return tenantTransaction(actor.tenantId, async (db) => {

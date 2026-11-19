@@ -4,3 +4,6 @@
 - O código de uma senha é único na unidade durante a data operacional. O prefixo pode ser compartilhado entre tipos do mesmo serviço porque a sequência é comum aos três tipos. Prefixos entre serviços da unidade são reservados, inclusive depois da desativação.
 - Cadastros em uso são desativados para preservar o histórico.
 - A porta web local é 5180. A URL da aplicação é configurada por ambiente.
+- A intercalação começa com o bloco normal. O 80+ sempre tem precedência no bloco preferencial. Se o tipo previsto estiver vazio, a chamada do outro tipo mantém a posição do ciclo.
+- A virada usa o horário local do tenant. Senhas aguardando de datas anteriores são canceladas e registradas pelo job. Atendimentos em andamento podem ser concluídos no guichê.
+- O encaminhamento mantém o código e entra no fim do grupo de prioridade da etapa de destino. A posição impressa representa a fila no momento da emissão.

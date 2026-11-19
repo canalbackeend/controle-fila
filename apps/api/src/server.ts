@@ -1,6 +1,7 @@
 import { LogController } from "fastify";
 import { z } from "zod";
 import { prisma } from "./db.js";
+import { queueJobs } from "./modules/queue/jobs.js";
 import { buildApp } from "./app.js";
 
 const port = z.coerce
@@ -24,7 +25,11 @@ const app = buildApp(
     secure: settings.APP_ORIGIN.startsWith("https:"),
   },
 );
-app.addHook("onClose", () => prisma.$disconnect());
+const jobs = queueJobs(app);
+app.addHook("onClose", async () => {
+  await jobs.destroy();
+  await prisma.$disconnect();
+});
 
 for (const signal of ["SIGTERM", "SIGINT"] as const) {
   process.once(signal, () => void app.close());
