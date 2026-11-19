@@ -3,6 +3,7 @@ import { Server } from "socket.io";
 import type { PanelCall } from "@beend/shared";
 import { tenantDb } from "./db.js";
 import { sessionActor, sessionCookie } from "./modules/auth/service.js";
+import { resolveTracking } from "./modules/tracking/service.js";
 import { deviceIdentity } from "./modules/devices/auth.js";
 import {
   queueStats,
@@ -13,6 +14,9 @@ import {
 
 const unitRoom = (scope: Pick<QueueScope, "tenantId" | "unitId">) =>
   `unit:${scope.tenantId}:${scope.unitId}`;
+const trackingRoom = (scope: QueueScope) =>
+  `tracking:${scope.tenantId}:${scope.unitId}`;
+const ticketRoom = (token: string) => `ticket:${token}`;
 export const deviceRoom = (id: string) => `panel:${id}`;
 
 export function attachRealtime(app: FastifyInstance, origin: string) {
@@ -32,6 +36,13 @@ export function attachRealtime(app: FastifyInstance, origin: string) {
   io.use(async (socket, next) => {
     try {
       const auth = socket.handshake.auth;
+      if (auth.publicToken) {
+        if (typeof auth.publicToken !== "string")
+          return next(new Error("Senha indisponível."));
+        const { scope } = await resolveTracking(auth.publicToken);
+        await socket.join([ticketRoom(auth.publicToken), trackingRoom(scope)]);
+        return next();
+      }
       if (auth.deviceToken) {
         const device = await deviceIdentity(auth.deviceToken);
         if (!device) return next(new Error("Dispositivo não autorizado."));
@@ -56,6 +67,10 @@ export function attachRealtime(app: FastifyInstance, origin: string) {
     const { ticket, type, counterName, displayName, eventId, eventTime } =
       change;
     const room = io.to(unitRoom(scope));
+    io.to(trackingRoom(scope)).emit("queue.changed");
+    io.to(ticketRoom(ticket.publicToken)).emit("ticket.updated", {
+      status: ticket.status,
+    });
     room.emit(
       type === "ISSUED" ? "ticket.issued" : "ticket.updated",
       ticketSummary(ticket),

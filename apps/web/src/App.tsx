@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
-import { Link, Navigate, Route, Routes } from "react-router-dom";
+import { Link, Navigate, Route, Routes, useLocation } from "react-router-dom";
 import type { Actor } from "@beend/shared";
 import { api, message } from "./api";
 import { Login } from "./pages/auth/Login";
 import { Content } from "./pages/content/Content";
 import { PanelEditor } from "./pages/content/PanelEditor";
+import { Tracking } from "./pages/tracking/Tracking";
 import { Panel } from "./pages/panel/Panel";
 import { Kiosk } from "./pages/kiosk/Kiosk";
 import { Devices } from "./pages/devices/Devices";
@@ -63,7 +64,10 @@ function Workspace({
 
 export function App() {
   const [actor, setActor] = useState<Actor | null | undefined>(undefined);
+  const { pathname } = useLocation();
+  const publicPage = /^\/(t|totem|painel)(\/|$)/.test(pathname);
   useEffect(() => {
+    if (publicPage) return;
     let active = true;
     void api<Actor>("/auth/session").then(
       (actor) => {
@@ -76,7 +80,7 @@ export function App() {
     return () => {
       active = false;
     };
-  }, []);
+  }, [publicPage]);
 
   function protectedPage(children: (actor: Actor) => React.ReactNode) {
     if (actor === undefined)
@@ -151,6 +155,7 @@ export function App() {
           ),
         )}
       />
+      <Route path="/t/:token" element={<Tracking />} />
       <Route path="/totem/:id?" element={<Kiosk />} />
       <Route path="/painel/:id?" element={<Panel />} />
       <Route

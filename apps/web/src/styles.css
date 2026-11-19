@@ -797,3 +797,52 @@ fieldset .form-grid {
   padding: 0.75vh 0.7vw;
   font-size: clamp(0.9rem, 1.35vw, 1.65rem);
 }
+
+.tracking {
+  max-width: 32rem;
+  margin: 0 auto;
+  padding: 1.4rem 1rem 2rem;
+}
+.tracking-header {
+  margin-bottom: 2rem;
+}
+.tracking > h1 {
+  margin-bottom: 1.15rem;
+  font-size: clamp(1.85rem, 7vw, 2.65rem);
+}
+.tracking-card {
+  display: grid;
+  gap: 0.85rem;
+  justify-items: start;
+  padding: 1.3rem;
+}
+.tracking-unit {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+}
+.tracking-code {
+  font-size: clamp(3rem, 16vw, 5.3rem);
+  line-height: 1.02;
+  overflow-wrap: anywhere;
+}
+.tracking-position {
+  display: flex;
+  gap: 0.65rem;
+  align-items: center;
+}
+.tracking-position strong {
+  font-size: 2rem;
+  color: var(--primary);
+  line-height: 1;
+}
+.tracking-counter {
+  font-size: 1.45rem;
+  font-weight: 750;
+  color: var(--ink);
+}
+.tracking-notifications input {
+  width: 6rem;
+}

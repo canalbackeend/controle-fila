@@ -183,6 +183,19 @@ describe.skipIf(process.env.RUN_DB_TESTS !== "1")("queue transactions", () => {
         .sort((a, b) => a - b),
     ).toEqual(Array.from({ length: 50 }, (_, index) => index + 1));
     expect(JSON.stringify(tickets)).not.toContain("Maria");
+    const publicResponse = await app.inject(`/track/${tickets[0].publicToken}`);
+    expect(publicResponse.statusCode, publicResponse.body).toBe(200);
+    expect(publicResponse.headers["cache-control"]).toContain("no-store");
+    expect(Object.keys(publicResponse.json()).sort()).toEqual([
+      "code",
+      "peopleAhead",
+      "service",
+      "status",
+      "unitName",
+    ]);
+    expect(publicResponse.body).not.toContain("Maria");
+    expect((await app.inject(`/track/${"a".repeat(32)}`)).statusCode).toBe(404);
+
     const stats = await app.inject({
       url: "/queue/stats",
       headers: { cookie: foreign.cookie },
@@ -269,10 +282,14 @@ describe.skipIf(process.env.RUN_DB_TESTS !== "1")("queue transactions", () => {
           priority: "NORMAL",
           number: 1,
           code: "R001",
-          publicToken: randomUUID(),
+          publicToken: randomUUID().replaceAll("-", ""),
         },
       });
     const own = await create(actor, fixtures[0]!.first);
+    const expired = await app.inject(`/track/${own.publicToken}`);
+    expect(expired.statusCode).toBe(410);
+    expect(expired.body).not.toContain("R001");
+
     const other = await create(foreign, fixtures[1]!.first);
     const scope = { ...actor, resetTime: "05:00" };
     expect(await expireQueue(scope, new Date("2020-01-02T07:59:59Z"))).toBe(0);

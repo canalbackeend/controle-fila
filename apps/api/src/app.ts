@@ -11,6 +11,7 @@ import { authRoutes } from "./modules/auth/routes.js";
 import { attendantRoutes } from "./modules/attendant/routes.js";
 import { deviceRoutes } from "./modules/devices/routes.js";
 import { panelRoutes } from "./modules/panel/routes.js";
+import { trackingRoutes } from "./modules/tracking/routes.js";
 import { attachRealtime } from "./realtime.js";
 import { queueRoutes } from "./modules/queue/routes.js";
 import { adminRoutes } from "./modules/admin/routes.js";
@@ -81,6 +82,7 @@ export function buildApp(
       queueRoutes(api, realtime.publish);
       deviceRoutes(api, realtime);
       panelRoutes(api);
+      trackingRoutes(api);
       assetRoutes(api);
       contentRoutes(api, realtime);
     });
