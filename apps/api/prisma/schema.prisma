@@ -156,6 +156,7 @@ model Ticket {
   priority        Priority
   status          TicketStatus  @default(WAITING)
   customerName    String?
+  issueKey        String?
   publicToken     String        @unique
   businessDate    String
   issuedAt        DateTime      @default(now())
@@ -171,6 +172,7 @@ model Ticket {
   @@unique([tenantId, id])
   @@unique([unitId, issuedServiceId, businessDate, number])
   @@unique([unitId, businessDate, code])
+  @@unique([tenantId, unitId, issueKey])
   @@index([tenantId, unitId, serviceId, businessDate, status, queuedAt])
 }
 

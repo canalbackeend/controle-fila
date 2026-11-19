@@ -165,10 +165,51 @@ export function issueTicket(
   scope: QueueScope,
   input: IssueInput,
   userId?: string,
-): Promise<{ receipt: IssuedTicket; change: QueueChange }> {
+): Promise<{ receipt: IssuedTicket; change?: QueueChange }> {
   return configureServices(scope, async (db) => {
     const now = new Date();
     const date = dateFor(scope, now);
+    if (input.requestId) {
+      const existing = await db.ticket.findUnique({
+        where: {
+          tenantId_unitId_issueKey: {
+            tenantId: scope.tenantId,
+            unitId: scope.unitId,
+            issueKey: input.requestId,
+          },
+        },
+      });
+      if (existing) {
+        if (
+          existing.issuedServiceId !== input.serviceId ||
+          existing.priority !== input.priority
+        ) {
+          throw new HttpError(409, "A referência de emissão já está em uso.");
+        }
+        const [unit, service] = await Promise.all([
+          db.unit.findUniqueOrThrow({
+            where: { id: scope.unitId },
+            select: { name: true },
+          }),
+          db.service.findUniqueOrThrow({
+            where: { id: existing.issuedServiceId },
+          }),
+        ]);
+        return {
+          receipt: {
+            ...ticketSummary(existing),
+            publicToken: existing.publicToken,
+            unitName: unit.name,
+            timeZone: scope.timeZone,
+            serviceName: service.name,
+            peopleAhead:
+              existing.serviceId === service.id
+                ? await position(db, scope, existing, service)
+                : 0,
+          },
+        };
+      }
+    }
     const service = await db.service.findFirst({
       where: { id: input.serviceId, unitId: scope.unitId, active: true },
     });
@@ -204,6 +245,7 @@ export function issueTicket(
             : undefined,
         code: prefix + String(count.number).padStart(3, "0"),
         number: count.number,
+        issueKey: input.requestId,
         publicToken: randomBytes(24).toString("base64url"),
       },
     });

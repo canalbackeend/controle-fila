@@ -6,6 +6,7 @@ import { ZodError } from "zod";
 import { HttpError } from "./errors.js";
 import { authRoutes } from "./modules/auth/routes.js";
 import { attendantRoutes } from "./modules/attendant/routes.js";
+import { deviceRoutes } from "./modules/devices/routes.js";
 import { attachRealtime } from "./realtime.js";
 import { queueRoutes } from "./modules/queue/routes.js";
 import { adminRoutes } from "./modules/admin/routes.js";
@@ -71,7 +72,9 @@ export function buildApp(
       authRoutes(api, settings.secure);
       adminRoutes(api);
       attendantRoutes(api);
-      queueRoutes(api, attachRealtime(api, settings.origin).publish);
+      const realtime = attachRealtime(api, settings.origin);
+      queueRoutes(api, realtime.publish);
+      deviceRoutes(api, realtime);
     });
   }
   return app;

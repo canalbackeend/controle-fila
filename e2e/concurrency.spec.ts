@@ -16,7 +16,9 @@ test("two attendants see the queue live and call different tickets", async ({
       [page, "Recepção"],
       [other, "Triagem"],
     ] as const) {
-      await desk.getByRole("combobox", { name: "Guichê", exact: true }).selectOption({ label });
+      await desk
+        .getByRole("combobox", { name: "Guichê", exact: true })
+        .selectOption({ label });
       await desk.getByRole("checkbox", { name: "Recepção" }).check();
       await desk.getByRole("button", { name: "Iniciar turno" }).click();
       await expect(

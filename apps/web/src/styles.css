@@ -404,3 +404,113 @@ input.code-input {
     gap: 0;
   }
 }
+
+.pairing-page {
+  display: grid;
+  place-content: center;
+  min-height: 100svh;
+  padding: 1rem;
+}
+.pairing-page .surface {
+  width: min(28rem, 92vw);
+}
+.pairing-page .section-head {
+  display: grid;
+}
+.pairing-page h1 {
+  font-size: 2rem;
+}
+.pair-code {
+  background: #e8eefb;
+  padding: 0.55rem 0.65rem;
+  border-radius: 0.6rem;
+  overflow-wrap: anywhere;
+}
+.kiosk {
+  min-height: 100svh;
+  background: #eaf0ff;
+  padding: clamp(1rem, 4vw, 3rem);
+}
+.kiosk header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.kiosk-content {
+  max-width: 54rem;
+  text-align: center;
+  margin: clamp(2rem, 9vh, 7rem) auto 0;
+}
+.kiosk-content > p {
+  margin: 1rem 0;
+  font-size: 1.15rem;
+}
+.kiosk-options {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+  margin: 2rem 0;
+}
+.kiosk button {
+  min-height: 80px;
+  font-size: clamp(1.15rem, 3vw, 1.6rem);
+}
+.kiosk-receipt {
+  text-align: center;
+  max-width: 31rem;
+  margin: 1.5rem auto;
+  display: grid;
+  gap: 1rem;
+}
+.receipt {
+  text-align: center;
+}
+.print-receipt {
+  display: grid;
+  justify-items: center;
+  gap: 0.35rem;
+  padding: 1.2rem;
+}
+.receipt-unit {
+  color: var(--ink);
+  font-weight: 700;
+}
+.receipt-code {
+  font-size: 3.5rem;
+  line-height: 1.05;
+}
+.receipt-actions {
+  justify-content: center;
+  padding: 0 1rem 1rem;
+}
+@media print {
+  @page {
+    margin: 0;
+    size: auto;
+  }
+  body:has(.print-receipt) {
+    background: white !important;
+    min-width: 0;
+  }
+  body:has(.print-receipt) * {
+    visibility: hidden;
+  }
+  body:has(.print-receipt) .print-receipt,
+  body:has(.print-receipt) .print-receipt * {
+    visibility: visible;
+    color: black;
+  }
+  .print-receipt {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 80mm;
+    padding: 5mm 4mm;
+    font-size: 10pt;
+  }
+  .receipt-code {
+    font-size: 32pt;
+  }
+}

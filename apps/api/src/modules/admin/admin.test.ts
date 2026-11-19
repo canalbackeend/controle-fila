@@ -50,6 +50,10 @@ describe.skipIf(!databaseTests)(
     afterAll(async () => {
       for (const { id } of actors) {
         const db = tenantDb(id);
+        await db.ticketEvent.deleteMany({});
+        await db.ticket.deleteMany({});
+        await db.queueSequence.deleteMany({});
+        await db.device.deleteMany({});
         await db.counter.deleteMany({});
         await db.service.deleteMany({});
         await db.tenant.delete({ where: { id } });
@@ -157,6 +161,96 @@ describe.skipIf(!databaseTests)(
       ).toEqual(["Recepção"]);
       expect(saved.json().counters).toHaveLength(1);
       expect(saved.json().users).toHaveLength(2);
+    });
+
+    test("pairs a kiosk once, confines its token to the device and tenant, and reuses a retried ticket", async () => {
+      const cookie = actors[0]!.cookie;
+      const outsider = actors[1]!.cookie;
+      const createdService = await app.inject({
+        method: "POST",
+        url: "/admin/services",
+        headers: { cookie },
+        payload: {
+          name: "Totem",
+          prefix: "K",
+          preferentialPrefix: "KP",
+          priority80Prefix: "KI",
+        },
+      });
+      expect(createdService.statusCode, createdService.body).toBe(201);
+      const created = await app.inject({
+        method: "POST",
+        url: "/admin/devices",
+        headers: { cookie },
+        payload: { name: "Totem A", type: "KIOSK" },
+      });
+      expect(created.statusCode, created.body).toBe(201);
+      const { code, device } = created.json();
+      const pair = () =>
+        app.inject({
+          method: "POST",
+          url: `/devices/${device.id}/pair`,
+          payload: { code },
+        });
+      const paired = await pair();
+      expect(paired.statusCode, paired.body).toBe(200);
+      expect((await pair()).statusCode).toBe(404);
+      const foreign = await app.inject({
+        method: "POST",
+        url: `/admin/devices/${device.id}/pairing`,
+        headers: { cookie: outsider },
+      });
+      expect(foreign.statusCode).toBe(404);
+      const list = await app.inject({
+        url: "/admin/devices",
+        headers: { cookie: outsider },
+      });
+      expect(list.json()).toEqual([]);
+      const headers = { authorization: `Bearer ${paired.json().token}` };
+      expect(
+        (await app.inject({ url: `/kiosk/${randomUUID()}`, headers }))
+          .statusCode,
+      ).toBe(401);
+      const snapshot = await app.inject({
+        url: `/kiosk/${device.id}`,
+        headers,
+      });
+      expect(snapshot.statusCode, snapshot.body).toBe(200);
+      const serviceId = createdService.json().id;
+      expect(
+        snapshot.json().services.map((service: { id: string }) => service.id),
+      ).toContain(serviceId);
+      const payload = {
+        serviceId,
+        priority: "NORMAL",
+        requestId: randomUUID(),
+        customerName: "Nome privado",
+      };
+      const issue = () =>
+        app.inject({
+          method: "POST",
+          url: `/kiosk/${device.id}/tickets`,
+          headers,
+          payload,
+        });
+      const [first, retry] = await Promise.all([issue(), issue()]);
+      expect(first.statusCode, first.body).toBe(201);
+      expect(retry.statusCode, retry.body).toBe(201);
+      expect(first.json().publicToken).toBe(retry.json().publicToken);
+      expect(
+        await tenantDb(actors[0]!.id).ticket.findFirst({
+          where: { id: first.json().id },
+        }),
+      ).toMatchObject({ customerName: null });
+      const rotated = await app.inject({
+        method: "POST",
+        url: `/admin/devices/${device.id}/pairing`,
+        headers: { cookie },
+      });
+      expect(rotated.statusCode).toBe(200);
+      expect(
+        (await app.inject({ url: `/kiosk/${device.id}`, headers })).statusCode,
+      ).toBe(401);
     });
   },
 );

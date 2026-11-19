@@ -3,6 +3,8 @@ import { Link, Navigate, Route, Routes } from "react-router-dom";
 import type { Actor } from "@beend/shared";
 import { api, message } from "./api";
 import { Login } from "./pages/auth/Login";
+import { Kiosk } from "./pages/kiosk/Kiosk";
+import { Devices } from "./pages/devices/Devices";
 import { Attendant } from "./pages/attendant/Attendant";
 import { Admin } from "./pages/admin/Admin";
 
@@ -34,7 +36,12 @@ function Workspace({
           Beend Fila
         </Link>
         <nav aria-label="Navegação principal">
-          {actor.role !== "ATTENDANT" && <Link to="/admin">Administração</Link>}
+          {actor.role !== "ATTENDANT" && (
+            <>
+              <Link to="/admin">Administração</Link>
+              <Link to="/admin/dispositivos">Dispositivos</Link>
+            </>
+          )}
           <Link to="/atendente">Atendimento</Link>
           <span>{actor.name}</span>
           <button onClick={() => void logout()}>Sair</button>
@@ -110,6 +117,17 @@ export function App() {
           ),
         )}
       />
+      <Route
+        path="/admin/dispositivos"
+        element={protectedPage((actor) =>
+          actor.role === "ATTENDANT" ? (
+            <Navigate to="/atendente" replace />
+          ) : (
+            <Devices />
+          ),
+        )}
+      />
+      <Route path="/totem/:id?" element={<Kiosk />} />
       <Route
         path="/atendente"
         element={protectedPage((actor) => (

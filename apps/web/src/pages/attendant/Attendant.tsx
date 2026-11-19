@@ -13,6 +13,7 @@ import {
   type AttendantState,
   type TicketAction,
 } from "@beend/shared";
+import { IssueAtDesk } from "../../components/IssueAtDesk";
 import { api, message } from "../../api";
 import { useRealtime } from "../../realtime";
 
@@ -208,6 +209,7 @@ export function Attendant({ actor }: { actor: Actor }) {
       )}
       {state?.session && (
         <>
+          <IssueAtDesk services={state.services} />
           <div className="attendant-grid">
             <section className="surface current-ticket">
               <div className="section-head">

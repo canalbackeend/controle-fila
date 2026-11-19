@@ -29,6 +29,7 @@ export const ticketStatusLabels: Record<TicketStatus, string> = {
 
 export const issueInput = z.object({
   serviceId: idSchema,
+  requestId: idSchema.optional(),
   priority: prioritySchema,
   customerName: z.string().trim().min(1).max(100).optional(),
 });

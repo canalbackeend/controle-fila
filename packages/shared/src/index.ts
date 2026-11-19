@@ -4,3 +4,4 @@ export const healthSchema = z.object({ status: z.literal("ok") });
 export * from "./admin.js";
 export * from "./queue.js";
 export * from "./attendant.js";
+export * from "./devices.js";

@@ -7,3 +7,5 @@
 - A intercalação começa com o bloco normal. O 80+ sempre tem precedência no bloco preferencial. Se o tipo previsto estiver vazio, a chamada do outro tipo mantém a posição do ciclo.
 - A virada usa o horário local do tenant. Senhas aguardando de datas anteriores são canceladas e registradas pelo job. Atendimentos em andamento podem ser concluídos no guichê.
 - O encaminhamento mantém o código e entra no fim do grupo de prioridade da etapa de destino. A posição impressa representa a fila no momento da emissão.
+- Os códigos de pareamento são descartáveis, expiram em 15 minutos e incluem o identificador da empresa. Gerar outro código revoga o token anterior do dispositivo.
+- O comprovante do totem é enviado para impressão após a emissão. A tela permite reimprimir a mesma senha antes de voltar ao início.

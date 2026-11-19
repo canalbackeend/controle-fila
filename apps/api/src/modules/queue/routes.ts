@@ -29,7 +29,7 @@ export function queueRoutes(
       issueInput.parse(request.body),
       actor.id,
     );
-    publish(actor, change);
+    if (change) publish(actor, change);
     return reply.code(201).send(receipt);
   });
   app.post("/queue/call", async (request) => {
