@@ -26,7 +26,6 @@ const output = resolve(import.meta.dirname, "../../apps/web/public/help");
 const password = "help screenshots password 2026";
 const suffix = randomUUID().slice(0, 6);
 const clinicSlug = `clinica-bem-estar-${suffix}`;
-const beendSlug = `beend-manual-${suffix}`;
 const admin = { name: "Ana Ribeiro", email: "ana@clinica-bemestar.test" };
 const hideWidgets = `.nps { display: none !important; }`;
 
@@ -174,17 +173,6 @@ test("captures the illustrated help center", async ({ browser, baseURL }) => {
     email: admin.email,
     password,
   });
-  const beend = await createTenant(
-    {
-      slug: beendSlug,
-      name: "Beend",
-      unitName: "Beend",
-      adminName: "Operação Beend",
-      email: "operacao@beend.test",
-      password,
-    },
-    "SUPERADMIN",
-  );
   let api: APIRequestContext | undefined;
   const contexts: { close(): Promise<void> }[] = [];
   try {
@@ -460,63 +448,19 @@ test("captures the illustrated help center", async ({ browser, baseURL }) => {
       ],
       { fullPage: true },
     );
-
-    const db = tenantDb(clinic.id);
-    const people = await db.user.findMany({ orderBy: { name: "asc" } });
-    const answers = [
-      [admin.name, 9, "A TV deixou a recepção muito mais organizada."],
-      ["Carlos Lima", 10, "Chamar pelo teclado ficou rápido."],
-      ["Juliana Prado", 7, "Gostaria de relatórios por semana."],
-    ] as const;
-    for (const [name, score, comment] of answers) {
-      const person = people.find((user) => user.name === name)!;
-      await db.npsResponse.create({
-        data: {
-          tenantId: clinic.id,
-          userId: person.id,
-          role: person.role === "ATTENDANT" ? "ATTENDANT" : "ADMIN",
-          score,
-          comment,
-        },
-      });
-    }
-    const { context: beendContext, page: operator } = await devicePage(
-      browser,
-      1280,
-      820,
-    );
-    contexts.push(beendContext);
-    await signIn(operator, beendSlug, "operacao@beend.test");
-    await expect(
-      operator.getByRole("heading", { name: "Empresas cadastradas" }),
-    ).toBeVisible();
-    await shoot(operator, "platformCompanies", [
-      operator.getByRole("button", { name: "Cadastrar empresa" }),
-      operator.getByRole("button", { name: /Editar plano e limites/ }).first(),
-    ]);
-    await operator.goto("/plataforma/satisfacao");
-    await expect(operator.getByText("A TV deixou a recepção")).toBeVisible();
-    await shoot(operator, "platformSatisfaction", [
-      operator.getByRole("region", { name: "Resumo do NPS" }),
-      operator.locator("section", {
-        has: operator.getByRole("heading", { name: "Respostas" }),
-      }),
-    ]);
   } finally {
     for (const context of contexts) await context.close();
     await api?.dispose();
-    for (const id of [clinic.id, beend.id]) {
-      const db = tenantDb(id);
-      await db.ticketEvent.deleteMany({});
-      await db.ticket.deleteMany({});
-      await db.queueSequence.deleteMany({});
-      await db.counterSession.deleteMany({});
-      await db.device.deleteMany({});
-      await db.counter.deleteMany({});
-      await db.service.deleteMany({});
-      await db.card.deleteMany({});
-      await prisma.tenant.delete({ where: { id } });
-    }
+    const db = tenantDb(clinic.id);
+    await db.ticketEvent.deleteMany({});
+    await db.ticket.deleteMany({});
+    await db.queueSequence.deleteMany({});
+    await db.counterSession.deleteMany({});
+    await db.device.deleteMany({});
+    await db.counter.deleteMany({});
+    await db.service.deleteMany({});
+    await db.card.deleteMany({});
+    await prisma.tenant.delete({ where: { id: clinic.id } });
     await prisma.$disconnect();
   }
 });

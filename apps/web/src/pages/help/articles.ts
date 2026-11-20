@@ -12,7 +12,7 @@ export type HelpArticle = {
   id: string;
   title: string;
   summary: string;
-  /** Perfis que veem o artigo. O superadministrador vê todos. */
+  /** Perfis da empresa cliente que veem o artigo. A conta Beend vê todos. */
   audience: Role[];
   sections: HelpSection[];
 };
@@ -341,36 +341,6 @@ export const helpArticles: HelpArticle[] = [
         title: "Esqueci minha senha",
         paragraphs: [
           "Peça ao administrador da sua empresa para definir uma nova senha em Administração → Equipe. Se você é o administrador, fale com o suporte da Beend.",
-        ],
-      },
-    ],
-  },
-  {
-    id: "plataforma",
-    title: "Gestão de clientes (Beend)",
-    summary: "Cadastrar empresas, limites, suspensão e acessos.",
-    audience: ["SUPERADMIN"],
-    sections: [
-      {
-        title: "Cadastrar um cliente",
-        figures: ["platformCompanies"],
-        steps: [
-          "Abra Empresas e clique em Cadastrar empresa.",
-          "Informe o identificador, a unidade, o administrador e o plano.",
-          "Defina os limites de totens e de TVs. Zero bloqueia o tipo; vazio libera sem limite.",
-          "Entregue os dados de Acesso inicial por um canal seguro. A senha inicial só aparece nesse momento.",
-        ],
-      },
-      {
-        title: "Gerenciar",
-        figures: ["platformSatisfaction"],
-        items: [
-          "Editar plano e limites: altera as liberações. Para reduzir abaixo do uso, remova dispositivos antes.",
-          "Suspender: bloqueia logins, filas, dispositivos e acompanhamento. Os dados são preservados.",
-          "Reativar: libera tudo de novo. Dispositivos pareados reconectam sozinhos.",
-          "Gerar senha provisória: invalida a senha do administrador e exige troca no primeiro acesso.",
-          "Clientes: lista totens e TVs de todas as empresas, com o último contato.",
-          "Satisfação: mostra o NPS (porcentagem de promotores menos a de detratores), as notas e os comentários de administradores e atendentes dos clientes, por período. Os nomes e e-mails de quem respondeu não aparecem.",
         ],
       },
     ],

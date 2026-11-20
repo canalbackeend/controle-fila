@@ -136,21 +136,6 @@ export const helpFigures = {
     caption: "Perfil",
     marks: ["Nome e e-mail da conta", "Trocar a senha"],
   },
-  platformCompanies: {
-    file: "plataforma-empresas.jpg",
-    alt: "Tela Empresas da conta Beend com os clientes cadastrados",
-    caption: "Empresas (somente Beend)",
-    marks: [
-      "Cadastrar um cliente",
-      "Plano, limites, acessos, suspensão e reativação",
-    ],
-  },
-  platformSatisfaction: {
-    file: "plataforma-satisfacao.jpg",
-    alt: "Tela Satisfação com o NPS e as respostas dos clientes",
-    caption: "Satisfação (somente Beend)",
-    marks: ["NPS e distribuição das notas", "Respostas com nota e comentário"],
-  },
 } satisfies Record<string, HelpFigure>;
 
 export type HelpFigureId = keyof typeof helpFigures;

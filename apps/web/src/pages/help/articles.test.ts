@@ -8,14 +8,18 @@ test("shows attendants only the articles meant for them", () => {
   expect(visible).toContain("atendimento");
   expect(visible).toContain("celular");
   expect(visible).not.toContain("totem");
-  expect(visible).not.toContain("plataforma");
 });
 
-test("keeps the Beend platform guide away from company administrators", () => {
-  const visible = ids(articlesFor("ADMIN"));
-  expect(visible).toContain("painel-tv");
-  expect(visible).not.toContain("plataforma");
-  expect(ids(articlesFor("SUPERADMIN"))).toEqual(ids(helpArticles));
+test("contains only guides for client companies, never Beend internal tools", () => {
+  expect(ids(articlesFor("ADMIN"))).toContain("painel-tv");
+  expect(ids(articlesFor("ADMIN"))).toEqual(ids(helpArticles));
+  expect(ids(articlesFor("SUPERADMIN"))).toEqual(ids(articlesFor("ADMIN")));
+  for (const article of helpArticles) {
+    expect(article.audience.some((role) => role !== "SUPERADMIN")).toBe(true);
+    expect(JSON.stringify(article)).not.toMatch(
+      /Gestão de clientes|Cadastrar empresa|Satisfação dos clientes|Dispositivos dos clientes|superadministrador/i,
+    );
+  }
 });
 
 test("searches every section ignoring accents and letter case", () => {
