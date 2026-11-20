@@ -235,7 +235,6 @@ test("captures the illustrated help center", async ({ browser, baseURL }) => {
       city: "Brasília",
       state: "DF",
       callDisplaySeconds: 5,
-      callSound: "VOICE",
       ticker:
         "Bem-vindo à Clínica Bem-Estar! Tenha seus documentos e a carteirinha do convênio em mãos.",
     };
@@ -439,7 +438,9 @@ test("captures the illustrated help center", async ({ browser, baseURL }) => {
       [
         page.locator("fieldset", { hasText: "Serviços exibidos" }),
         page.locator("fieldset", { hasText: "Pesos do carrossel" }),
-        page.locator("fieldset", { hasText: "Som da chamada" }),
+        page
+          .getByLabel("Segundos por cartão")
+          .locator("xpath=ancestor::div[contains(@class, 'form-grid')][1]"),
         page.getByRole("button", { name: "Salvar painel" }),
       ],
       { fullPage: true },

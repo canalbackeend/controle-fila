@@ -3,8 +3,6 @@ import { useEffect, useState, type ChangeEvent, type FormEvent } from "react";
 import { Link, useParams } from "react-router-dom";
 import {
   brazilianStates,
-  callSoundLabels,
-  callSounds,
   contentTypes,
   type PanelEditorData,
   type PanelSettings,
@@ -50,7 +48,6 @@ export function PanelEditor() {
         city: form.get("city"),
         state: form.get("state") || null,
         callDisplaySeconds: form.get("callDisplaySeconds"),
-        callSound: form.get("callSound"),
         ticker: form.get("ticker"),
       });
       setSuccess(true);
@@ -211,26 +208,6 @@ export function PanelEditor() {
                 />
               </label>
             </div>
-            <fieldset>
-              <legend>Som da chamada</legend>
-              <div className="actions">
-                {callSounds.map((sound) => (
-                  <label key={sound} className="checkbox">
-                    <input
-                      type="radio"
-                      name="callSound"
-                      value={sound}
-                      defaultChecked={data.config.callSound === sound}
-                    />
-                    {callSoundLabels[sound]}
-                  </label>
-                ))}
-              </div>
-              <p>
-                A chamada de voz toca o bip e fala a senha e o guichê em
-                português. Se a TV não tiver voz em português, toca só o bip.
-              </p>
-            </fieldset>
             <label>
               Letreiro da TV
               <textarea

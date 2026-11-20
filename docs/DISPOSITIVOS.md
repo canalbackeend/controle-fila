@@ -26,6 +26,4 @@ chrome --kiosk --autoplay-policy=no-user-gesture-required "https://fila.suaempre
 
 No primeiro uso da tela, selecione **Toque para iniciar**. Configure a saída de áudio do equipamento e faça uma chamada de teste. Valide a leitura do código a cinco metros, o alerta sonoro, a fila de destaque e a retomada do carrossel. Em equipamentos Android que não aceitam essas flags, use o modo de tela cheia do navegador e toque para liberar o áudio.
 
-Para usar a chamada de voz, abra **Dispositivos → Configurar TV e clima**, escolha **Chamada de voz** em **Som da chamada** e clique em **Salvar painel**. A TV precisa ter uma voz em português instalada. No Android, instale ou atualize o **Reconhecimento e síntese de voz do Google** e selecione português do Brasil nas configurações de texto para fala. No Windows, adicione o pacote de idioma português (Brasil) com voz. Se não houver voz em português, a TV toca apenas o bip. Mantenha pelo menos 5 segundos de chamada em destaque para a frase terminar com a senha na tela.
-
 Em produção, o painel usa cache do navegador para continuar exibindo o último conteúdo enquanto tenta se reconectar. Confirme a reconexão após desligar e restaurar a rede. Para homologação, mantenha a TV ativa por 24 horas e observe o uso de memória no DevTools em intervalos regulares. A meta operacional do PRD é uma semana sem intervenção.

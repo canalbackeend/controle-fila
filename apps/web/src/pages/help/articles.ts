@@ -182,13 +182,13 @@ export const helpArticles: HelpArticle[] = [
         ],
       },
       {
-        title: "Som da chamada",
+        title: "Chamada na TV",
         figures: ["tvCall"],
         items: [
-          "Bip: toca o alerta sonoro na chamada.",
-          'Chamada de voz: toca o alerta e fala a senha e o guichê, por exemplo "Senha: a, zero, zero, um. Guichê 2". Quando o serviço chama pelo nome, fala o nome curto.',
-          "A voz usa o leitor de voz do aparelho. No Android, instale o Reconhecimento e síntese de voz do Google com português do Brasil. Sem voz em português, a TV toca só o bip.",
-          "Mantenha pelo menos 5 segundos de chamada em destaque para a frase terminar.",
+          "A senha ocupa a tela ampliada pelo tempo de Segundos de chamada em destaque (5 por padrão), com o guichê de destino.",
+          "Toca um bip para chamar a atenção. O conteúdo da TV é sempre mudo.",
+          "Chamadas feitas ao mesmo tempo aparecem uma depois da outra, sem se sobrepor.",
+          "Quando o serviço chama pelo nome, a TV mostra só o primeiro nome e a inicial do sobrenome.",
         ],
       },
       {
@@ -385,12 +385,6 @@ export const helpArticles: HelpArticle[] = [
         title: "A TV não toca som",
         paragraphs: [
           "Toque em Toque para iniciar depois de abrir ou recarregar a página. Confira o volume e a saída de áudio da TV.",
-        ],
-      },
-      {
-        title: "A chamada de voz não fala",
-        paragraphs: [
-          "Confira se Chamada de voz está marcada em Configurar TV e clima e se o aparelho tem voz em português do Brasil instalada. Sem voz, a TV toca só o bip.",
         ],
       },
       {

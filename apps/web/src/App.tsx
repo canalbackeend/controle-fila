@@ -103,7 +103,11 @@ function Workspace({
             </>
           )}
           {!actor.mustChangePassword && actor.role === "SUPERADMIN" && (
-            <div className="nav-icons" role="group" aria-label="Ferramentas da Beend">
+            <div
+              className="nav-icons"
+              role="group"
+              aria-label="Ferramentas da Beend"
+            >
               <NavLink
                 to="/plataforma/empresas"
                 aria-label="Empresas"

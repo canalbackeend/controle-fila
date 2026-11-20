@@ -101,7 +101,7 @@ export const helpFigures = {
     marks: [
       "Serviços cujas chamadas aparecem nesta TV",
       "Quanto aparece de cada tipo de conteúdo",
-      "Bip ou chamada de voz",
+      "Tempo de cada cartão e da chamada em destaque",
       "Salvar as configurações da TV",
     ],
   },

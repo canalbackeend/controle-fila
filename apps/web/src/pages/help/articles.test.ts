@@ -26,10 +26,7 @@ test("searches every section ignoring accents and letter case", () => {
   expect(ids(articlesFor("ATTENDANT", "IMPRESSAO termica"))).toEqual([
     "problemas",
   ]);
-  expect(ids(articlesFor("ADMIN", "voz portugues"))).toEqual([
-    "painel-tv",
-    "problemas",
-  ]);
+  expect(ids(articlesFor("ADMIN", "bip mudo"))).toEqual(["painel-tv"]);
   expect(articlesFor("ATTENDANT", "superadministrador inexistente")).toEqual(
     [],
   );
