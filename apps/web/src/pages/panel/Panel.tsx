@@ -5,7 +5,7 @@ import { useParams } from "react-router-dom";
 import type { Socket } from "socket.io-client";
 import {
   defaultPanelSettings,
-  pickPanelCard,
+  advancePanelRotation,
   type DisplayCard,
   type PanelCall,
   type PanelData,
@@ -121,7 +121,30 @@ function Card({ card }: { card: DisplayCard }) {
             </ul>
           </div>
         )}
-        {card.source && <p className="tv-source">{card.source}</p>}
+        {card.source && (
+          <p className="tv-source">
+            {card.sourceUrl ? (
+              <a href={card.sourceUrl} target="_blank" rel="noreferrer">
+                {card.source}
+              </a>
+            ) : (
+              card.source
+            )}
+            {card.sourceLicenseUrl && (
+              <>
+                {" "}
+                ·{" "}
+                <a
+                  href={card.sourceLicenseUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  CC BY-ND 3.0
+                </a>
+              </>
+            )}
+          </p>
+        )}
       </div>
       {imageCredit && (
         <p className="tv-photo-credit">
@@ -145,12 +168,11 @@ function PanelDevice({ id }: { id: string }) {
   const [data, setData] = useState(() => readCache(key));
   const [history, setHistory] = useState<PanelCall[]>([]);
   const [overlay, setOverlay] = useState<PanelCall[]>([]);
-  const [cardId, setCardId] = useState<string | undefined>(
-    () =>
-      pickPanelCard(
-        data?.cards ?? [],
-        data?.config.weights ?? defaultPanelSettings.weights,
-      )?.id,
+  const [rotation, setRotation] = useState(() =>
+    advancePanelRotation(
+      data?.cards ?? [],
+      data?.config.weights ?? defaultPanelSettings.weights,
+    ),
   );
   const [suspended, setSuspended] = useState(false);
   const [started, setStarted] = useState(false);
@@ -160,7 +182,7 @@ function PanelDevice({ id }: { id: string }) {
   const current = overlay[0];
   const config = data?.config ?? defaultPanelSettings;
   const cards = data?.cards ?? emptyCards;
-  const card = cards.find(({ id }) => id === cardId) ?? fallback;
+  const card = cards.find(({ id }) => id === rotation.id) ?? fallback;
 
   const merge = useCallback((newCalls: PanelCall[]) => {
     setHistory((previous) =>
@@ -189,10 +211,10 @@ function PanelDevice({ id }: { id: string }) {
           ? previous
           : content,
       );
-      setCardId((previous) =>
-        next.cards.some(({ id }) => id === previous)
+      setRotation((previous) =>
+        next.cards.some(({ id }) => id === previous.id)
           ? previous
-          : pickPanelCard(next.cards, next.config.weights)?.id,
+          : advancePanelRotation(next.cards, next.config.weights, previous),
       );
       merge(next.calls);
       try {
@@ -274,11 +296,14 @@ function PanelDevice({ id }: { id: string }) {
   useEffect(() => {
     if (!started || current) return;
     const timer = window.setTimeout(
-      () => setCardId(pickPanelCard(cards, config.weights, cardId)?.id),
+      () =>
+        setRotation((previous) =>
+          advancePanelRotation(cards, config.weights, previous),
+        ),
       config.cardSeconds * 1000,
     );
     return () => window.clearTimeout(timer);
-  }, [cards, config.cardSeconds, config.weights, current, started, cardId]);
+  }, [cards, config.cardSeconds, config.weights, current, started, rotation]);
   useEffect(() => {
     if (!started || !current) return;
     if (audio.current) playAlert(audio.current);

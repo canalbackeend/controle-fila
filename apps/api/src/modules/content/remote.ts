@@ -21,6 +21,7 @@ for (const [base, mask] of [
 export async function remoteContent(
   url: URL,
   limit: number,
+  accept?: string,
   redirects = 0,
 ): Promise<Buffer> {
   if (
@@ -44,6 +45,7 @@ export async function remoteContent(
         headers: {
           host: url.hostname,
           "user-agent": "BeendFila/1.0 (https://fila.beend.tech)",
+          ...(accept ? { accept } : {}),
         },
         signal: AbortSignal.timeout(6000),
         agent: false,
@@ -86,6 +88,6 @@ export async function remoteContent(
     request.on("error", reject);
   });
   return response instanceof URL
-    ? remoteContent(response, limit, redirects + 1)
+    ? remoteContent(response, limit, accept, redirects + 1)
     : response;
 }

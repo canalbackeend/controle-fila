@@ -17,43 +17,49 @@ test("shows notices, tips, headlines and weather according to panel weights", as
     data: { url: `https://example.invalid/${unit.slug}`, category },
   });
   try {
-    const upload = await unit.request.post("/api/admin/assets", {
-      multipart: {
-        file: {
-          name: "foto.png",
-          mimeType: "image/png",
-          buffer: await readFile(
-            new URL(
-              "../apps/web/src/assets/beend-tech-transparente.png",
-              import.meta.url,
+    const images: string[] = [];
+    for (const [index, file] of [
+      "beend-tech-transparente.png",
+      "beend-tech-branca.png",
+    ].entries()) {
+      const upload = await unit.request.post("/api/admin/assets", {
+        multipart: {
+          file: {
+            name: "foto.png",
+            mimeType: "image/png",
+            buffer: await readFile(
+              new URL(`../apps/web/src/assets/${file}`, import.meta.url),
             ),
-          ),
+          },
         },
-      },
-    });
-    expect(upload.ok()).toBeTruthy();
-    const { imageUrl } = await upload.json();
-    await prisma.newsIllustration.create({
-      data: {
-        category,
-        fileTitle: "File:Imagem de teste.jpg",
-        imageUrl,
-        author: "Autor de teste",
-        license: "CC BY-SA 4.0",
-        licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0/",
-        sourceUrl:
-          "https://commons.wikimedia.org/wiki/File:Imagem_de_teste.jpg",
-      },
-    });
-    await prisma.newsItem.create({
-      data: {
-        sourceId: feed.id,
-        externalId: "first",
-        source: "Jornal de teste",
-        title: "Notícia do dia",
-        category,
-        publishedAt: new Date(),
-      },
+      });
+      expect(upload.ok()).toBeTruthy();
+      const { imageUrl } = await upload.json();
+      images.push(imageUrl);
+      await prisma.newsIllustration.create({
+        data: {
+          category,
+          fileTitle: `File:Imagem de teste ${index}.jpg`,
+          imageUrl,
+          author: "Autor de teste",
+          license: "CC BY-SA 4.0",
+          licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0/",
+          sourceUrl:
+            "https://commons.wikimedia.org/wiki/File:Imagem_de_teste.jpg",
+        },
+      });
+    }
+    await prisma.newsItem.createMany({
+      data: ["Notícia do dia", "NOTÍCIA DO DIA!", "Segunda notícia"].map(
+        (title, index) => ({
+          sourceId: feed.id,
+          externalId: String(index),
+          source: "Jornal de teste",
+          title,
+          category,
+          publishedAt: new Date(Date.now() - index * 1000),
+        }),
+      ),
     });
     await prisma.weatherCache.createMany({
       data: cacheKeys.map((key, index) => ({
@@ -117,7 +123,7 @@ test("shows notices, tips, headlines and weather according to panel weights", as
       await expect(page.getByRole("heading", { name: title })).toBeVisible();
     }
     const photo = page.locator(".tv-news.with-image img");
-    await expect(photo).toHaveAttribute("src", imageUrl);
+    await expect(photo).toHaveAttribute("src", images[0]!);
     await expect(photo).toHaveCSS("object-fit", "cover");
     await expect
       .poll(() =>
@@ -130,6 +136,22 @@ test("shows notices, tips, headlines and weather according to panel weights", as
     await expect(
       page.getByRole("link", { name: "Autor de teste" }),
     ).toBeVisible();
+    const deviceToken = await page.evaluate(
+      (id) => localStorage.getItem(`beend-device:${id}`),
+      device.id,
+    );
+    const snapshot = await page.request.get(`/api/panel/${device.id}`, {
+      headers: { authorization: `Bearer ${deviceToken}` },
+    });
+    expect(
+      (await snapshot.json()).cards.map(
+        (card: { title: string }) => card.title,
+      ),
+    ).toEqual(["Notícia do dia", "Segunda notícia"]);
+    await expect(
+      page.getByRole("heading", { name: "Segunda notícia" }),
+    ).toBeVisible({ timeout: 8000 });
+    await expect(photo).toHaveAttribute("src", images[1]!);
     const admin = await browser.newPage({
       baseURL: new URL(page.url()).origin,
     });

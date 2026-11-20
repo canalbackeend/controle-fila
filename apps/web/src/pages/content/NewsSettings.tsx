@@ -62,7 +62,10 @@ export function NewsSettings({
   return (
     <fieldset className="news-settings" disabled={busy}>
       <legend>Notícias da TV</legend>
-      <p>Escolha um perfil para aplicar na hora.</p>
+      <p>
+        Escolha um perfil para aplicar na hora. Se houver poucas notícias do
+        tema, o painel inclui manchetes de outros assuntos.
+      </p>
       <div className="actions">
         {Object.entries(newsPresets).map(([preset, { label, categories }]) => {
           const active =

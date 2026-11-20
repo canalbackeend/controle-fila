@@ -789,7 +789,8 @@ input.code-input {
   font-size: clamp(0.75rem, 1vw, 1.25rem);
   color: #e4edfa;
 }
-.tv-photo-credit a {
+.tv-photo-credit a,
+.tv-source a {
   color: inherit;
 }
 .tv-ticker {

@@ -47,6 +47,8 @@ export type DisplayCard = {
     sourceUrl: string;
   };
   source?: string;
+  sourceUrl?: string;
+  sourceLicenseUrl?: string;
   weather?: {
     temperature: number;
     days: { day: string; min: number; max: number }[];
@@ -177,6 +179,7 @@ export function pickPanelCard(
   weights: PanelSettings["weights"],
   previous?: string,
   random = Math.random,
+  newsHistory?: readonly string[],
 ) {
   const enabled = cards.filter((card) => weights[card.type] > 0);
   const alternatives = enabled.filter((card) => card.id !== previous);
@@ -191,7 +194,40 @@ export function pickPanelCard(
   let draw = random() * total;
   for (const { type, items } of groups) {
     draw -= weights[type];
-    if (draw < 0) return items[Math.floor(random() * items.length)];
+    if (draw >= 0) continue;
+    if (type !== "NEWS" || !newsHistory)
+      return items[Math.floor(random() * items.length)];
+    const unseen = items.filter(({ id }) => !newsHistory.includes(id));
+    const rotation = unseen.length ? unseen : items;
+    const lastNews = enabled.find(({ id }) => id === newsHistory.at(-1));
+    return (
+      rotation.find(
+        ({ imageUrl }) => imageUrl && imageUrl !== lastNews?.imageUrl,
+      ) ?? rotation[0]
+    );
   }
   return undefined;
+}
+
+type PanelRotation = { id?: string; newsHistory: readonly string[] };
+
+export function advancePanelRotation(
+  cards: DisplayCard[],
+  weights: PanelSettings["weights"],
+  previous: PanelRotation = { newsHistory: [] },
+  random = Math.random,
+): PanelRotation {
+  const newsHistory = previous.newsHistory.filter((id) =>
+    cards.some((card) => card.type === "NEWS" && card.id === id),
+  );
+  const next = pickPanelCard(cards, weights, previous.id, random, newsHistory);
+  return {
+    id: next?.id,
+    newsHistory:
+      next?.type !== "NEWS"
+        ? newsHistory
+        : newsHistory.includes(next.id)
+          ? [next.id]
+          : [...newsHistory, next.id],
+  };
 }

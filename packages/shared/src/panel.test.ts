@@ -1,5 +1,10 @@
 import { expect, test } from "vitest";
-import { contentTypes, pickPanelCard, type DisplayCard } from "./panel.js";
+import {
+  advancePanelRotation,
+  contentTypes,
+  pickPanelCard,
+  type DisplayCard,
+} from "./panel.js";
 
 const cards: DisplayCard[] = contentTypes.map((type) => ({
   id: type,
@@ -20,6 +25,28 @@ test("selects all four categories by configured weight independently of card cou
       )?.type,
     ).toBe(contentTypes[index]);
   }
+});
+
+test("shows every headline once and changes its photo whenever possible", () => {
+  const news = ["one", "two", "three"].map((id, index): DisplayCard => ({
+    id,
+    title: id,
+    type: "NEWS",
+    text: "",
+    imageUrl: index === 2 ? "/second.webp" : "/first.webp",
+  }));
+  const weights = { NOTICE: 0, NEWS: 100, WEATHER: 0, TIP: 0 };
+  const first = advancePanelRotation(news, weights, undefined, () => 0);
+  const second = advancePanelRotation(news, weights, first, () => 0);
+  const third = advancePanelRotation(news, weights, second, () => 0);
+  const fourth = advancePanelRotation(news, weights, third, () => 0);
+  expect([first.id, second.id, third.id, fourth.id]).toEqual([
+    "one",
+    "three",
+    "two",
+    "three",
+  ]);
+  expect(fourth.newsHistory).toEqual(["three"]);
 });
 
 test("filters zero weight categories and prevents consecutive copies where possible", () => {

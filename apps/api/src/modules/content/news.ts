@@ -14,9 +14,20 @@ const sources = z
     }),
   )
   .max(30);
+const sportsFeed = new URL("https://www.gov.br/esporte/++api++/pt-br/@search");
+sportsFeed.search = new URLSearchParams({
+  portal_type: "News Item",
+  sort_on: "effective",
+  sort_order: "descending",
+  metadata_fields: "effective",
+  b_size: "40",
+}).toString();
+export const sportsNewsLicense =
+  "https://creativecommons.org/licenses/by-nd/3.0/";
 const officialFeeds = new Map([
   ["https://www.camara.leg.br/noticias/rss/ultimas-noticias", "Agência Câmara"],
   ["https://www12.senado.leg.br/noticias/RSS", "Agência Senado"],
+  [sportsFeed.href, "Ministério do Esporte"],
 ]);
 const topicPatterns: Record<keyof typeof newsTopics, RegExp> = {
   saude:
@@ -67,6 +78,32 @@ const parser = new Parser<object, NewsEntry>({
     ],
   },
 });
+const sportsResponse = z.object({ items: z.array(z.unknown()) });
+const sportsItem = z.object({
+  "@id": z.url().refine((value) => {
+    const url = new URL(value);
+    return (
+      url.origin === "https://www.gov.br" &&
+      url.pathname.startsWith("/esporte/")
+    );
+  }),
+  title: z.string().trim().min(1).max(180),
+  effective: z.iso.datetime({ offset: true }),
+});
+
+async function sportsHeadlines(url: URL): Promise<(Parser.Item & NewsEntry)[]> {
+  const { items } = sportsResponse.parse(
+    JSON.parse(
+      (await remoteContent(url, 1_500_000, "application/json")).toString(),
+    ),
+  );
+  return items.flatMap((item) => {
+    const parsed = sportsItem.safeParse(item);
+    if (!parsed.success) return [];
+    const link = parsed.data["@id"].replace("/++api++/", "/");
+    return [{ link, title: parsed.data.title, isoDate: parsed.data.effective }];
+  });
+}
 
 export function defaultNewsCategory(category: string) {
   return !/polic|politic|crime|seguranca/.test(normalize(category));
@@ -114,10 +151,13 @@ export async function refreshNews(onError: (feedId: string) => void) {
   for (const feed of feeds) {
     try {
       const base = new URL(feed.url);
-      const parsed = await parser.parseString(
-        (await remoteContent(base, 1_500_000)).toString(),
-      );
+      const sports = base.href === sportsFeed.href;
       const official = officialFeeds.get(feed.url);
+      const parsed = sports
+        ? { items: await sportsHeadlines(base), title: official }
+        : await parser.parseString(
+            (await remoteContent(base, 1_500_000)).toString(),
+          );
       const feedTitle =
         official ?? (parsed.title?.trim().slice(0, 100) || base.hostname);
       const entries = parsed.items
@@ -140,7 +180,9 @@ export async function refreshNews(onError: (feedId: string) => void) {
       });
       for (const [index, item] of entries.entries()) {
         const externalId = ids[index]!;
-        const category = official ? headlineTopic(item.title!) : feed.category;
+        const topic = official ? headlineTopic(item.title!) : feed.category;
+        const category =
+          sports && defaultNewsCategory(topic) ? "esportes" : topic;
         const existing = known.find((entry) => entry.externalId === externalId);
         if (
           existing?.category === category &&
@@ -190,6 +232,7 @@ export async function refreshNews(onError: (feedId: string) => void) {
               : feedTitle,
           category,
           publishedAt,
+          articleUrl: sports ? item.link : undefined,
         };
         await prisma.newsItem.upsert({
           where: { sourceId_externalId: { sourceId: feed.id, externalId } },

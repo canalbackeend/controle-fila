@@ -278,6 +278,7 @@ model NewsItem {
   title       String
   imageUrl    String?
   source      String
+  articleUrl  String?
   category    String
   publishedAt DateTime
   feed        FeedSource @relation(fields: [sourceId], references: [id], onDelete: Cascade)
@@ -293,13 +294,15 @@ model WeatherCache {
 }
 
 model NewsIllustration {
-  category   String @id
+  category   String
   fileTitle  String
   imageUrl   String
   author     String
   license    String
   licenseUrl String
   sourceUrl  String
+
+  @@id([category, fileTitle])
 }
 
 model Template {

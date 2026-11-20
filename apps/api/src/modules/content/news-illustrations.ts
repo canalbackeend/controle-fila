@@ -12,13 +12,28 @@ const catalog = [
     author: "O Bicho Geográfico",
   },
   {
+    category: "geral",
+    fileTitle: "File:Panorama da Esplanada dos Ministérios.jpg",
+    author: "Adriel Marcos",
+  },
+  {
     category: "saude",
     fileTitle: "File:2023 Stetoskop.jpg",
     author: "Jacek Halicki",
   },
   {
+    category: "saude",
+    fileTitle: "File:Instrumentos medicos de uso en Cardiología.jpg",
+    author: "Ivan2010",
+  },
+  {
     category: "economia",
     fileTitle: "File:Avenida Faria Lima, São Paulo.jpg",
+    author: "Wilfredor",
+  },
+  {
+    category: "economia",
+    fileTitle: "File:Paulista Avenue, São Paulo, Brazil.jpg",
     author: "Wilfredor",
   },
   {
@@ -28,9 +43,20 @@ const catalog = [
     author: "Felipe Restrepo Acosta",
   },
   {
+    category: "educacao",
+    fileTitle:
+      "File:Hamamatsu Municipal Sakuma Library reading room ac (1).jpg",
+    author: "Asturio Cantabrio",
+  },
+  {
     category: "tecnologia",
     fileTitle: "File:CircuitBoardByDesignermadsen.jpg",
     author: "Kent Madsen",
+  },
+  {
+    category: "tecnologia",
+    fileTitle: "File:Raspberry Pi 4 Model B - Top.jpg",
+    author: "Laserlicht",
   },
   {
     category: "esportes",
@@ -39,15 +65,26 @@ const catalog = [
     author: "Lenny Maidana",
   },
   {
+    category: "esportes",
+    fileTitle: "File:Tow surfing Nazaré.jpg",
+    author: "Robinnmulller",
+  },
+  {
     category: "ambiente",
     fileTitle: "File:Amazon Rainforest.jpg",
     author: "Antonio Campoy",
+  },
+  {
+    category: "ambiente",
+    fileTitle: "File:Amazon rainforest, Brazil - 2026.jpg",
+    author: "flowcomm",
   },
 ];
 
 const licenses: Readonly<Record<string, string>> = {
   CC0: "https://creativecommons.org/publicdomain/zero/1.0/",
   "CC BY 2.0": "https://creativecommons.org/licenses/by/2.0/",
+  "CC BY 4.0": "https://creativecommons.org/licenses/by/4.0/",
   "CC BY-SA 4.0": "https://creativecommons.org/licenses/by-sa/4.0/",
 };
 
@@ -81,11 +118,11 @@ export async function syncNewsIllustrations(
   const cached = await prisma.newsIllustration.findMany({
     select: { category: true, fileTitle: true },
   });
-  const version = new Map(
-    cached.map(({ category, fileTitle }) => [category, fileTitle]),
-  );
   const missing = catalog.filter(
-    ({ category, fileTitle }) => version.get(category) !== fileTitle,
+    ({ category, fileTitle }) =>
+      !cached.some(
+        (entry) => entry.category === category && entry.fileTitle === fileTitle,
+      ),
   );
   if (!missing.length) return 0;
 
@@ -128,7 +165,7 @@ export async function syncNewsIllustrations(
         sourceUrl,
       };
       await prisma.newsIllustration.upsert({
-        where: { category },
+        where: { category_fileTitle: { category, fileTitle } },
         create: { category, ...illustration },
         update: illustration,
       });
