@@ -28,10 +28,18 @@ import { Attendant } from "./pages/attendant/Attendant";
 import { Admin } from "./pages/admin/Admin";
 import { LegalPage } from "./pages/legal/LegalPage";
 import { Help } from "./pages/help/Help";
+import { AppFooter } from "./components/AppFooter";
+import { NpsSurvey } from "./components/NpsSurvey";
+import { WorkspaceBar } from "./components/WorkspaceBar";
 
 const Companies = lazy(() =>
   import("./pages/platform/Companies").then(({ Companies }) => ({
     default: Companies,
+  })),
+);
+const Satisfaction = lazy(() =>
+  import("./pages/platform/Satisfaction").then(({ Satisfaction }) => ({
+    default: Satisfaction,
   })),
 );
 const PlatformDevices = lazy(() =>
@@ -77,17 +85,6 @@ function Workspace({
               <Icon name="headset" /> Atendimento
             </NavLink>
           )}
-          {!actor.mustChangePassword && actor.role === "SUPERADMIN" && (
-            <>
-              <NavLink to="/plataforma/empresas">
-                <Icon name="building" /> Empresas
-              </NavLink>
-              <NavLink to="/plataforma/dispositivos">
-                <Icon name="devices" />
-                Clientes
-              </NavLink>
-            </>
-          )}
           {!actor.mustChangePassword && actor.role !== "ATTENDANT" && (
             <>
               <NavLink to="/admin" end>
@@ -104,6 +101,31 @@ function Workspace({
                 <Icon name="chart" /> Relatórios
               </NavLink>
             </>
+          )}
+          {!actor.mustChangePassword && actor.role === "SUPERADMIN" && (
+            <div className="nav-icons" role="group" aria-label="Ferramentas da Beend">
+              <NavLink
+                to="/plataforma/empresas"
+                aria-label="Empresas"
+                data-tooltip="Empresas"
+              >
+                <Icon name="building" />
+              </NavLink>
+              <NavLink
+                to="/plataforma/dispositivos"
+                aria-label="Clientes"
+                data-tooltip="Dispositivos dos clientes"
+              >
+                <Icon name="signal" />
+              </NavLink>
+              <NavLink
+                to="/plataforma/satisfacao"
+                aria-label="Satisfação"
+                data-tooltip="Satisfação dos clientes"
+              >
+                <Icon name="star" />
+              </NavLink>
+            </div>
           )}
           <div className="nav-icons">
             {!actor.mustChangePassword && actor.role !== "ATTENDANT" && (
@@ -136,12 +158,15 @@ function Workspace({
           </div>
         </nav>
       </header>
+      {!actor.mustChangePassword && <WorkspaceBar actor={actor} />}
       {error && (
         <p role="alert" className="error">
           {error}
         </p>
       )}
-      {children}
+      <div className="workspace-content">{children}</div>
+      <AppFooter />
+      <NpsSurvey actor={actor} />
     </div>
   );
 }
@@ -247,6 +272,24 @@ export function App() {
               }
             >
               <Companies />
+            </Suspense>
+          ) : (
+            <Navigate to="/" replace />
+          ),
+        )}
+      />
+      <Route
+        path="/plataforma/satisfacao"
+        element={protectedPage((actor) =>
+          actor.role === "SUPERADMIN" ? (
+            <Suspense
+              fallback={
+                <main className="workspace">
+                  <p role="status">Carregando satisfação…</p>
+                </main>
+              }
+            >
+              <Satisfaction />
             </Suspense>
           ) : (
             <Navigate to="/" replace />

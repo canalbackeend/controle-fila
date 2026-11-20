@@ -3,15 +3,16 @@
  * Central de Ajuda. Campos vazios não aparecem nas páginas.
  */
 export const company = {
-  brand: "Beend",
+  brand: "beend.tech",
   product: "Beend Fila",
   legalName: "",
   document: "",
-  address: "",
+  address: "Brasília/DF - Brasil",
   privacyEmail: "",
   support: {
-    email: "",
-    whatsapp: "",
+    email: "suporte@beend.tech",
+    phone: "+55 (61) 9 9595-7461",
+    whatsapp: "+55 (61) 9 9595-7461",
     hours: "",
   },
   legalUpdatedAt: "20 de novembro de 2026",

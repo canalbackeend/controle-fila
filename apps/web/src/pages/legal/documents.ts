@@ -11,8 +11,9 @@ export type LegalDocument = {
   sections: LegalSection[];
 };
 
-const contact = company.privacyEmail
-  ? `pelo e-mail ${company.privacyEmail}`
+const contactEmail = company.privacyEmail || company.support.email;
+const contact = contactEmail
+  ? `pelo e-mail ${contactEmail}`
   : "pelos canais de atendimento informados no contrato";
 const identity = [
   company.legalName,

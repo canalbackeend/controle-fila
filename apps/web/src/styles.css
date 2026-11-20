@@ -1476,3 +1476,528 @@ input[type="color"] {
     transition: none;
   }
 }
+
+/*
+ * beend.tech design system for the signed-in area. TV, kiosk, sign-in and
+ * tracking keep their own look. The accent stays the company theme color.
+ */
+.workspace-theme {
+  --ink: #1e293b;
+  --muted: #64748b;
+  --line: #e2e8f0;
+  --ds-page: #ecf0f1;
+  --ds-soft: #f8fafc;
+  --ds-faint: #94a3b8;
+  --ds-shadow: 0 10px 30px rgb(0 0 0 / 0.04);
+  --ds-width: 1170px;
+  --ds-gutter: 1.5rem;
+  --field-border: #e2e8f0;
+  --field-radius: 0.5rem;
+  --tone-promoter: #2f9e5b;
+  --tone-passive: #c47f06;
+  --tone-detractor: #d63c2c;
+  --tone-neutral: #2b80b9;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: var(--ds-page);
+  color: var(--ink);
+  font-family: "Inter Variable", "Inter", ui-sans-serif, system-ui, sans-serif;
+}
+.workspace-theme .workspace-content {
+  flex: 1;
+}
+.workspace-theme h1 {
+  font-size: clamp(1.75rem, 3.4vw, 2.25rem);
+  font-weight: 900;
+  letter-spacing: -0.025em;
+  line-height: 1.1;
+}
+.workspace-theme h2 {
+  font-weight: 800;
+  letter-spacing: -0.015em;
+}
+.workspace-theme .eyebrow {
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+/* Top bar */
+.workspace-theme .app-header {
+  position: relative;
+  z-index: 20;
+  padding: 1rem max(var(--ds-gutter), calc((100% - var(--ds-width)) / 2));
+  border-bottom: 0;
+  background: #fff;
+  box-shadow: var(--ds-shadow);
+}
+.workspace-theme .app-header nav {
+  gap: 0.15rem;
+}
+.workspace-theme .app-header nav a {
+  padding: 0.5rem 0.55rem;
+  color: var(--muted);
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+.workspace-theme .nav-icons {
+  margin-left: 0.25rem;
+  padding-left: 0.5rem;
+  border-left: 1px solid #f1f5f9;
+}
+.workspace-theme .app-header .nav-icons > a,
+.workspace-theme .app-header .nav-icons > button {
+  border: 0;
+  background: transparent;
+  color: var(--ds-faint);
+}
+.workspace-theme .app-header .nav-icons > a:hover,
+.workspace-theme .app-header .nav-icons > button:hover {
+  background: transparent;
+  color: var(--ink);
+}
+.workspace-theme .app-header .nav-icons > a[aria-current="page"] {
+  background: var(--theme-wash);
+  color: var(--primary);
+}
+
+/* Trail and date under the top bar */
+.workspace-bar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem 1rem;
+  width: 100%;
+  max-width: calc(var(--ds-width) + 2 * var(--ds-gutter));
+  margin: 2rem auto 0;
+  padding: 0 var(--ds-gutter);
+  color: var(--ds-faint);
+  font-size: 0.92rem;
+}
+.workspace-trail {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  min-width: 0;
+}
+.workspace-trail a {
+  color: inherit;
+  text-decoration: none;
+}
+.workspace-trail a:hover {
+  color: var(--primary);
+}
+.workspace-trail [aria-current="page"] {
+  color: #475569;
+  font-weight: 600;
+}
+.workspace-trail span > span[aria-hidden] {
+  opacity: 0.5;
+}
+.workspace-date {
+  color: var(--muted);
+  font-weight: 500;
+}
+
+/* Page body */
+.workspace-theme .workspace {
+  max-width: calc(var(--ds-width) + 2 * var(--ds-gutter));
+  padding: 1.5rem var(--ds-gutter) 3rem;
+}
+.workspace-theme .surface {
+  border: 0;
+  border-radius: 0.5rem;
+  box-shadow: var(--ds-shadow);
+}
+.workspace-theme .section-head h2 {
+  font-size: 1.1rem;
+}
+.workspace-theme .tabs {
+  border-bottom-color: #dfe5ea;
+}
+.workspace-theme .tabs button {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.workspace-theme .tabs button:hover {
+  background: transparent;
+  color: var(--ink);
+}
+.workspace-theme .tabs button[aria-current] {
+  color: var(--primary);
+}
+
+/* Controls */
+.workspace-theme button {
+  border-color: var(--line);
+  border-radius: 0.375rem;
+  font-weight: 700;
+}
+.workspace-theme button:hover {
+  background: var(--ds-soft);
+}
+.workspace-theme button.primary {
+  border-color: var(--primary);
+  background: var(--primary);
+  color: #fff;
+  font-size: 0.8rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  box-shadow: 0 10px 15px -3px
+    color-mix(in srgb, var(--primary) 25%, transparent);
+}
+.workspace-theme button.primary:hover {
+  background: var(--primary-hover);
+}
+.workspace-theme label {
+  color: #475569;
+  font-weight: 600;
+}
+.workspace-theme input:not([type="checkbox"], [type="radio"]),
+.workspace-theme select,
+.workspace-theme textarea {
+  background-color: var(--ds-soft);
+}
+.workspace-theme input:not([type="checkbox"], [type="radio"]):focus,
+.workspace-theme select:focus,
+.workspace-theme textarea:focus {
+  border-color: var(--primary);
+  background-color: #fff;
+}
+.workspace-theme .report-table th {
+  color: var(--ds-faint);
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.workspace-theme .metric h2 {
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+/* Summary cards (beend.tech menu cards) */
+.metric-card {
+  --tone: var(--tone-neutral);
+  display: grid;
+  align-content: space-between;
+  gap: 0.4rem;
+  min-height: 8rem;
+  padding: 1.25rem;
+  border-bottom: 0 solid var(--tone);
+  border-radius: 0.5rem;
+  background: #fff;
+  box-shadow: var(--ds-shadow);
+  transition:
+    transform 0.12s ease,
+    border-bottom-width 0.12s ease;
+}
+.metric-card:hover {
+  transform: translateY(-4px);
+  border-bottom-width: 5px;
+}
+.metric-card.promoter {
+  --tone: var(--tone-promoter);
+}
+.metric-card.passive {
+  --tone: var(--tone-passive);
+}
+.metric-card.detractor {
+  --tone: var(--tone-detractor);
+}
+.metric-label {
+  color: var(--tone);
+  font-size: 0.85rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.metric-value {
+  color: var(--ink);
+  font-size: 2.25rem;
+  font-weight: 800;
+  line-height: 1;
+}
+.metric-note {
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+/* Footer */
+.app-footer {
+  display: grid;
+  gap: 0.25rem;
+  justify-items: center;
+  width: 100%;
+  max-width: calc(var(--ds-width) + 2 * var(--ds-gutter));
+  margin: 0 auto;
+  padding: 1.5rem var(--ds-gutter) 2rem;
+  border-top: 1px solid #dfe5ea;
+  color: var(--ds-faint);
+  font-size: 0.9rem;
+  text-align: center;
+}
+.app-footer p {
+  color: inherit;
+}
+.app-footer-title {
+  font-weight: 600;
+}
+.app-footer a {
+  color: #475569;
+  text-decoration: none;
+}
+.app-footer a:hover {
+  color: var(--primary);
+}
+.app-footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.3rem 1rem;
+  margin-top: 0.5rem;
+  font-size: 0.8rem;
+}
+
+/* Satisfaction survey */
+.nps {
+  position: fixed;
+  right: 1.5rem;
+  bottom: 1.5rem;
+  z-index: 50;
+  display: grid;
+  justify-items: end;
+  gap: 1rem;
+}
+.workspace-theme .nps-toggle {
+  position: relative;
+  width: 3.5rem;
+  height: 3.5rem;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: #000;
+  color: #fff;
+  box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.2);
+}
+.workspace-theme .nps-toggle:hover {
+  background: #1e293b;
+}
+.nps-toggle .ui-icon {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+.nps-dot {
+  position: absolute;
+  top: 0.85rem;
+  right: 0.8rem;
+  width: 0.7rem;
+  height: 0.7rem;
+  border: 2px solid #000;
+  border-radius: 50%;
+  background: #0b82ff;
+  animation: nps-pulse 1.6s ease-in-out infinite;
+}
+@keyframes nps-pulse {
+  50% {
+    opacity: 0.45;
+  }
+}
+.nps-card {
+  width: min(25rem, calc(100vw - 3rem));
+  overflow: hidden;
+  border: 1px solid #f1f5f9;
+  border-radius: 1rem;
+  background: #fff;
+  box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+}
+.nps-head {
+  padding: 1.5rem;
+  border-bottom: 1px solid #f1f5f9;
+  background: #f8fafc80;
+}
+.nps-eyebrow {
+  margin-bottom: 0.3rem;
+  color: #0b82ff;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+.nps-head h2 {
+  font-size: 1rem;
+  font-weight: 800;
+  line-height: 1.3;
+}
+.nps-brand {
+  color: #000;
+  text-transform: lowercase;
+}
+.nps-body {
+  display: grid;
+  gap: 1.1rem;
+  padding: 1.5rem;
+}
+.nps-scale {
+  display: grid;
+  grid-template-columns: repeat(11, minmax(0, 1fr));
+  gap: 0.3rem;
+}
+.workspace-theme .nps-score {
+  --tone: var(--tone-detractor);
+  height: 2.5rem;
+  padding: 0;
+  border: 1px solid #f1f5f9;
+  border-radius: 0.375rem;
+  background: #fff;
+  color: var(--tone);
+  font-size: 0.8rem;
+  font-weight: 900;
+}
+.workspace-theme .nps-score.passive {
+  --tone: var(--tone-passive);
+}
+.workspace-theme .nps-score.promoter {
+  --tone: var(--tone-promoter);
+}
+.workspace-theme .nps-score:hover {
+  border-color: color-mix(in srgb, var(--tone) 35%, white);
+  background: color-mix(in srgb, var(--tone) 8%, white);
+}
+.workspace-theme .nps-score[aria-pressed="true"] {
+  border-color: var(--tone);
+  background: var(--tone);
+  color: #fff;
+  box-shadow: 0 10px 15px -3px color-mix(in srgb, var(--tone) 25%, transparent);
+}
+.nps-legend {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0 0.25rem;
+  color: #94a3b8;
+  font-size: 0.6rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.nps-comment {
+  font-size: 0.7rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.nps-comment textarea {
+  min-height: 6rem;
+  border-radius: 0.75rem;
+  font-size: 0.9rem;
+  letter-spacing: normal;
+  text-transform: none;
+  resize: none;
+}
+.workspace-theme .nps-send {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  width: 100%;
+  padding: 1rem;
+  border: 0;
+  border-radius: 0.75rem;
+  background: #000;
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.workspace-theme .nps-send:hover {
+  background: #1e293b;
+}
+.workspace-theme .nps-send:disabled {
+  background: #f1f5f9;
+  color: #a7b3c4;
+  cursor: not-allowed;
+  opacity: 1;
+}
+.nps-thanks {
+  display: grid;
+  justify-items: center;
+  gap: 0.7rem;
+  padding: 2rem;
+  text-align: center;
+}
+.nps-thanks-icon {
+  display: grid;
+  place-items: center;
+  width: 4rem;
+  height: 4rem;
+  border-radius: 50%;
+  background: #f0fdf4;
+  color: var(--tone-promoter);
+}
+.nps-thanks-icon .ui-icon {
+  width: 2rem;
+  height: 2rem;
+}
+.nps-thanks h2 {
+  font-size: 1.05rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+/* Satisfaction results */
+.nps-overview {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 10.5rem), 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+.nps-score-card .metric-value {
+  color: var(--tone);
+}
+.nps-badge {
+  --tone: var(--tone-detractor);
+  display: inline-grid;
+  place-items: center;
+  min-width: 2rem;
+  padding: 0.2rem 0.45rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--tone) 12%, white);
+  color: var(--tone);
+  font-weight: 800;
+}
+.nps-badge.passive {
+  --tone: var(--tone-passive);
+}
+.nps-badge.promoter {
+  --tone: var(--tone-promoter);
+}
+@media (max-width: 720px) {
+  .nps {
+    right: 1rem;
+    bottom: 1rem;
+  }
+  .workspace-theme .nps-score {
+    height: 2.1rem;
+    font-size: 0.72rem;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .nps-dot {
+    animation: none;
+  }
+  .metric-card {
+    transition: none;
+  }
+  .metric-card:hover {
+    transform: none;
+  }
+}

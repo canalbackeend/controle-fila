@@ -26,7 +26,10 @@ test("administrators browse and search the help center", async ({
   unit,
 }) => {
   await unit.login(page);
-  await page.getByRole("link", { name: "Ajuda", exact: true }).click();
+  await page
+    .getByRole("navigation", { name: "Navegação principal" })
+    .getByRole("link", { name: "Ajuda", exact: true })
+    .click();
   const article = page.getByRole("article");
   await expect(
     article.getByRole("heading", { name: "Primeiros passos" }),
@@ -50,7 +53,10 @@ test("attendants see only the guides for their work", async ({
   unit,
 }) => {
   await unit.login(page, "staff@test.local");
-  await page.getByRole("link", { name: "Ajuda", exact: true }).click();
+  await page
+    .getByRole("navigation", { name: "Navegação principal" })
+    .getByRole("link", { name: "Ajuda", exact: true })
+    .click();
   const index = page.getByRole("navigation", { name: "Artigos da ajuda" });
   await expect(
     index.getByRole("link", { name: "Atender a fila" }),

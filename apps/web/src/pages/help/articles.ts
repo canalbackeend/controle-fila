@@ -317,6 +317,7 @@ export const helpArticles: HelpArticle[] = [
           "No primeiro acesso, o sistema pede para trocar a senha inicial.",
           "Atendentes podem escolher uma paleta de cores pessoal ou seguir as cores da empresa.",
           "A sessão expira depois de 8 horas. Use Sair ao terminar, principalmente em computadores compartilhados.",
+          "Pesquisa de satisfação: a cada 30 dias, o botão preto no canto inferior direito convida você a dar uma nota de 0 a 10 para a beend.tech. A resposta é opcional e vai só para a equipe da Beend.",
         ],
       },
       {
@@ -350,6 +351,7 @@ export const helpArticles: HelpArticle[] = [
           "Reativar: libera tudo de novo. Dispositivos pareados reconectam sozinhos.",
           "Gerar senha provisória: invalida a senha do administrador e exige troca no primeiro acesso.",
           "Clientes: lista totens e TVs de todas as empresas, com o último contato.",
+          "Satisfação: mostra o NPS (porcentagem de promotores menos a de detratores), as notas e os comentários de administradores e atendentes dos clientes, por período. Os nomes e e-mails de quem respondeu não aparecem.",
         ],
       },
     ],

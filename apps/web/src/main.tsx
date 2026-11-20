@@ -4,6 +4,7 @@ import { BrowserRouter } from "react-router-dom";
 import { App } from "./App";
 import { installChunkRecovery } from "./chunk-recovery";
 import { ErrorScreen } from "./components/ErrorScreen";
+import "@fontsource-variable/inter";
 import "./styles.css";
 
 installChunkRecovery();
