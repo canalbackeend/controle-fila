@@ -16,7 +16,7 @@ test("an attendant can open both unit devices from their profile", async ({
     }),
   );
   await unit.login(page, "staff@test.local");
-  await page.getByRole("link", { name: "Meu perfil", exact: true }).click();
+  await page.getByRole("link", { name: "Perfil", exact: true }).click();
   for (const { route, device } of devices) {
     const link = page.getByRole("link", { name: device.name, exact: true });
     await expect(link).toHaveAttribute("href", `/${route}/${device.id}`);

@@ -7,6 +7,7 @@ test("shows notices, tips, headlines and weather according to panel weights", as
   page,
   unit,
 }) => {
+  test.setTimeout(60000);
   const city = `Cidade ${unit.slug}`;
   const states = ["SP", "MG"] as const;
   const cacheKeys = states.map((state) => weatherCacheKey({ city, state }));
@@ -104,16 +105,58 @@ test("shows notices, tips, headlines and weather according to panel weights", as
       await admin.getByLabel("Notícias", { exact: true }).fill("0");
       await admin.getByRole("button", { name: "Salvar painel" }).click();
       await expect(admin.getByText("Configuração salva.")).toBeVisible();
+      await expect(
+        page.getByRole("heading", { name: `${city}, MG` }),
+      ).toBeVisible();
+      await expect(page.locator(".tv-temperature")).toContainText("31°C");
+      await expect(page.locator(".tv-temperature")).toContainText(
+        "Fonte simulada",
+      );
+
+      const news = admin.getByRole("group", { name: "Notícias da TV" });
+      const health = news.getByRole("button", { name: "Saúde e bem-estar" });
+      await health.click();
+      await expect(health).toHaveAttribute("aria-pressed", "true");
+      await expect(news.getByRole("status")).toHaveText(
+        "Perfil de notícias aplicado.",
+      );
+      await expect(admin.getByLabel("Notícias", { exact: true })).toHaveValue(
+        "30",
+      );
+      await expect(
+        weather.getByRole("combobox", { name: /^Estado/ }),
+      ).toHaveValue("MG");
+      await news.getByText("Configuração manual", { exact: true }).click();
+      await news.getByLabel("Saúde e bem-estar", { exact: true }).uncheck();
+      await news.getByLabel("Cidadania e serviços", { exact: true }).uncheck();
+      await news.getByRole("button", { name: "Salvar notícias" }).click();
+      await expect(news.getByRole("status")).toHaveText(
+        "Preferências de notícias salvas.",
+      );
+      await admin.getByRole("button", { name: "Salvar painel" }).click();
+      await expect(admin.getByText("Configuração salva.")).toBeVisible();
+      const config = await unit.request.get(`/api/admin/panels/${device.id}`);
+      expect((await config.json()).config).toMatchObject({
+        newsMode: "CUSTOM",
+        newsCategories: [],
+        state: "MG",
+      });
+      await news
+        .getByRole("link", { name: "Cadastrar notícia própria" })
+        .click();
+      await admin.getByRole("button", { name: "Adicionar conteúdo" }).click();
+      await admin.getByRole("combobox", { name: /^Tipo/ }).selectOption("NEWS");
+      await admin
+        .getByLabel("Título", { exact: true })
+        .fill("Notícia própria da unidade");
+      await admin.getByRole("button", { name: "Salvar conteúdo" }).click();
+      await expect(admin.getByText("Conteúdo salvo.")).toBeVisible();
+      await expect(
+        page.getByRole("heading", { name: "Notícia própria da unidade" }),
+      ).toBeVisible({ timeout: 40000 });
     } finally {
       await admin.close();
     }
-    await expect(
-      page.getByRole("heading", { name: `${city}, MG` }),
-    ).toBeVisible();
-    await expect(page.locator(".tv-temperature")).toContainText("31°C");
-    await expect(page.locator(".tv-temperature")).toContainText(
-      "Fonte simulada",
-    );
     await expect(
       page.getByText("Atendimento por ordem de chamada").first(),
     ).toBeVisible();

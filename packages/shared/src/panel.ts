@@ -50,6 +50,7 @@ export type PanelSettings = WeatherLocation & {
   serviceIds: string[];
   weights: Record<ContentType, number>;
   cardSeconds: number;
+  newsMode: "AUTO" | "CUSTOM";
   newsCategories: string[];
   callDisplaySeconds: number;
   ticker: string;
@@ -69,6 +70,7 @@ export const defaultPanelSettings: PanelSettings = {
   serviceIds: [],
   weights: { NOTICE: 50, NEWS: 30, WEATHER: 20, TIP: 20 },
   cardSeconds: 10,
+  newsMode: "AUTO",
   newsCategories: [],
   city: "São Paulo",
   state: "SP",
@@ -82,6 +84,40 @@ import { idSchema, nameSchema } from "./admin.js";
 export const contentTypes = ["NOTICE", "NEWS", "WEATHER", "TIP"] as const;
 const weight = z.coerce.number().int().min(0).max(100);
 export const categorySchema = z.string().trim().toLowerCase().min(1).max(60);
+export const newsTopics = {
+  saude: "Saúde e bem-estar",
+  economia: "Economia e trabalho",
+  educacao: "Educação e cultura",
+  tecnologia: "Ciência e tecnologia",
+  esportes: "Esportes e lazer",
+  ambiente: "Meio ambiente",
+  servicos: "Cidadania e serviços",
+} as const;
+export const newsPresets = {
+  geral: { label: "Geral", categories: [] },
+  saude: { label: "Saúde e bem-estar", categories: ["saude", "servicos"] },
+  negocios: {
+    label: "Negócios e trabalho",
+    categories: ["economia", "tecnologia"],
+  },
+  educacao: {
+    label: "Educação e cultura",
+    categories: ["educacao", "tecnologia"],
+  },
+  esportes: { label: "Esportes e lazer", categories: ["esportes"] },
+} satisfies Record<string, { label: string; categories: string[] }>;
+const newsCategories = z
+  .array(categorySchema)
+  .max(30)
+  .transform((categories) => [...new Set(categories)]);
+export const panelNewsInput = z.discriminatedUnion("mode", [
+  z.object({
+    mode: z.literal("AUTO"),
+    preset: z.enum(Object.keys(newsPresets) as (keyof typeof newsPresets)[]),
+  }),
+  z.object({ mode: z.literal("CUSTOM"), categories: newsCategories }),
+]);
+export type PanelNewsSelection = z.output<typeof panelNewsInput>;
 export const weatherStateSchema = z.enum(
   Object.keys(brazilianStates) as BrazilianState[],
 );
@@ -97,10 +133,7 @@ export const panelInput = z.object({
     TIP: weight,
   }),
   cardSeconds: z.coerce.number().int().min(5).max(30),
-  newsCategories: z
-    .array(categorySchema)
-    .max(30)
-    .transform((categories) => [...new Set(categories)]),
+  newsCategories: newsCategories.optional(),
   city: nameSchema,
   state: weatherStateSchema.nullable().default(null),
   callDisplaySeconds: z.coerce.number().int().min(2).max(30),
@@ -111,7 +144,7 @@ export const assetUrlSchema = z
   .regex(/^\/api\/assets\/[a-f0-9]{64}\.(?:webp|png)$/);
 export const cardInput = z
   .object({
-    type: z.enum(["NOTICE", "TIP"]),
+    type: z.enum(["NOTICE", "TIP", "NEWS"]),
     title: z.string().trim().min(1).max(130),
     text: z.string().trim().max(300),
     imageUrl: assetUrlSchema.nullable().default(null),

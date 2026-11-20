@@ -70,6 +70,11 @@ function Workspace({
           <BrandLogo />
         </Link>
         <nav aria-label="Navegação principal">
+          {!actor.mustChangePassword && (
+            <NavLink to="/atendente">
+              <Icon name="headset" /> Atendimento
+            </NavLink>
+          )}
           {!actor.mustChangePassword && actor.role === "SUPERADMIN" && (
             <>
               <NavLink to="/plataforma/empresas">
@@ -77,7 +82,7 @@ function Workspace({
               </NavLink>
               <NavLink to="/plataforma/dispositivos">
                 <Icon name="devices" />
-                Dispositivos dos clientes
+                Clientes
               </NavLink>
             </>
           )}
@@ -85,9 +90,7 @@ function Workspace({
             <>
               <NavLink to="/admin" end>
                 <Icon name="dashboard" />
-                {actor.role === "SUPERADMIN"
-                  ? "Operação Beend"
-                  : "Administração"}
+                {actor.role === "SUPERADMIN" ? "Operações" : "Administração"}
               </NavLink>
               <NavLink to="/admin/dispositivos">
                 <Icon name="devices" /> Dispositivos
@@ -103,14 +106,9 @@ function Workspace({
               </NavLink>
             </>
           )}
-          {!actor.mustChangePassword && (
-            <NavLink to="/atendente">
-              <Icon name="headset" /> Atendimento
-            </NavLink>
-          )}
           <NavLink to="/perfil" title={actor.name}>
             <Icon name="user" />
-            Meu perfil
+            Perfil
           </NavLink>
           <button onClick={() => void logout()}>
             <Icon name="logout" /> Sair

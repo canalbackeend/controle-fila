@@ -924,6 +924,22 @@ fieldset legend {
 fieldset .form-grid {
   margin-top: 0.7rem;
 }
+.news-settings {
+  display: grid;
+  gap: 0.75rem;
+}
+.news-settings details {
+  border-radius: 0.65rem;
+  border: 1px solid var(--line);
+  padding: 0.65rem 0.9rem;
+}
+.news-settings summary {
+  font-weight: 650;
+  cursor: pointer;
+}
+.news-settings details > :not(summary) {
+  margin-top: 0.7rem;
+}
 .tv-weather {
   display: grid;
   gap: 1.5vh;

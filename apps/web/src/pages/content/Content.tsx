@@ -9,7 +9,11 @@ import {
 import { api, message } from "../../api";
 
 type ContentData = { logoUrl: string | null; cards: ManagedCard[] };
-const labels = { TIP: "Curiosidade / dica", NOTICE: "Aviso / anúncio" };
+const labels = {
+  TIP: "Curiosidade / dica",
+  NOTICE: "Aviso / anúncio",
+  NEWS: "Notícia personalizada",
+};
 
 async function upload(file: FormDataEntryValue | null, format?: "png") {
   if (!(file instanceof File) || !file.size) return undefined;
@@ -115,7 +119,10 @@ export function Content({ actor }: { actor: Actor }) {
       <div className="page-title">
         <div>
           <h1>Conteúdo do painel</h1>
-          <p>Gerencie avisos, dicas e o logotipo exibidos na TV.</p>
+          <p>
+            Gerencie avisos, dicas, notícias próprias e o logotipo exibidos na
+            TV.
+          </p>
         </div>
       </div>
       {error && (
@@ -173,7 +180,7 @@ export function Content({ actor }: { actor: Actor }) {
       </section>
       <section className="surface">
         <div className="section-head">
-          <h2>Avisos e dicas</h2>
+          <h2>Avisos, dicas e notícias</h2>
           <button className="primary" onClick={() => setEditor("new")}>
             <Icon name="plus" /> Adicionar conteúdo
           </button>
@@ -189,6 +196,7 @@ export function Content({ actor }: { actor: Actor }) {
               <label>
                 Tipo
                 <select name="type" defaultValue={card?.type ?? "NOTICE"}>
+                  {!card?.global && <option value="NEWS">{labels.NEWS}</option>}
                   <option value="NOTICE">{labels.NOTICE}</option>
                   <option value="TIP">{labels.TIP}</option>
                 </select>

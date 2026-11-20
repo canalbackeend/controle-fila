@@ -54,6 +54,7 @@ enum DeviceType {
 enum CardType {
   TIP
   NOTICE
+  NEWS
 }
 
 model Tenant {
@@ -235,6 +236,7 @@ model PanelConfig {
   serviceIds         String[] @default([])
   weights            Json     @default("{\"NOTICE\":50,\"NEWS\":30,\"WEATHER\":20,\"TIP\":20}")
   cardSeconds        Int      @default(10)
+  newsMode           String   @default("AUTO")
   newsCategories     String[] @default([])
   city               String   @default("São Paulo")
   state              String?

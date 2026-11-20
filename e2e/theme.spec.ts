@@ -47,7 +47,7 @@ test("applies the company theme to existing devices, tracking, sign-in and staff
     await expect(deskAccent).toHaveCSS("border-inline-start-color", "rgb(33, 79, 181)");
     await expect(tvAccent).toHaveCSS("border-bottom-color", "rgb(33, 79, 181)");
     await unit.login(page);
-    await page.getByRole("link", { name: "Meu perfil", exact: true }).click();
+    await page.getByRole("link", { name: "Perfil", exact: true }).click();
     await page.getByRole("radio", { name: "Vermelho", exact: true }).check();
     await page.getByRole("button", { name: "Salvar tema" }).click();
     await expect(page.getByText("Tema da empresa salvo.")).toBeVisible();
@@ -97,14 +97,14 @@ test("applies the company theme to existing devices, tracking, sign-in and staff
     const signIn = await devices.newPage();
     await signIn.goto(`/entrar?empresa=${unit.slug}`);
     await theme(signIn, ".login", "#7B285A");
-    await page.getByRole("link", { name: "Meu perfil", exact: true }).click();
+    await page.getByRole("link", { name: "Perfil", exact: true }).click();
     await page
       .getByLabel("Nome", { exact: true })
       .fill("Administrador de teste");
     await page.getByRole("button", { name: "Salvar perfil" }).click();
     await expect(page.getByText("Perfil salvo.")).toBeVisible();
     await expect(
-      page.getByRole("link", { name: "Meu perfil", exact: true }),
+      page.getByRole("link", { name: "Perfil", exact: true }),
     ).toHaveAttribute("title", "Administrador de teste");
   } finally {
     await devices.close();
@@ -117,7 +117,7 @@ test("an attendant can use a personal theme and return to the company palette", 
   unit,
 }) => {
   await unit.login(page, "staff@test.local");
-  await page.getByRole("link", { name: "Meu perfil", exact: true }).click();
+  await page.getByRole("link", { name: "Perfil", exact: true }).click();
   await expect(
     page.getByRole("radio", { name: "Usar tema da empresa" }),
   ).toBeChecked();
@@ -138,7 +138,7 @@ test("an attendant can use a personal theme and return to the company palette", 
     theme: { preset: "blue" },
     personalTheme: null,
   });
-  await page.getByRole("link", { name: "Meu perfil", exact: true }).click();
+  await page.getByRole("link", { name: "Perfil", exact: true }).click();
   await page.getByRole("radio", { name: "Usar tema da empresa" }).check();
   await page.getByRole("button", { name: "Salvar tema" }).click();
   await expect(appearance).toHaveCSS("--theme-color", "#214FB5");

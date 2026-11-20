@@ -20,6 +20,7 @@ export function settingsFor(saved: PanelConfig | null): PanelSettings {
     },
     city: saved.city,
     state: weatherStateSchema.safeParse(saved.state).data ?? null,
+    newsMode: saved.newsMode === "CUSTOM" ? "CUSTOM" : "AUTO",
     newsCategories: saved.newsCategories,
     cardSeconds: saved.cardSeconds,
     callDisplaySeconds: saved.callDisplaySeconds,
@@ -53,7 +54,8 @@ export async function panelContent(tenantId: string, config: PanelSettings) {
       orderBy: { id: "desc" },
       take: 40,
     }),
-    config.weights.NEWS > 0
+    config.weights.NEWS > 0 &&
+    (config.newsMode === "AUTO" || config.newsCategories.length > 0)
       ? prisma.newsItem.findMany({
           where: {
             feed: { active: true, global: true },
@@ -83,6 +85,7 @@ export async function panelContent(tenantId: string, config: PanelSettings) {
       title,
       text,
       imageUrl: imageUrl ?? undefined,
+      source: type === "NEWS" ? "Notícias da unidade" : undefined,
     })),
     ...news
       .filter(

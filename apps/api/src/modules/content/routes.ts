@@ -3,13 +3,17 @@ import { refreshWeather } from "./weather-cache.js";
 import {
   assetUrlSchema,
   cardInput,
+  defaultPanelSettings,
   idParams,
   idSchema,
+  newsPresets,
+  newsTopics,
   panelInput,
+  panelNewsInput,
   type PanelEditorData,
 } from "@beend/shared";
 import { z } from "zod";
-import { prisma, tenantDb } from "../../db.js";
+import { prisma, tenantDb, tenantTransaction } from "../../db.js";
 import { HttpError, missing } from "../../errors.js";
 import { deviceRoom, type Realtime } from "../../realtime.js";
 import { requireActor } from "../auth/service.js";
@@ -65,6 +69,7 @@ export function contentRoutes(app: FastifyInstance, realtime: Realtime) {
       : await tenantDb(actor.tenantId).card.create({
           data: { ...data, tenantId: actor.tenantId },
         });
+    if (!global) realtime.publishContent(actor.tenantId);
     return reply.code(201).send(managed(card));
   });
   app.put("/admin/cards/:id", async (request) => {
@@ -84,6 +89,7 @@ export function contentRoutes(app: FastifyInstance, realtime: Realtime) {
     const card = global
       ? await prisma.card.update({ where: { id, tenantId: null }, data })
       : await tenantDb(actor.tenantId).card.update({ where: { id }, data });
+    if (!global) realtime.publishContent(actor.tenantId);
     return managed(card);
   });
   app.delete("/admin/cards/:id", async (request, reply) => {
@@ -98,6 +104,7 @@ export function contentRoutes(app: FastifyInstance, realtime: Realtime) {
       await prisma.card.delete({ where: { id, tenantId: null } });
     } else {
       await tenantDb(actor.tenantId).card.delete({ where: { id } });
+      realtime.publishContent(actor.tenantId);
     }
     return reply.code(204).send();
   });
@@ -127,13 +134,65 @@ export function contentRoutes(app: FastifyInstance, realtime: Realtime) {
       name: panel.name,
       config: settingsFor(panel.config),
       services,
-      categories: feeds.map(({ category }) => category),
+      categories: [
+        ...new Set([
+          ...Object.keys(newsTopics),
+          ...feeds.map(({ category }) => category),
+        ]),
+      ],
     };
+  });
+  app.patch("/admin/panels/:id/news", async (request) => {
+    const actor = await requireActor(request, ["ADMIN", "SUPERADMIN"]);
+    const { id } = idParams.parse(request.params);
+    const input = panelNewsInput.parse(request.body);
+    const news = {
+      newsMode: input.mode,
+      newsCategories:
+        input.mode === "AUTO"
+          ? newsPresets[input.preset].categories
+          : input.categories,
+    };
+    const saved = await tenantTransaction(actor.tenantId, async (db) => {
+      const panel = await db.device.findFirst({
+        where: { id, unitId: actor.unitId, type: "PANEL" },
+      });
+      if (!panel) missing("Painel indisponível.");
+      const config = await db.panelConfig.upsert({
+        where: { deviceId: id },
+        create: {
+          ...news,
+          tenantId: actor.tenantId,
+          deviceId: id,
+          state: defaultPanelSettings.state,
+        },
+        update: news,
+      });
+      const settings = settingsFor(config);
+      if (settings.weights.NEWS > 0) return settings;
+      return settingsFor(
+        await db.panelConfig.update({
+          where: { deviceId: id },
+          data: {
+            weights: {
+              ...settings.weights,
+              NEWS: defaultPanelSettings.weights.NEWS,
+            },
+          },
+        }),
+      );
+    });
+    realtime.io.to(deviceRoom(id)).emit("panel.config");
+    return saved;
   });
   app.put("/admin/panels/:id", async (request, reply) => {
     const actor = await requireActor(request, ["ADMIN", "SUPERADMIN"]);
     const { id } = idParams.parse(request.params);
-    const config = panelInput.parse(request.body);
+    const { newsCategories, ...settings } = panelInput.parse(request.body);
+    const config = {
+      ...settings,
+      ...(newsCategories && { newsCategories, newsMode: "AUTO" }),
+    };
     const db = tenantDb(actor.tenantId);
     const [panel, count] = await Promise.all([
       db.device.findFirst({

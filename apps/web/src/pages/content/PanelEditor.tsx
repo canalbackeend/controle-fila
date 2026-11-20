@@ -1,12 +1,14 @@
 import { Icon } from "../../components/Icon";
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useState, type ChangeEvent, type FormEvent } from "react";
 import { Link, useParams } from "react-router-dom";
 import {
   brazilianStates,
   contentTypes,
   type PanelEditorData,
+  type PanelSettings,
 } from "@beend/shared";
 import { api, message } from "../../api";
+import { NewsSettings } from "./NewsSettings";
 
 const labels = {
   NOTICE: "Avisos",
@@ -20,6 +22,8 @@ export function PanelEditor() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [savingNews, setSavingNews] = useState(false);
+  const [newsWeight, setNewsWeight] = useState<string>();
   useEffect(() => {
     void api<PanelEditorData>(`/admin/panels/${id}`).then(setData, (error) =>
       setError(message(error)),
@@ -28,6 +32,7 @@ export function PanelEditor() {
 
   async function save(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (busy || savingNews) return;
     const form = new FormData(event.currentTarget);
     setBusy(true);
     setError("");
@@ -35,7 +40,6 @@ export function PanelEditor() {
     try {
       await api(`/admin/panels/${id}`, "PUT", {
         serviceIds: form.getAll("serviceId"),
-        newsCategories: form.getAll("category"),
         weights: Object.fromEntries(
           contentTypes.map((type) => [type, form.get(type)]),
         ),
@@ -51,6 +55,11 @@ export function PanelEditor() {
     } finally {
       setBusy(false);
     }
+  }
+
+  function updateNews(config: PanelSettings) {
+    setData((previous) => previous && { ...previous, config });
+    setNewsWeight(String(config.weights.NEWS));
   }
 
   return (
@@ -119,6 +128,14 @@ export function PanelEditor() {
                 </label>
               </div>
             </fieldset>
+            <NewsSettings
+              key={id}
+              panelId={id}
+              data={data}
+              busy={busy || savingNews}
+              onSaving={setSavingNews}
+              onSaved={updateNews}
+            />
             <fieldset>
               <legend>Serviços exibidos</legend>
               <p>Nenhum selecionado exibe todos os serviços.</p>
@@ -151,31 +168,18 @@ export function PanelEditor() {
                         min={0}
                         max={100}
                         required
-                        defaultValue={data.config.weights[type]}
+                        {...(type === "NEWS"
+                          ? {
+                              value:
+                                newsWeight ?? String(data.config.weights.NEWS),
+                              onChange: (
+                                event: ChangeEvent<HTMLInputElement>,
+                              ) => setNewsWeight(event.target.value),
+                            }
+                          : { defaultValue: data.config.weights[type] })}
                       />
                     </label>
                   ))}
-              </div>
-            </fieldset>
-            <fieldset>
-              <legend>Categorias de notícias</legend>
-              <p>
-                Sem seleção, categorias de política e polícia ficam ocultas.
-              </p>
-              <div className="check-grid">
-                {data.categories.map((category) => (
-                  <label key={category} className="checkbox">
-                    <input
-                      name="category"
-                      value={category}
-                      type="checkbox"
-                      defaultChecked={data.config.newsCategories.includes(
-                        category,
-                      )}
-                    />
-                    {category}
-                  </label>
-                ))}
               </div>
             </fieldset>
             <div className="form-grid">
@@ -212,7 +216,7 @@ export function PanelEditor() {
               />
             </label>
             <div>
-              <button className="primary" disabled={busy}>
+              <button className="primary" disabled={busy || savingNews}>
                 <Icon name="check" /> Salvar painel
               </button>
             </div>

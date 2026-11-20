@@ -35,6 +35,12 @@ Configure `WEATHER_PROVIDER=weatherapi` e `WEATHER_API_KEY` nas variáveis de am
 
 Em **Dispositivos**, clique em **Configurar TV e clima** na linha da TV. Na seção **Previsão do tempo**, informe a cidade, selecione o estado e defina o **Peso do clima** acima de zero. Clique em **Salvar painel**. O servidor compartilha o cache entre painéis da mesma localização e atualiza os dados a cada 30 minutos. As configurações antigas mantêm a cidade salva até que um estado seja selecionado.
 
+## Notícias da TV
+
+Em **Dispositivos**, abra **Configurar TV e clima**. Na seção **Notícias da TV**, clique em um perfil para aplicá-lo imediatamente. Em **Configuração manual**, marque os temas desejados e clique em **Salvar notícias**. Deixe os temas desmarcados para exibir apenas as notícias cadastradas pela própria empresa em **Conteúdo → Adicionar conteúdo → Notícia personalizada**.
+
+O servidor atualiza as manchetes a cada 15 minutos. As fontes incluídas são a [Agência Câmara](https://infograficos.camara.leg.br/manual-de-comunicacao/agencia-camara/) e a [Agência Senado](https://www12.senado.leg.br/assessoria-de-imprensa/noticias/politica-de-uso). O aplicativo agrupa as manchetes institucionais por tema e exibe o crédito sem importar fotos dessas fontes. Use `RSS_FEEDS` para acrescentar fontes licenciadas.
+
 ## Backup e restauração
 
 O serviço `backup` grava um dump PostgreSQL e um arquivo de imagens na inicialização e a cada 24 horas. Por padrão, a retenção local é de 14 dias. Configure `BACKUP_INTERVAL_SECONDS` e `BACKUP_RETENTION_DAYS` conforme a operação.

@@ -35,6 +35,18 @@ test("the Beend operator provisions a client who activates and operates within i
     await page.getByRole("button", { name: "Entrar", exact: true }).click();
     await page.waitForURL("**/plataforma/empresas");
     const companies = page.getByRole("link", { name: "Empresas", exact: true });
+    const navigation = page.getByRole("navigation", {
+      name: "Navegação principal",
+    });
+    await expect(navigation.getByRole("link").first()).toHaveText(
+      "Atendimento",
+    );
+    await expect(
+      navigation.getByRole("link", { name: "Operações", exact: true }),
+    ).toBeVisible();
+    await expect(
+      navigation.getByRole("link", { name: "Perfil", exact: true }),
+    ).toBeVisible();
     await expect(companies).toHaveAttribute("aria-current", "page");
     await expect(companies.locator("svg")).toHaveAttribute(
       "aria-hidden",
@@ -74,6 +86,19 @@ test("the Beend operator provisions a client who activates and operates within i
       .fill(customerPassword);
     await customer.getByRole("button", { name: "Salvar perfil" }).click();
     await expect(customer.getByText("Perfil salvo.")).toBeVisible();
+    const operatorTV = await page.request.post("/api/admin/devices", {
+      data: { name: "TV da operação", type: "PANEL" },
+    });
+    expect(operatorTV.ok(), await operatorTV.text()).toBeTruthy();
+    const { device } = await operatorTV.json();
+    const newsPath = `/api/admin/panels/${device.id}/news`;
+    const preset = { mode: "AUTO", preset: "saude" };
+    expect(
+      (await customer.request.patch(newsPath, { data: preset })).status(),
+    ).toBe(404);
+    expect(
+      (await page.request.patch(newsPath, { data: preset })).ok(),
+    ).toBeTruthy();
     await expect(
       customer.getByRole("link", { name: "Empresas", exact: true }),
     ).toHaveCount(0);
@@ -141,7 +166,7 @@ test("the Beend operator provisions a client who activates and operates within i
       accessList.getByLabel("Endereço de login da empresa"),
     ).toHaveValue(new URL(`/entrar?empresa=${customerSlug}`, baseURL).href);
     await expect(accessList.getByText(secret!)).toHaveCount(0);
-    await page.getByRole("link", { name: "Dispositivos dos clientes" }).click();
+    await page.getByRole("link", { name: "Clientes", exact: true }).click();
     await page.getByLabel("Buscar dispositivo ou empresa").fill(customerSlug);
     const monitored = page
       .getByRole("listitem")
@@ -177,6 +202,8 @@ test("the Beend operator provisions a client who activates and operates within i
       await db.counter.deleteMany({});
       await db.tenant.delete({ where: { id: client.id } });
     }
-    await tenantDb(operator.id).tenant.delete({ where: { id: operator.id } });
+    const operatorDb = tenantDb(operator.id);
+    await operatorDb.device.deleteMany({});
+    await operatorDb.tenant.delete({ where: { id: operator.id } });
   }
 });

@@ -138,6 +138,8 @@ export function attachRealtime(app: FastifyInstance, origin: string) {
     },
     publishTheme: (tenantId: string, theme: TenantTheme) =>
       io.to(themeRoom(tenantId)).emit("tenant.theme", theme),
+    publishContent: (tenantId: string) =>
+      io.to(themeRoom(tenantId)).emit("panel.content"),
     publishShift: (scope: QueueScope) =>
       io.to(unitRoom(scope)).emit("shift.changed"),
     publish: (scope: QueueScope, change: QueueChange) => {
