@@ -44,7 +44,10 @@ test("applies the company theme to existing devices, tracking, sign-in and staff
     await unit.login(desk, "staff@test.local");
     const deskAccent = desk.locator(".attendant-title");
     const tvAccent = tv.locator(".tv-header");
-    await expect(deskAccent).toHaveCSS("border-inline-start-color", "rgb(33, 79, 181)");
+    await expect(deskAccent).toHaveCSS(
+      "border-inline-start-color",
+      "rgb(33, 79, 181)",
+    );
     await expect(tvAccent).toHaveCSS("border-bottom-color", "rgb(33, 79, 181)");
     await unit.login(page);
     await page.getByRole("link", { name: "Perfil", exact: true }).click();
@@ -77,7 +80,10 @@ test("applies the company theme to existing devices, tracking, sign-in and staff
       theme(tv, ".tv-screen", "#B22540"),
       theme(kiosk, ".kiosk", "#B22540"),
       theme(phone, ".tracking", "#B22540"),
-      expect(deskAccent).toHaveCSS("border-inline-start-color", "rgb(178, 37, 64)"),
+      expect(deskAccent).toHaveCSS(
+        "border-inline-start-color",
+        "rgb(178, 37, 64)",
+      ),
       expect(tvAccent).toHaveCSS("border-bottom-color", "rgb(178, 37, 64)"),
     ]);
     await page
@@ -105,7 +111,7 @@ test("applies the company theme to existing devices, tracking, sign-in and staff
     await expect(page.getByText("Perfil salvo.")).toBeVisible();
     await expect(
       page.getByRole("link", { name: "Perfil", exact: true }),
-    ).toHaveAttribute("title", "Administrador de teste");
+    ).toHaveAttribute("data-tooltip", "Perfil · Administrador de teste");
   } finally {
     await devices.close();
     await staff.close();

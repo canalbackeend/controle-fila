@@ -103,21 +103,37 @@ function Workspace({
               <NavLink to="/admin/relatorios">
                 <Icon name="chart" /> Relatórios
               </NavLink>
-              <NavLink to="/admin/configuracoes">
-                <Icon name="settings" /> Configurações
-              </NavLink>
             </>
           )}
-          <NavLink to="/ajuda">
-            <Icon name="help" /> Ajuda
-          </NavLink>
-          <NavLink to="/perfil" title={actor.name}>
-            <Icon name="user" />
-            Perfil
-          </NavLink>
-          <button onClick={() => void logout()}>
-            <Icon name="logout" /> Sair
-          </button>
+          <div className="nav-icons">
+            {!actor.mustChangePassword && actor.role !== "ATTENDANT" && (
+              <NavLink
+                to="/admin/configuracoes"
+                aria-label="Configurações"
+                data-tooltip="Configurações"
+              >
+                <Icon name="settings" />
+              </NavLink>
+            )}
+            <NavLink to="/ajuda" aria-label="Ajuda" data-tooltip="Ajuda">
+              <Icon name="help" />
+            </NavLink>
+            <NavLink
+              to="/perfil"
+              aria-label="Perfil"
+              data-tooltip={`Perfil · ${actor.name}`}
+            >
+              <Icon name="user" />
+            </NavLink>
+            <button
+              type="button"
+              aria-label="Sair"
+              data-tooltip="Sair"
+              onClick={() => void logout()}
+            >
+              <Icon name="logout" />
+            </button>
+          </div>
         </nav>
       </header>
       {error && (
