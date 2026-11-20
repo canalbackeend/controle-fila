@@ -9,6 +9,7 @@ import { prisma, tenantDb } from "../../db.js";
 import { configureSources, refreshNews } from "./news.js";
 import { syncNewsIllustrations } from "./news-illustrations.js";
 import { configuredWeatherProvider, weatherCacheKey } from "./weather.js";
+import { cacheSceneVideos } from "./video-scenes.js";
 import { refreshWeather } from "./weather-cache.js";
 
 export function contentJobs(app: FastifyInstance) {
@@ -30,6 +31,16 @@ export function contentJobs(app: FastifyInstance) {
       if (count) app.log.info({ count }, "News illustrations cached");
     } catch {
       app.log.warn("News illustrations refresh failed");
+    }
+  }
+  async function videos() {
+    try {
+      const count = await cacheSceneVideos((id) =>
+        app.log.warn({ id }, "Panel video unavailable"),
+      );
+      if (count) app.log.info({ count }, "Panel videos cached");
+    } catch {
+      app.log.warn("Panel video cache refresh failed");
     }
   }
   async function weather() {
@@ -70,6 +81,7 @@ export function contentJobs(app: FastifyInstance) {
   const jobs = [
     schedule("*/15 * * * *", news, { noOverlap: true }),
     schedule("0 4 * * *", illustrations, { noOverlap: true }),
+    schedule("15 * * * *", videos, { noOverlap: true }),
     schedule("*/30 * * * *", weather, { noOverlap: true }),
   ];
   const ready = configureSources()

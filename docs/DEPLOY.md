@@ -43,6 +43,12 @@ O servidor atualiza as manchetes a cada 15 minutos. As fontes incluídas são a 
 
 O [Wikimedia Commons](https://commons.wikimedia.org/wiki/Commons:Reusing_content_outside_Wikimedia/en) fornece fotos ilustrativas para as manchetes sem imagem. O servidor importa o catálogo na inicialização e tenta novamente uma vez ao dia para fotos pendentes. As miniaturas e os créditos ficam armazenados localmente. A TV exibe a foto ao fundo com autoria, licença e indicação de que é ilustrativa.
 
+## Vídeos da TV
+
+Em **Dispositivos → Configurar TV e clima → Vídeos da TV**, escolha e ordene as cenas do Wikimedia Commons, defina quantos cartões aparecem entre os vídeos e clique em **Salvar vídeos**. Todas as cenas começam desmarcadas.
+
+A API importa versões WebM de 480p na inicialização e tenta de novo a cada hora para os arquivos pendentes. O volume de uploads também preserva os clipes entre publicações. O painel exibe os créditos e toca os vídeos em mudo, pausando durante a chamada de senha. Em caso de erro, o carrossel volta aos cartões.
+
 ## Backup e restauração
 
 O serviço `backup` grava um dump PostgreSQL e um arquivo de imagens na inicialização e a cada 24 horas. Por padrão, a retenção local é de 14 dias. Configure `BACKUP_INTERVAL_SECONDS` e `BACKUP_RETENTION_DAYS` conforme a operação.

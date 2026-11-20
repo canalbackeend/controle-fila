@@ -3,6 +3,7 @@ import cookie from "@fastify/cookie";
 import rateLimit from "@fastify/rate-limit";
 import multipart from "@fastify/multipart";
 import { assetRoutes } from "./modules/content/assets.js";
+import { videoSceneRoutes } from "./modules/content/video-scenes.js";
 import { contentRoutes } from "./modules/content/routes.js";
 import { Prisma } from "@prisma/client";
 import { ZodError } from "zod";
@@ -88,6 +89,7 @@ export function buildApp(
       trackingRoutes(api);
       reportsRoutes(api);
       assetRoutes(api);
+      videoSceneRoutes(api);
       contentRoutes(api, realtime);
     });
   }

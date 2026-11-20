@@ -62,6 +62,8 @@ export type PanelSettings = WeatherLocation & {
   newsCategories: string[];
   callDisplaySeconds: number;
   ticker: string;
+  sceneIds: PanelSceneId[];
+  sceneFrequency: number;
 };
 export type PanelData = {
   theme: TenantTheme;
@@ -71,6 +73,7 @@ export type PanelData = {
   config: PanelSettings;
   calls: PanelCall[];
   cards: DisplayCard[];
+  scenes: PanelScene[];
   temperature?: number;
   weatherSource?: string;
 };
@@ -84,10 +87,40 @@ export const defaultPanelSettings: PanelSettings = {
   state: "SP",
   callDisplaySeconds: 5,
   ticker: "",
+  sceneIds: [],
+  sceneFrequency: 3,
 };
 
 import { z } from "zod";
 import { idSchema, nameSchema } from "./admin.js";
+
+export const panelSceneIds = [
+  "misty-river",
+  "ocean-waves",
+  "waterfall",
+  "snowy-mountains",
+] as const;
+export const panelSceneId = z.enum(panelSceneIds);
+export type PanelSceneId = z.infer<typeof panelSceneId>;
+export type PanelScene = {
+  id: PanelSceneId;
+  label: string;
+  title: string;
+  text: string;
+  seconds: number;
+  videoUrl: string;
+  author: string;
+  sourceUrl: string;
+  license: string;
+  licenseUrl: string;
+};
+export const panelVideoInput = z.object({
+  sceneIds: z
+    .array(panelSceneId)
+    .max(panelSceneIds.length)
+    .transform((ids) => [...new Set(ids)]),
+  sceneFrequency: z.coerce.number().int().min(1).max(10),
+});
 
 export const contentTypes = ["NOTICE", "NEWS", "WEATHER", "TIP"] as const;
 const weight = z.coerce.number().int().min(0).max(100);
@@ -172,6 +205,7 @@ export type PanelEditorData = {
   config: PanelSettings;
   services: { id: string; name: string }[];
   categories: string[];
+  videoCatalog: Omit<PanelScene, "videoUrl">[];
 };
 
 export function pickPanelCard(

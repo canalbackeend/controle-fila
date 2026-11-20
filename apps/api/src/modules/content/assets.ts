@@ -10,7 +10,7 @@ import { z } from "zod";
 import { HttpError, missing } from "../../errors.js";
 import { requireActor } from "../auth/service.js";
 
-const uploads =
+export const uploads =
   process.env.UPLOAD_DIR ||
   fileURLToPath(new URL("../../../../../uploads", import.meta.url));
 const maxFileSize = 6 * 1024 * 1024;

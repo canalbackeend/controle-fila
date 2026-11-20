@@ -99,6 +99,14 @@ test("the Beend operator provisions a client who activates and operates within i
     expect(
       (await page.request.patch(newsPath, { data: preset })).ok(),
     ).toBeTruthy();
+    const videoPath = `/api/admin/panels/${device.id}/videos`;
+    const videos = { sceneIds: ["misty-river"], sceneFrequency: 2 };
+    expect(
+      (await customer.request.patch(videoPath, { data: videos })).status(),
+    ).toBe(404);
+    expect(
+      (await page.request.patch(videoPath, { data: videos })).ok(),
+    ).toBeTruthy();
     await expect(
       customer.getByRole("link", { name: "Empresas", exact: true }),
     ).toHaveCount(0);

@@ -1,0 +1,3 @@
+ALTER TABLE "PanelConfig"
+    ADD COLUMN "sceneIds" TEXT[] NOT NULL DEFAULT ARRAY[]::TEXT[],
+    ADD COLUMN "sceneFrequency" INTEGER NOT NULL DEFAULT 3;

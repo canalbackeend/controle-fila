@@ -242,6 +242,8 @@ model PanelConfig {
   state              String?
   callDisplaySeconds Int      @default(5)
   ticker             String   @default("")
+  sceneIds           String[] @default([])
+  sceneFrequency     Int      @default(3)
   device             Device   @relation(fields: [tenantId, deviceId], references: [tenantId, id], onDelete: Cascade)
 
   @@unique([tenantId, deviceId])

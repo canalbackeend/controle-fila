@@ -10,6 +10,7 @@ import {
   newsTopics,
   panelInput,
   panelNewsInput,
+  panelVideoInput,
   type PanelEditorData,
 } from "@beend/shared";
 import { z } from "zod";
@@ -18,6 +19,7 @@ import { HttpError, missing } from "../../errors.js";
 import { deviceRoom, type Realtime } from "../../realtime.js";
 import { requireActor } from "../auth/service.js";
 import { requireAsset } from "./assets.js";
+import { videoCatalog } from "./video-scenes.js";
 import { managed, settingsFor } from "./service.js";
 
 const logoInput = z.object({ imageUrl: assetUrlSchema.nullable() });
@@ -132,6 +134,7 @@ export function contentRoutes(app: FastifyInstance, realtime: Realtime) {
     ]);
     return {
       name: panel.name,
+      videoCatalog,
       config: settingsFor(panel.config),
       services,
       categories: [
@@ -184,6 +187,28 @@ export function contentRoutes(app: FastifyInstance, realtime: Realtime) {
     });
     realtime.io.to(deviceRoom(id)).emit("panel.config");
     return saved;
+  });
+  app.patch("/admin/panels/:id/videos", async (request, reply) => {
+    const actor = await requireActor(request, ["ADMIN", "SUPERADMIN"]);
+    const { id } = idParams.parse(request.params);
+    const videos = panelVideoInput.parse(request.body);
+    const db = tenantDb(actor.tenantId);
+    const panel = await db.device.findFirst({
+      where: { id, unitId: actor.unitId, type: "PANEL" },
+    });
+    if (!panel) missing("Painel indisponível.");
+    await db.panelConfig.upsert({
+      where: { deviceId: id },
+      create: {
+        tenantId: actor.tenantId,
+        deviceId: id,
+        state: defaultPanelSettings.state,
+        ...videos,
+      },
+      update: videos,
+    });
+    realtime.io.to(deviceRoom(id)).emit("panel.config");
+    return reply.code(204).send();
   });
   app.put("/admin/panels/:id", async (request, reply) => {
     const actor = await requireActor(request, ["ADMIN", "SUPERADMIN"]);

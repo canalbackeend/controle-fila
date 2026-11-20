@@ -7,6 +7,7 @@ import type {
 import {
   defaultPanelSettings,
   newsPresets,
+  panelSceneId,
   weatherStateSchema,
   type DisplayCard,
   type ManagedCard,
@@ -31,6 +32,10 @@ export function settingsFor(saved: PanelConfig | null): PanelSettings {
     cardSeconds: saved.cardSeconds,
     callDisplaySeconds: saved.callDisplaySeconds,
     ticker: saved.ticker,
+    sceneIds: saved.sceneIds.flatMap(
+      (id) => panelSceneId.safeParse(id).data ?? [],
+    ),
+    sceneFrequency: saved.sceneFrequency,
   };
 }
 

@@ -9,6 +9,7 @@ import {
 } from "@beend/shared";
 import { api, message } from "../../api";
 import { NewsSettings } from "./NewsSettings";
+import { VideoSettings } from "./VideoSettings";
 
 const labels = {
   NOTICE: "Avisos",
@@ -81,6 +82,7 @@ export function PanelEditor() {
           Configuração salva.
         </p>
       )}
+      {data && id && <VideoSettings key={id} panelId={id} data={data} />}
       {data && (
         <section className="surface">
           <form className="editor" onSubmit={(event) => void save(event)}>

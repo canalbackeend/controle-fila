@@ -6,6 +6,7 @@ import {
   type PanelData,
 } from "@beend/shared";
 import { panelContent, settingsFor } from "../content/service.js";
+import { availableScenes } from "../content/video-scenes.js";
 import { requireDevice } from "../devices/auth.js";
 import { nameFor } from "../queue/service.js";
 
@@ -25,7 +26,7 @@ export function panelRoutes(app: FastifyInstance) {
       db.panelConfig.findUnique({ where: { deviceId: id } }),
     ]);
     const config = settingsFor(saved);
-    const [events, services, counters, content] = await Promise.all([
+    const [events, services, counters, content, scenes] = await Promise.all([
       db.ticketEvent.findMany({
         where: {
           unitId: scope.unitId,
@@ -55,6 +56,7 @@ export function panelRoutes(app: FastifyInstance) {
         select: { id: true, name: true },
       }),
       panelContent(tenant.id, config),
+      availableScenes(config.sceneIds),
     ]);
     const calls = events.flatMap((event): PanelCall[] => {
       const service = services.find(({ id }) => id === event.fromServiceId);
@@ -80,6 +82,7 @@ export function panelRoutes(app: FastifyInstance) {
       logoUrl: tenant.logoUrl ?? undefined,
       config,
       calls,
+      scenes,
       ...content,
     };
   });

@@ -9,11 +9,14 @@ import {
   type DisplayCard,
   type PanelCall,
   type PanelData,
+  type PanelScene,
+  type PanelSceneId,
 } from "@beend/shared";
 import { ApiError, api } from "../../api";
 import { useRealtime } from "../../realtime";
 import { PairingForm, usePairing } from "../devices/pairing";
 import { FullscreenButton } from "../devices/FullscreenButton";
+import { VideoScene } from "./VideoScene";
 import { playAlert } from "./sound";
 
 const cardLabels = {
@@ -30,6 +33,7 @@ const fallback: DisplayCard = {
 };
 const zone = "America/Sao_Paulo";
 const emptyCards: DisplayCard[] = [];
+const emptyScenes: PanelScene[] = [];
 
 function readCache(key: string): PanelData | undefined {
   try {
@@ -177,11 +181,16 @@ function PanelDevice({ id }: { id: string }) {
   const [suspended, setSuspended] = useState(false);
   const [started, setStarted] = useState(false);
   const [audioError, setAudioError] = useState("");
+  const [sceneId, setSceneId] = useState<PanelSceneId>();
+  const slidesSinceVideo = useRef(0);
+  const lastSceneId = useRef<PanelSceneId>(undefined);
   const audio = useRef<AudioContext | null>(null);
   const seen = useRef<string[]>([]);
   const current = overlay[0];
   const config = data?.config ?? defaultPanelSettings;
   const cards = data?.cards ?? emptyCards;
+  const scenes = data?.scenes ?? emptyScenes;
+  const scene = scenes.find(({ id }) => id === sceneId);
   const card = cards.find(({ id }) => id === rotation.id) ?? fallback;
 
   const merge = useCallback((newCalls: PanelCall[]) => {
@@ -215,6 +224,9 @@ function PanelDevice({ id }: { id: string }) {
         next.cards.some(({ id }) => id === previous.id)
           ? previous
           : advancePanelRotation(next.cards, next.config.weights, previous),
+      );
+      setSceneId((previous) =>
+        next.scenes?.some(({ id }) => id === previous) ? previous : undefined,
       );
       merge(next.calls);
       try {
@@ -293,17 +305,45 @@ function PanelDevice({ id }: { id: string }) {
       active = false;
     };
   }, [cards, data?.logoUrl]);
-  useEffect(() => {
-    if (!started || current) return;
-    const timer = window.setTimeout(
-      () =>
-        setRotation((previous) =>
-          advancePanelRotation(cards, config.weights, previous),
-        ),
-      config.cardSeconds * 1000,
+  const advanceCard = useCallback(() => {
+    setRotation((previous) =>
+      advancePanelRotation(cards, config.weights, previous),
     );
+  }, [cards, config.weights]);
+  const finishScene = useCallback(() => {
+    setSceneId(undefined);
+    advanceCard();
+  }, [advanceCard]);
+  useEffect(() => {
+    if (!started || current || scene) return;
+    const timer = window.setTimeout(() => {
+      slidesSinceVideo.current = Math.min(slidesSinceVideo.current + 1, 10);
+      if (
+        scenes.length &&
+        (!cards.length || slidesSinceVideo.current >= config.sceneFrequency)
+      ) {
+        const index =
+          (scenes.findIndex(({ id }) => id === lastSceneId.current) + 1) %
+          scenes.length;
+        lastSceneId.current = scenes[index]?.id;
+        slidesSinceVideo.current = 0;
+        setSceneId(scenes[index]?.id);
+      } else {
+        advanceCard();
+      }
+    }, config.cardSeconds * 1000);
     return () => window.clearTimeout(timer);
-  }, [cards, config.cardSeconds, config.weights, current, started, rotation]);
+  }, [
+    advanceCard,
+    cards.length,
+    config.cardSeconds,
+    config.sceneFrequency,
+    current,
+    started,
+    rotation,
+    scene,
+    scenes,
+  ]);
   useEffect(() => {
     if (!started || !current) return;
     if (audio.current) playAlert(audio.current);
@@ -409,7 +449,16 @@ function PanelDevice({ id }: { id: string }) {
             </ul>
           )}
         </aside>
-        <Card card={card} />
+        {scene ? (
+          <VideoScene
+            key={scene.id}
+            scene={scene}
+            paused={Boolean(current)}
+            onFinish={finishScene}
+          />
+        ) : (
+          <Card card={card} />
+        )}
       </div>
       <footer className="tv-ticker">
         <div className={`tv-ticker-track${config.ticker ? " scrolling" : ""}`}>

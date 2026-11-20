@@ -26,3 +26,4 @@
 - A suspensão é reversível. O cadastro e a gestão comercial ficam com o superadministrador Beend, e as filas, a equipe, os dispositivos e os relatórios ficam no painel da empresa.
 - A recuperação de guichê é feita pelo administrador da unidade. Uma senha ativa volta ao fim do grupo da mesma prioridade ou é cancelada, conforme a opção escolhida. Senhas de dias anteriores ou de serviços desativados só podem ser canceladas nessa operação.
 - A alteração de senha, e-mail, permissão ou situação de uma conta pela área Equipe revoga sessões anteriores da conta afetada e encerra suas conexões em tempo real. Alterar o nome mantém a sessão.
+- As pausas visuais usam quatro clipes do Wikimedia Commons com mensagens em português e frequência configurável por TV. O servidor guarda as versões WebM no volume de mídia. O vídeo fica mudo, pausa durante a chamada e é pulado em caso de erro.
