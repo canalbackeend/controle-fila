@@ -1250,3 +1250,154 @@ input[type="color"] {
 .video-order li + li {
   margin-top: 0.5rem;
 }
+
+/* Legal pages */
+.legal {
+  max-width: 50rem;
+  margin: 0 auto;
+  padding: clamp(1rem, 4vw, 2.5rem);
+  color: var(--ink);
+  line-height: 1.6;
+}
+.legal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 2rem;
+}
+.legal-article p,
+.help-article p {
+  margin: 0 0 0.8rem;
+}
+.legal-article h1 {
+  margin-bottom: 0.25rem;
+}
+.legal-article h2 {
+  font-size: 1.15rem;
+  margin: 2rem 0 0.5rem;
+}
+.legal-article ul {
+  padding-left: 1.3rem;
+}
+.legal-article li + li {
+  margin-top: 0.35rem;
+}
+.legal-updated {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+.legal-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1.2rem;
+  justify-content: center;
+  margin-top: 1.5rem;
+  font-size: 0.85rem;
+}
+.legal-links a {
+  color: var(--muted);
+}
+
+/* Help center */
+.help-layout {
+  display: grid;
+  grid-template-columns: minmax(14rem, 18rem) minmax(0, 1fr);
+  gap: 1.5rem;
+  align-items: start;
+}
+.help-index,
+.help-index > * {
+  min-width: 0;
+}
+.help-index {
+  position: sticky;
+  top: 1rem;
+  display: grid;
+  gap: 0.75rem;
+}
+.help-index ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.15rem;
+}
+.help-index a {
+  display: block;
+  padding: 0.5rem 0.7rem;
+  border-radius: 0.5rem;
+  color: var(--ink);
+  text-decoration: none;
+}
+.help-index a:hover {
+  background: var(--theme-wash);
+}
+.help-index a[aria-current="page"] {
+  background: var(--theme-wash);
+  color: var(--primary);
+  font-weight: 700;
+}
+.help-article {
+  padding: clamp(1rem, 3vw, 2rem);
+  line-height: 1.6;
+}
+.help-article h2 {
+  margin-top: 0;
+}
+.help-article h3 {
+  font-size: 1.05rem;
+  margin: 1.6rem 0 0.4rem;
+}
+.help-article ol,
+.help-article ul,
+.legal-article ul {
+  padding-left: 1.3rem;
+}
+.help-article ol {
+  list-style: decimal;
+}
+.help-article ul,
+.legal-article ul {
+  list-style: disc;
+}
+.help-article li + li {
+  margin-top: 0.3rem;
+}
+.help-summary {
+  color: var(--muted);
+}
+.help-contact {
+  padding: 1rem 1.2rem;
+}
+.help-contact h2 {
+  font-size: 1rem;
+  margin: 0 0 0.4rem;
+}
+.help-contact p,
+.help-contact dl {
+  margin: 0.3rem 0 0;
+}
+.help-contact dd {
+  margin: 0 0 0.4rem;
+}
+@media (max-width: 800px) {
+  .help-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .help-index {
+    position: static;
+  }
+  .help-index ul {
+    display: flex;
+    gap: 0.4rem;
+    overflow-x: auto;
+    padding-bottom: 0.3rem;
+  }
+  .help-index a {
+    white-space: nowrap;
+    border: 1px solid var(--line);
+    background: var(--surface);
+  }
+}

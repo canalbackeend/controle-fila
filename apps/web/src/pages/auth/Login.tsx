@@ -4,6 +4,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { slugSchema, type Actor, type TenantTheme } from "@beend/shared";
 import { themeStyle } from "../../theme";
 import { api, message } from "../../api";
+import { LegalLinks } from "../legal/LegalPage";
 
 export function Login({ onLogin }: { onLogin: (actor: Actor) => void }) {
   const [error, setError] = useState("");
@@ -108,6 +109,7 @@ export function Login({ onLogin }: { onLogin: (actor: Actor) => void }) {
               {busy ? "Entrando…" : "Entrar"}
             </button>
           </form>
+          <LegalLinks />
         </div>
       </section>
     </main>

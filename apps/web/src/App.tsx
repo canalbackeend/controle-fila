@@ -26,6 +26,8 @@ import { Kiosk } from "./pages/kiosk/Kiosk";
 import { Devices } from "./pages/devices/Devices";
 import { Attendant } from "./pages/attendant/Attendant";
 import { Admin } from "./pages/admin/Admin";
+import { LegalPage } from "./pages/legal/LegalPage";
+import { Help } from "./pages/help/Help";
 
 const Companies = lazy(() =>
   import("./pages/platform/Companies").then(({ Companies }) => ({
@@ -106,6 +108,9 @@ function Workspace({
               </NavLink>
             </>
           )}
+          <NavLink to="/ajuda">
+            <Icon name="help" /> Ajuda
+          </NavLink>
           <NavLink to="/perfil" title={actor.name}>
             <Icon name="user" />
             Perfil
@@ -128,7 +133,9 @@ function Workspace({
 export function App() {
   const [actor, setActor] = useState<Actor | null | undefined>(undefined);
   const { pathname } = useLocation();
-  const publicPage = /^\/(t|totem|painel)(\/|$)/.test(pathname);
+  const publicPage = /^\/(t|totem|painel|privacidade|termos)(\/|$)/.test(
+    pathname,
+  );
   useEffect(() => {
     if (publicPage) return;
     let active = true;
@@ -329,7 +336,15 @@ export function App() {
           />
         ))}
       />
+      <Route
+        path="/ajuda/:artigo?"
+        element={protectedPage((actor) => (
+          <Help actor={actor} />
+        ))}
+      />
       <Route path="/t/:token" element={<Tracking />} />
+      <Route path="/privacidade" element={<LegalPage kind="privacy" />} />
+      <Route path="/termos" element={<LegalPage kind="terms" />} />
       <Route path="/totem/:id?" element={<Kiosk />} />
       <Route path="/painel/:id?" element={<Panel />} />
       <Route

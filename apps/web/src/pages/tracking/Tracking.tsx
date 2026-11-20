@@ -10,6 +10,7 @@ import {
 } from "@beend/shared";
 import { ApiError, api } from "../../api";
 import { useRealtime } from "../../realtime";
+import { LegalLinks } from "../legal/LegalPage";
 
 type Permission = NotificationPermission | "unsupported";
 
@@ -243,6 +244,7 @@ function Tracker({ token }: { token: string }) {
           )}
         </>
       )}
+      <LegalLinks />
     </main>
   );
 }
