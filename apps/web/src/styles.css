@@ -2001,3 +2001,69 @@ input[type="color"] {
     transform: none;
   }
 }
+
+/* Help center illustrations */
+.help-figure {
+  display: grid;
+  gap: 0.75rem;
+  margin: 1.25rem 0 1.75rem;
+}
+.help-figure a {
+  display: block;
+  border-radius: 0.5rem;
+}
+.help-figure img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 1px solid var(--line);
+  border-radius: 0.5rem;
+  box-shadow: var(--ds-shadow, 0 10px 30px rgb(0 0 0 / 0.04));
+  background: #fff;
+}
+.help-figure a:hover img {
+  border-color: var(--primary);
+}
+.help-figure figcaption {
+  display: grid;
+  gap: 0.5rem;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+.help-figure figcaption strong {
+  color: var(--ink);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.help-article ol.help-marks {
+  display: grid;
+  gap: 0.35rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: help-mark;
+}
+.help-marks li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.55rem;
+  counter-increment: help-mark;
+}
+.help-article .help-marks li + li {
+  margin-top: 0;
+}
+.help-marks li::before {
+  content: counter(help-mark);
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 1.4rem;
+  height: 1.4rem;
+  border-radius: 50%;
+  background: #0b82ff;
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 800;
+}

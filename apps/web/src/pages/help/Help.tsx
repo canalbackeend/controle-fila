@@ -4,6 +4,34 @@ import type { Actor } from "@beend/shared";
 import { LegalLinks } from "../legal/LegalPage";
 import { supportChannels } from "../legal/company";
 import { articlesFor, helpArticles, type HelpArticle } from "./articles";
+import { helpFigures, type HelpFigure, type HelpFigureId } from "./figures";
+
+function Figure({ id }: { id: HelpFigureId }) {
+  const figure: HelpFigure = helpFigures[id];
+  const src = `/help/${figure.file}`;
+  return (
+    <figure className="help-figure">
+      <a
+        href={src}
+        target="_blank"
+        rel="noreferrer"
+        title="Abrir imagem ampliada"
+      >
+        <img src={src} alt={figure.alt} loading="lazy" decoding="async" />
+      </a>
+      <figcaption>
+        <strong>{figure.caption}</strong>
+        {figure.marks && (
+          <ol className="help-marks">
+            {figure.marks.map((mark) => (
+              <li key={mark}>{mark}</li>
+            ))}
+          </ol>
+        )}
+      </figcaption>
+    </figure>
+  );
+}
 
 function Contact({ actor }: { actor: Actor }) {
   const channels = supportChannels();
@@ -70,6 +98,9 @@ function Article({ article }: { article: HelpArticle }) {
           )}
           {section.paragraphs?.map((paragraph) => (
             <p key={paragraph}>{paragraph}</p>
+          ))}
+          {section.figures?.map((id) => (
+            <Figure key={id} id={id} />
           ))}
         </section>
       ))}

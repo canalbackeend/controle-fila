@@ -1,10 +1,12 @@
 import type { Role } from "@beend/shared";
+import { helpFigures, type HelpFigureId } from "./figures";
 
 export type HelpSection = {
   title: string;
   paragraphs?: string[];
   steps?: string[];
   items?: string[];
+  figures?: HelpFigureId[];
 };
 export type HelpArticle = {
   id: string;
@@ -33,6 +35,7 @@ export const helpArticles: HelpArticle[] = [
       },
       {
         title: "Implantação em 7 passos",
+        figures: ["adminServices"],
         steps: [
           "Troque a senha inicial em Perfil no primeiro acesso.",
           "Em Administração, aplique um modelo (Clínica, Cartório ou Balcão). O modelo cria serviços, prioridades e guichês prontos.",
@@ -53,6 +56,7 @@ export const helpArticles: HelpArticle[] = [
     sections: [
       {
         title: "Abrir o turno",
+        figures: ["attendantShift"],
         steps: [
           "Abra Atendimento.",
           "Em Meu turno, escolha o guichê em que você está.",
@@ -65,6 +69,7 @@ export const helpArticles: HelpArticle[] = [
       },
       {
         title: "Chamar e atender",
+        figures: ["attendantCall"],
         steps: [
           "Clique em Chamar próximo ou aperte a barra de Espaço. O sistema escolhe a próxima senha respeitando as prioridades.",
           "A senha aparece na TV com alerta sonoro. Se a pessoa não vier, clique em Rechamar ou aperte R.",
@@ -126,6 +131,7 @@ export const helpArticles: HelpArticle[] = [
     sections: [
       {
         title: "Cadastrar e parear",
+        figures: ["devices"],
         steps: [
           "Em Dispositivos, clique em Cadastrar dispositivo e escolha Totem.",
           "Abra no totem o endereço exibido e digite o código de pareamento. O código vale por 15 minutos e só pode ser usado uma vez.",
@@ -134,6 +140,7 @@ export const helpArticles: HelpArticle[] = [
       },
       {
         title: "Impressão",
+        figures: ["kioskReceipt"],
         paragraphs: [
           "O totem imprime o comprovante automaticamente, com unidade, código, serviço, data e hora, pessoas à frente e QR Code. Use impressora térmica de 80 mm configurada como padrão no sistema operacional.",
           "Abra o Chrome com --kiosk --kiosk-printing para imprimir sem a janela de impressão. Sem impressora, acrescente ?impressao=manual ao endereço do totem: o comprovante aparece na tela e só é impresso pelo botão Imprimir senha.",
@@ -141,6 +148,7 @@ export const helpArticles: HelpArticle[] = [
       },
       {
         title: "Uso",
+        figures: ["kioskServices", "kioskPriority"],
         items: [
           "A pessoa escolhe o serviço e o tipo de senha: são no máximo dois toques.",
           "Depois de 15 segundos sem uso, o totem volta para a tela inicial.",
@@ -168,12 +176,14 @@ export const helpArticles: HelpArticle[] = [
       },
       {
         title: "Configurar a TV",
+        figures: ["tvSettings"],
         paragraphs: [
           "Em Dispositivos, clique em Configurar TV e clima na linha da TV. Ali você define quais serviços aparecem nessa TV (vazio mostra todos), o tempo de cada cartão, o tempo da chamada em destaque e o letreiro do rodapé. Clique em Salvar painel. A TV atualiza sozinha.",
         ],
       },
       {
         title: "Som da chamada",
+        figures: ["tvCall"],
         items: [
           "Bip: toca o alerta sonoro na chamada.",
           'Chamada de voz: toca o alerta e fala a senha e o guichê, por exemplo "Senha: a, zero, zero, um. Guichê 2". Quando o serviço chama pelo nome, fala o nome curto.',
@@ -183,6 +193,7 @@ export const helpArticles: HelpArticle[] = [
       },
       {
         title: "Conteúdo do carrossel",
+        figures: ["tvIdle"],
         items: [
           "Pesos: defina quanto aparece de avisos, notícias, clima e dicas. Peso zero desliga o tipo.",
           "Notícias da TV: aplique um perfil temático com um clique ou escolha os temas em Configuração manual.",
@@ -207,6 +218,7 @@ export const helpArticles: HelpArticle[] = [
     sections: [
       {
         title: "Como funciona",
+        figures: ["tracking"],
         items: [
           "A pessoa lê o QR Code do comprovante com a câmera do celular. Não precisa de aplicativo nem de cadastro.",
           "A página mostra a senha, o serviço, quantas pessoas estão à frente e o status, atualizando sozinha.",
@@ -225,6 +237,7 @@ export const helpArticles: HelpArticle[] = [
     sections: [
       {
         title: "Serviços",
+        figures: ["adminServices"],
         items: [
           "Prefixos: letra das senhas normais, preferenciais e 80+ (por exemplo, A, P e R). Prefixos não se repetem entre serviços.",
           "Forma de chamada: por senha (padrão) ou por nome. Na chamada por nome, a TV mostra só o primeiro nome e a inicial do sobrenome.",
@@ -241,6 +254,7 @@ export const helpArticles: HelpArticle[] = [
       },
       {
         title: "Equipe",
+        figures: ["adminTeam"],
         items: [
           "Permissão Administrador: configura a unidade, dispositivos, conteúdos e relatórios.",
           "Permissão Atendente: atende a fila e emite senhas no balcão.",
@@ -268,6 +282,7 @@ export const helpArticles: HelpArticle[] = [
     sections: [
       {
         title: "Cadastrar conteúdo",
+        figures: ["content"],
         steps: [
           "Abra Conteúdo e clique em Adicionar conteúdo.",
           "Escolha o tipo: Aviso / anúncio, Curiosidade / dica ou Notícia personalizada.",
@@ -289,6 +304,7 @@ export const helpArticles: HelpArticle[] = [
     sections: [
       {
         title: "O que mostram",
+        figures: ["reports"],
         items: [
           "Atendimentos, não comparecimentos, espera média e atendimento médio, por serviço e atendente.",
           "Distribuição dos atendimentos por hora do dia.",
@@ -312,6 +328,7 @@ export const helpArticles: HelpArticle[] = [
     sections: [
       {
         title: "Perfil",
+        figures: ["profile"],
         items: [
           "Em Perfil, altere seu nome, e-mail e senha. Para mudar e-mail ou senha, informe a senha atual.",
           "No primeiro acesso, o sistema pede para trocar a senha inicial.",
@@ -336,6 +353,7 @@ export const helpArticles: HelpArticle[] = [
     sections: [
       {
         title: "Cadastrar um cliente",
+        figures: ["platformCompanies"],
         steps: [
           "Abra Empresas e clique em Cadastrar empresa.",
           "Informe o identificador, a unidade, o administrador e o plano.",
@@ -345,6 +363,7 @@ export const helpArticles: HelpArticle[] = [
       },
       {
         title: "Gerenciar",
+        figures: ["platformSatisfaction"],
         items: [
           "Editar plano e limites: altera as liberações. Para reduzir abaixo do uso, remova dispositivos antes.",
           "Suspender: bloqueia logins, filas, dispositivos e acompanhamento. Os dados são preservados.",
@@ -444,6 +463,10 @@ function articleText(article: HelpArticle) {
       ...(section.paragraphs ?? []),
       ...(section.steps ?? []),
       ...(section.items ?? []),
+      ...(section.figures ?? []).flatMap((id) => {
+        const figure: { caption: string; marks?: string[] } = helpFigures[id];
+        return [figure.caption, ...(figure.marks ?? [])];
+      }),
     ]),
   ].join(" ");
 }

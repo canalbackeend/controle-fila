@@ -13,7 +13,8 @@
     "typecheck": "pnpm -r typecheck",
     "test": "vitest run",
     "test:e2e": "playwright test",
-    "build": "pnpm -r build"
+    "build": "pnpm -r build",
+    "help:screenshots": "playwright test --config scripts/help-screenshots/playwright.config.ts"
   },
   "devDependencies": {
     "@playwright/test": "^1.56.1",
