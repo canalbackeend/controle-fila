@@ -1401,3 +1401,13 @@ input[type="color"] {
     background: var(--surface);
   }
 }
+
+.error-screen {
+  display: grid;
+  gap: 0.9rem;
+  justify-items: start;
+}
+.error-screen h1,
+.error-screen p {
+  margin: 0;
+}
