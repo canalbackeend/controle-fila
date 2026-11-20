@@ -51,7 +51,9 @@ A API importa versões WebM de 480p na inicialização e tenta de novo a cada ho
 
 ## Backup e restauração
 
-O serviço `backup` grava um dump PostgreSQL e um arquivo de imagens na inicialização e a cada 24 horas. Por padrão, a retenção local é de 14 dias. Configure `BACKUP_INTERVAL_SECONDS` e `BACKUP_RETENTION_DAYS` conforme a operação.
+O serviço `backup` grava um dump PostgreSQL e um arquivo de imagens na inicialização e a cada 24 horas. Por padrão, a retenção local é de 14 dias. Configure `BACKUP_INTERVAL_SECONDS` e `BACKUP_RETENTION_DAYS` conforme a operação. Os vídeos da TV ficam fora do arquivo de imagens, porque a API os baixa de novo do Wikimedia Commons na inicialização.
+
+Os backups ficam no mesmo servidor da aplicação. Copie a pasta de backups para um armazenamento externo (por exemplo, S3 ou Backblaze B2) pelo menos uma vez por dia. Sem essa cópia, uma falha do servidor perde a aplicação e os backups juntos.
 
 ```sh
 docker compose -f docker-compose.prod.yml logs backup

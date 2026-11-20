@@ -18,7 +18,7 @@ backup() {
   database="/backups/db-$stamp.dump"
   media="/backups/media-$stamp.tar.gz"
   if pg_dump --format=custom --no-owner --file="$database.partial" &&
-     tar -czf "$media.partial" -C /uploads . &&
+     tar -czf "$media.partial" --exclude=./scene-videos -C /uploads . &&
      mv "$database.partial" "$database" &&
      mv "$media.partial" "$media"; then
     find /backups -maxdepth 1 -type f \( -name 'db-*.dump' -o -name 'media-*.tar.gz' \) -mtime "+$retention" -delete
