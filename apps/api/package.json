@@ -7,7 +7,8 @@
     "start": "tsx src/server.ts",
     "typecheck": "tsc --noEmit",
     "prisma": "dotenv -e ../../.env -- prisma",
-    "seed": "dotenv -e ../../.env -- tsx src/seed.ts"
+    "seed": "dotenv -e ../../.env -- tsx src/seed.ts",
+    "recover-superadmin": "dotenv -e ../../.env -- tsx src/recover-superadmin.ts"
   },
   "dependencies": {
     "@beend/shared": "workspace:*",

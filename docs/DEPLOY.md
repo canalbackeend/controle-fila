@@ -21,6 +21,16 @@ docker compose -f docker-compose.prod.yml exec api pnpm --filter api seed
 
 Entre com a conta superadmin, abra **Administração → Empresas** e cadastre a empresa com seu administrador. Com a conta da empresa, aplique um modelo e configure a unidade.
 
+### Recuperar a conta superadmin
+
+Se a senha ou o e-mail da conta superadmin forem esquecidos, abra o terminal do serviço `api` (no Coolify, **Terminal** do recurso, contêiner `api`) e execute:
+
+```sh
+pnpm --filter api recover-superadmin
+```
+
+O comando mostra o identificador da empresa, o e-mail atual e uma senha provisória aleatória. A conta é reativada, as sessões anteriores são encerradas e a troca da senha é exigida no próximo acesso. Para também redefinir o e-mail, informe-o no final: `pnpm --filter api recover-superadmin superadmin@beend.local`. Administradores das empresas clientes não são alterados; para eles, use **Gerar senha provisória** em **Empresas**.
+
 ## Coolify
 
 Crie um recurso **Docker Compose** apontando para o repositório e selecione `docker-compose.prod.yml`. No serviço `web`, configure o domínio com HTTPS para a porta interna 80. O banco e a API ficam na rede do Compose. Reserve um valor livre para `WEB_PORT` se houver publicação local de porta. A proxy do domínio deve encaminhar WebSocket em `/socket.io/` e anexar a cadeia real de `X-Forwarded-For`.
