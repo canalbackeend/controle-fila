@@ -8,7 +8,7 @@
 - A virada usa o horário local do tenant. Senhas aguardando de datas anteriores são canceladas e registradas pelo job. Atendimentos em andamento podem ser concluídos no guichê.
 - O encaminhamento mantém o código e entra no fim do grupo de prioridade da etapa de destino. A posição impressa representa a fila no momento da emissão.
 - Os códigos de pareamento são descartáveis, expiram em 15 minutos e incluem o identificador da empresa. Gerar outro código revoga o token anterior do dispositivo.
-- A impressão automática do totem está pausada temporariamente para testes sem impressora térmica. O comprovante aparece na tela e pode ser impresso pelo botão **Imprimir senha**.
+- O totem imprime o comprovante automaticamente após a emissão. Para totens sem impressora térmica, o endereço com `?impressao=manual` mantém a impressão apenas pelo botão **Imprimir senha**. A opção fica no endereço do equipamento para não exigir cadastro adicional.
 - O painel guarda o conteúdo do carrossel no dispositivo e limita o cache de imagens. O cache persistente não contém histórico de chamadas por nome.
 - O primeiro uso da TV pede um toque para liberar o áudio. Em quiosques dedicados, o Chrome oferece a flag `--autoplay-policy=no-user-gesture-required`.
 - As fontes RSS são configuradas por ambiente e precisam autorizar a exibição comercial. O servidor guarda miniaturas locais e usa o último clima válido por até seis horas se o provedor falhar.

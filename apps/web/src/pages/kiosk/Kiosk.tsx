@@ -1,7 +1,7 @@
 import { themeStyle } from "../../theme";
 import { BrandLogo } from "../../components/BrandLogo";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useSearchParams } from "react-router-dom";
 import type { Socket } from "socket.io-client";
 import {
   priorityLabels,
@@ -18,6 +18,8 @@ import { FullscreenButton } from "../devices/FullscreenButton";
 
 function KioskDevice({ id }: { id: string }) {
   const { auth, token, pair, clear } = usePairing(id);
+  const [search] = useSearchParams();
+  const autoPrint = search.get("impressao") !== "manual";
   const [suspended, setSuspended] = useState(false);
   const [data, setData] = useState<KioskData>();
   const [service, setService] = useState<ServiceOption>();
@@ -139,7 +141,7 @@ function KioskDevice({ id }: { id: string }) {
       {ticket ? (
         <div className="kiosk-receipt">
           <h1>Senha emitida</h1>
-          <Receipt ticket={ticket} close={reset} autoPrint={false} />
+          <Receipt ticket={ticket} close={reset} autoPrint={autoPrint} />
         </div>
       ) : (
         <section className="kiosk-content">

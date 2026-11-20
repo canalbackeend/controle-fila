@@ -14,7 +14,9 @@ No totem e no painel de TV, toque no ícone de quatro cantos no topo à direita 
 chrome --kiosk --kiosk-printing "https://fila.suaempresa.com.br/totem/ID-DO-TOTEM"
 ```
 
-Selecione um serviço e um tipo de senha. O comprovante deve mostrar unidade, código, serviço, data e hora, pessoas à frente e QR Code. Escaneie o QR com um celular conectado à internet. A opção **Imprimir senha** no comprovante permite repetir a impressão da mesma senha. Se o servidor ficar indisponível, o totem orienta a pessoa a procurar o balcão.
+Selecione um serviço e um tipo de senha. O totem imprime o comprovante automaticamente, com unidade, código, serviço, data e hora, pessoas à frente e QR Code. Escaneie o QR com um celular conectado à internet. A opção **Imprimir senha** no comprovante permite repetir a impressão da mesma senha.
+
+Em um totem sem impressora, por exemplo durante testes, acrescente `?impressao=manual` ao endereço, como em `https://fila.suaempresa.com.br/totem/ID-DO-TOTEM?impressao=manual`. O comprovante aparece na tela e só é impresso pelo botão **Imprimir senha**. Sem a flag `--kiosk-printing`, o Chrome abre a janela de impressão a cada senha. Se o servidor ficar indisponível, o totem orienta a pessoa a procurar o balcão.
 
 ## Painel de TV
 
