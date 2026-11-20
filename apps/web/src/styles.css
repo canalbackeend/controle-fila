@@ -769,6 +769,29 @@ input.code-input {
   font-size: clamp(0.8rem, 1.3vw, 1.65rem);
   color: #d4e1f8;
 }
+.tv-news.with-image {
+  padding-bottom: 8vh;
+}
+.tv-news.with-image::after {
+  background:
+    linear-gradient(90deg, #0a1426f5, #0a1426ce 46%, #0a142633 100%),
+    linear-gradient(0deg, #0a1426ce, transparent 22%);
+}
+.tv-news.with-image h2 {
+  max-width: 24ch;
+  font-size: clamp(1.45rem, 4vw, 4.8rem);
+}
+.tv-card p.tv-photo-credit {
+  position: absolute;
+  inset-inline: 5vw;
+  bottom: 2vh;
+  max-width: none;
+  font-size: clamp(0.75rem, 1vw, 1.25rem);
+  color: #e4edfa;
+}
+.tv-photo-credit a {
+  color: inherit;
+}
 .tv-ticker {
   overflow: hidden;
   white-space: nowrap;

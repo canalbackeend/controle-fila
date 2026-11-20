@@ -40,6 +40,12 @@ export type DisplayCard = {
   title: string;
   text: string;
   imageUrl?: string;
+  imageCredit?: {
+    author: string;
+    license: string;
+    licenseUrl: string;
+    sourceUrl: string;
+  };
   source?: string;
   weather?: {
     temperature: number;

@@ -77,9 +77,10 @@ function CallText({ call }: { call: PanelCall }) {
 }
 
 function Card({ card }: { card: DisplayCard }) {
+  const { imageCredit } = card;
   return (
     <article
-      className={`tv-card ${card.imageUrl ? "with-image" : ""}`}
+      className={`tv-card ${card.type === "NEWS" ? "tv-news" : ""} ${card.imageUrl ? "with-image" : ""}`}
       key={card.id}
     >
       {card.imageUrl && (
@@ -122,6 +123,18 @@ function Card({ card }: { card: DisplayCard }) {
         )}
         {card.source && <p className="tv-source">{card.source}</p>}
       </div>
+      {imageCredit && (
+        <p className="tv-photo-credit">
+          Foto ilustrativa recortada ·{" "}
+          <a href={imageCredit.sourceUrl} target="_blank" rel="noreferrer">
+            {imageCredit.author}
+          </a>{" "}
+          ·{" "}
+          <a href={imageCredit.licenseUrl} target="_blank" rel="noreferrer">
+            {imageCredit.license}
+          </a>
+        </p>
+      )}
     </article>
   );
 }

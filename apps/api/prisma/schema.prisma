@@ -292,6 +292,16 @@ model WeatherCache {
   fetchedAt DateTime @default(now())
 }
 
+model NewsIllustration {
+  category   String @id
+  fileTitle  String
+  imageUrl   String
+  author     String
+  license    String
+  licenseUrl String
+  sourceUrl  String
+}
+
 model Template {
   id     String @id
   name   String

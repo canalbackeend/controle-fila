@@ -1,3 +1,4 @@
+import { readFile } from "node:fs/promises";
 import { prisma } from "../apps/api/src/db";
 import { weatherCacheKey } from "../apps/api/src/modules/content/weather";
 import { expect, test } from "./fixture";
@@ -16,6 +17,34 @@ test("shows notices, tips, headlines and weather according to panel weights", as
     data: { url: `https://example.invalid/${unit.slug}`, category },
   });
   try {
+    const upload = await unit.request.post("/api/admin/assets", {
+      multipart: {
+        file: {
+          name: "foto.png",
+          mimeType: "image/png",
+          buffer: await readFile(
+            new URL(
+              "../apps/web/src/assets/beend-tech-transparente.png",
+              import.meta.url,
+            ),
+          ),
+        },
+      },
+    });
+    expect(upload.ok()).toBeTruthy();
+    const { imageUrl } = await upload.json();
+    await prisma.newsIllustration.create({
+      data: {
+        category,
+        fileTitle: "File:Imagem de teste.jpg",
+        imageUrl,
+        author: "Autor de teste",
+        license: "CC BY-SA 4.0",
+        licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0/",
+        sourceUrl:
+          "https://commons.wikimedia.org/wiki/File:Imagem_de_teste.jpg",
+      },
+    });
     await prisma.newsItem.create({
       data: {
         sourceId: feed.id,
@@ -87,6 +116,20 @@ test("shows notices, tips, headlines and weather according to panel weights", as
       await setWeight(type);
       await expect(page.getByRole("heading", { name: title })).toBeVisible();
     }
+    const photo = page.locator(".tv-news.with-image img");
+    await expect(photo).toHaveAttribute("src", imageUrl);
+    await expect(photo).toHaveCSS("object-fit", "cover");
+    await expect
+      .poll(() =>
+        photo.evaluate((element) =>
+          element instanceof HTMLImageElement ? element.naturalWidth : 0,
+        ),
+      )
+      .toBeGreaterThan(0);
+    await expect(page.getByText("Foto ilustrativa recortada")).toBeVisible();
+    await expect(
+      page.getByRole("link", { name: "Autor de teste" }),
+    ).toBeVisible();
     const admin = await browser.newPage({
       baseURL: new URL(page.url()).origin,
     });
@@ -162,6 +205,7 @@ test("shows notices, tips, headlines and weather according to panel weights", as
     ).toBeVisible();
   } finally {
     await prisma.feedSource.delete({ where: { id: feed.id } });
+    await prisma.newsIllustration.deleteMany({ where: { category } });
     await prisma.weatherCache.deleteMany({
       where: { city: { in: cacheKeys } },
     });

@@ -41,7 +41,10 @@ export async function remoteContent(
         servername: url.hostname,
         port: 443,
         path: url.pathname + url.search,
-        headers: { host: url.hostname, "user-agent": "BeendFila/1.0" },
+        headers: {
+          host: url.hostname,
+          "user-agent": "BeendFila/1.0 (https://fila.beend.tech)",
+        },
         signal: AbortSignal.timeout(6000),
         agent: false,
       },

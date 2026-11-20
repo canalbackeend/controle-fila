@@ -7,6 +7,7 @@ import {
 } from "@beend/shared";
 import { prisma, tenantDb } from "../../db.js";
 import { configureSources, refreshNews } from "./news.js";
+import { syncNewsIllustrations } from "./news-illustrations.js";
 import { configuredWeatherProvider, weatherCacheKey } from "./weather.js";
 import { refreshWeather } from "./weather-cache.js";
 
@@ -19,6 +20,16 @@ export function contentJobs(app: FastifyInstance) {
       );
     } catch {
       app.log.error("News refresh failed");
+    }
+  }
+  async function illustrations() {
+    try {
+      const count = await syncNewsIllustrations((category) =>
+        app.log.warn({ category }, "News illustration unavailable"),
+      );
+      if (count) app.log.info({ count }, "News illustrations cached");
+    } catch {
+      app.log.warn("News illustrations refresh failed");
     }
   }
   async function weather() {
@@ -58,6 +69,7 @@ export function contentJobs(app: FastifyInstance) {
   }
   const jobs = [
     schedule("*/15 * * * *", news, { noOverlap: true }),
+    schedule("0 4 * * *", illustrations, { noOverlap: true }),
     schedule("*/30 * * * *", weather, { noOverlap: true }),
   ];
   const ready = configureSources()

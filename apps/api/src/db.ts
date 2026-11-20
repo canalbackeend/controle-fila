@@ -18,6 +18,7 @@ export function tenantDb(tenantId: string) {
             model === "Template" ||
             model === "FeedSource" ||
             model === "NewsItem" ||
+            model === "NewsIllustration" ||
             model === "WeatherCache"
           ) {
             throw new Error("Global model accessed from tenant repository");

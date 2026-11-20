@@ -41,6 +41,8 @@ Em **Dispositivos**, abra **Configurar TV e clima**. Na seção **Notícias da T
 
 O servidor atualiza as manchetes a cada 15 minutos. As fontes incluídas são a [Agência Câmara](https://infograficos.camara.leg.br/manual-de-comunicacao/agencia-camara/) e a [Agência Senado](https://www12.senado.leg.br/assessoria-de-imprensa/noticias/politica-de-uso). O aplicativo agrupa as manchetes institucionais por tema e exibe o crédito sem importar fotos dessas fontes. Use `RSS_FEEDS` para acrescentar fontes licenciadas.
 
+O [Wikimedia Commons](https://commons.wikimedia.org/wiki/Commons:Reusing_content_outside_Wikimedia/en) fornece fotos ilustrativas para as manchetes sem imagem. O servidor importa o catálogo na inicialização e tenta novamente uma vez ao dia para fotos pendentes. As miniaturas e os créditos ficam armazenados localmente. A TV exibe a foto ao fundo com autoria, licença e indicação de que é ilustrativa.
+
 ## Backup e restauração
 
 O serviço `backup` grava um dump PostgreSQL e um arquivo de imagens na inicialização e a cada 24 horas. Por padrão, a retenção local é de 14 dias. Configure `BACKUP_INTERVAL_SECONDS` e `BACKUP_RETENTION_DAYS` conforme a operação.

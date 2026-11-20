@@ -47,15 +47,17 @@ export async function panelContent(tenantId: string, config: PanelSettings) {
       { OR: [{ validTo: null }, { validTo: { gte: now } }] },
     ],
   };
-  const [local, global, news, weatherRow] = await Promise.all([
+  const showFeed =
+    config.weights.NEWS > 0 &&
+    (config.newsMode === "AUTO" || config.newsCategories.length > 0);
+  const [local, global, news, illustrations, weatherRow] = await Promise.all([
     db.card.findMany({ where, orderBy: { id: "desc" }, take: 80 }),
     prisma.card.findMany({
       where: { ...where, tenantId: null, type: "TIP" },
       orderBy: { id: "desc" },
       take: 40,
     }),
-    config.weights.NEWS > 0 &&
-    (config.newsMode === "AUTO" || config.newsCategories.length > 0)
+    showFeed
       ? prisma.newsItem.findMany({
           where: {
             feed: { active: true, global: true },
@@ -68,6 +70,7 @@ export async function panelContent(tenantId: string, config: PanelSettings) {
           take: 75,
         })
       : [],
+    showFeed ? prisma.newsIllustration.findMany() : [],
     config.weights.WEATHER > 0
       ? prisma.weatherCache.findUnique({
           where: { city: weatherCacheKey(config) },
@@ -78,6 +81,9 @@ export async function panelContent(tenantId: string, config: PanelSettings) {
     weatherRow && now.getTime() - weatherRow.fetchedAt.getTime() < 6 * 3600000
       ? weatherData.safeParse(weatherRow.payload).data
       : undefined;
+  const illustrationsByCategory = new Map(
+    illustrations.map((illustration) => [illustration.category, illustration]),
+  );
   const cards: DisplayCard[] = [
     ...[...local, ...global].map(({ id, type, title, text, imageUrl }) => ({
       id,
@@ -93,14 +99,26 @@ export async function panelContent(tenantId: string, config: PanelSettings) {
           config.newsCategories.length || defaultNewsCategory(category),
       )
       .slice(0, 20)
-      .map((item): DisplayCard => ({
-        id: item.id,
-        type: "NEWS",
-        title: item.title,
-        text: "",
-        imageUrl: item.imageUrl ?? undefined,
-        source: item.source,
-      })),
+      .map((item): DisplayCard => {
+        const illustration = item.imageUrl
+          ? undefined
+          : (illustrationsByCategory.get(item.category) ??
+            illustrationsByCategory.get("geral"));
+        return {
+          id: item.id,
+          type: "NEWS",
+          title: item.title,
+          text: "",
+          imageUrl: item.imageUrl ?? illustration?.imageUrl,
+          imageCredit: illustration && {
+            author: illustration.author,
+            license: illustration.license,
+            licenseUrl: illustration.licenseUrl,
+            sourceUrl: illustration.sourceUrl,
+          },
+          source: item.source,
+        };
+      }),
     ...(weather ? [weatherCard(config, weather)] : []),
   ];
   return {
