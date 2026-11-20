@@ -26,6 +26,12 @@ const paths = {
   download: "M12 3v12m-4-4 4 4 4-4M4 16v4h16v-4",
   filter: "M3 5h18l-7 8v5l-4 2v-7L3 5Z",
   trash: "M3 6h18M7 6l1 14h8l1-14m-7 0V3h4v3",
+  message: "M4 5h16v11H9l-5 4V5Z",
+  signal:
+    "M2 9a14.5 14.5 0 0 1 20 0M5 12.5a10 10 0 0 1 14 0M8.5 16a5 5 0 0 1 7 0M12 19.5h.01",
+  send: "M21 3 3 10.5l7 2.5 2.5 7L21 3Zm-11 10 4-4",
+  star: "m12 3 2.8 5.8 6.2.9-4.5 4.4 1.1 6.2L12 17.4l-5.6 2.9 1.1-6.2L3 9.7l6.2-.9L12 3Z",
+  checkCircle: "M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-13 0 3 3 5-6",
 } as const;
 
 export function Icon({ name }: { name: keyof typeof paths }) {

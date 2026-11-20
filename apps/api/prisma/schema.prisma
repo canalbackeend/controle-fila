@@ -58,22 +58,23 @@ enum CardType {
 }
 
 model Tenant {
-  id            String    @id @default(uuid())
-  slug          String    @unique
+  id            String        @id @default(uuid())
+  slug          String        @unique
   name          String
-  timeZone      String    @default("America/Sao_Paulo")
-  resetTime     String    @default("00:00")
-  retentionDays Int       @default(30)
+  timeZone      String        @default("America/Sao_Paulo")
+  resetTime     String        @default("00:00")
+  retentionDays Int           @default(30)
   logoUrl       String?
   planName      String?
   kioskLimit    Int?
   panelLimit    Int?
   suspendedAt   DateTime?
-  theme         Json      @default("{\"preset\":\"blue\"}")
-  createdAt     DateTime  @default(now())
+  theme         Json          @default("{\"preset\":\"blue\"}")
+  createdAt     DateTime      @default(now())
   units         Unit[]
   users         User[]
   cards         Card[]
+  npsResponses  NpsResponse[]
 }
 
 model Unit {
@@ -101,6 +102,7 @@ model User {
   active               Boolean          @default(true)
   tenant               Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   sessions             CounterSession[]
+  npsResponses         NpsResponse[]
 
   @@unique([tenantId, email])
   @@unique([tenantId, id])
@@ -317,4 +319,19 @@ model Template {
 enum CallSound {
   BEEP
   VOICE
+}
+
+model NpsResponse {
+  id        String   @id @default(uuid())
+  tenantId  String
+  userId    String
+  role      Role
+  score     Int
+  comment   String?
+  createdAt DateTime @default(now())
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [tenantId, userId], references: [tenantId, id], onDelete: Cascade)
+
+  @@index([tenantId, userId, createdAt])
+  @@index([createdAt])
 }

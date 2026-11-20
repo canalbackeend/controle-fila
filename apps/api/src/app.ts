@@ -18,6 +18,7 @@ import { attachRealtime } from "./realtime.js";
 import { queueRoutes } from "./modules/queue/routes.js";
 import { platformRoutes } from "./modules/platform/routes.js";
 import { adminRoutes } from "./modules/admin/routes.js";
+import { npsRoutes } from "./modules/nps/routes.js";
 
 export function buildApp(
   options: FastifyServerOptions = {},
@@ -88,6 +89,7 @@ export function buildApp(
       panelRoutes(api);
       trackingRoutes(api);
       reportsRoutes(api);
+      npsRoutes(api);
       assetRoutes(api);
       videoSceneRoutes(api);
       contentRoutes(api, realtime);
