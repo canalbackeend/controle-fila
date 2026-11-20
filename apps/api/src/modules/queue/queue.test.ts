@@ -1,10 +1,10 @@
 import { randomUUID } from "node:crypto";
 import { afterAll, beforeAll, describe, expect, test } from "vitest";
-import { localDay, type Actor } from "@beend/shared";
+import { localDay, type Actor, type TicketSummary } from "@beend/shared";
 import { buildApp } from "../../app.js";
 import { prisma, tenantDb } from "../../db.js";
 import { createTenant } from "../admin/service.js";
-import { expireQueue } from "./service.js";
+import { dateFor, expireQueue } from "./service.js";
 
 describe.skipIf(process.env.RUN_DB_TESTS !== "1")("queue transactions", () => {
   const app = buildApp(
@@ -315,6 +315,69 @@ describe.skipIf(process.env.RUN_DB_TESTS !== "1")("queue transactions", () => {
     expect(csv.body).toContain('"Triagem"');
     expect(csv.body).not.toContain("Maria");
   }, 15000);
+
+  test("calls an 80+ ticket before an older preferential ticket from another service at the same counter", async () => {
+    const { actor, cookie } = accounts[2]!;
+    const { first, second } = fixtures[1]!;
+    const headers = { cookie };
+    const issue = async (
+      serviceId: string,
+      priority: TicketSummary["priority"],
+    ) => {
+      const response = await app.inject({
+        method: "POST",
+        url: "/queue/tickets",
+        headers,
+        payload: { serviceId, priority },
+      });
+      expect(response.statusCode, response.body).toBe(201);
+      return response.json<TicketSummary>();
+    };
+    const preferential = await issue(first, "PREFERENTIAL");
+    const priority80 = await issue(second, "PRIORITY80");
+    await issue(second, "NORMAL");
+    const db = tenantDb(actor.tenantId);
+    await db.ticket.update({
+      where: { id: preferential.id },
+      data: { queuedAt: new Date(Date.parse(priority80.queuedAt) - 1000) },
+    });
+    await db.queueSequence.updateMany({
+      where: {
+        unitId: actor.unitId,
+        businessDate: dateFor(actor),
+        serviceId: { in: [first, second] },
+      },
+      data: { turn: 2 },
+    });
+
+    const call = async (expected: TicketSummary) => {
+      const response = await app.inject({
+        method: "POST",
+        url: "/queue/call",
+        headers,
+        payload: {},
+      });
+      expect(response.statusCode, response.body).toBe(200);
+      expect(response.json()).toMatchObject({
+        id: expected.id,
+        status: "CALLED",
+      });
+    };
+    await call(priority80);
+    const closed = await app.inject({
+      method: "POST",
+      url: `/queue/tickets/${priority80.id}/action`,
+      headers,
+      payload: { action: "NO_SHOW" },
+    });
+    expect(closed.statusCode, closed.body).toBe(200);
+    await call(preferential);
+    const turns = await db.queueSequence.findMany({
+      where: { unitId: actor.unitId, businessDate: dateFor(actor) },
+      select: { turn: true },
+    });
+    expect(turns).toEqual([{ turn: 0 }, { turn: 0 }]);
+  });
 
   test("expires only the waiting tickets of the selected tenant after the local reset and records the event", async () => {
     const { actor } = accounts[0]!;

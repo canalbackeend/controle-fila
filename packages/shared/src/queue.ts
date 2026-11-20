@@ -86,15 +86,21 @@ export function compareQueueOrder(a: QueueTicket, b: QueueTicket) {
 
 export function pickNextTicket<T extends QueueTicket>(
   tickets: readonly T[],
-  ratio: Ratio,
-  turn: number,
+  ratio: Ratio | "arrival",
+  turn = 0,
 ) {
-  const cycle = ratio.ratioNormal + ratio.ratioPreferential;
+  const cycle =
+    ratio === "arrival" ? 1 : ratio.ratioNormal + ratio.ratioPreferential;
   const normalized = turn % cycle;
-  const wantsNormal = normalized < ratio.ratioNormal;
+  let oldest: T | undefined;
   let normal: T | undefined;
   let preferential: T | undefined;
   for (const ticket of tickets) {
+    if (
+      ratio === "arrival" &&
+      (!oldest || compareQueueOrder(ticket, oldest) < 0)
+    )
+      oldest = ticket;
     if (ticket.priority === "NORMAL") {
       if (!normal || compareQueueOrder(ticket, normal) < 0) normal = ticket;
     } else if (
@@ -107,6 +113,11 @@ export function pickNextTicket<T extends QueueTicket>(
       preferential = ticket;
     }
   }
+  // When merging service candidates, arrival determines which block is next.
+  const wantsNormal =
+    ratio === "arrival"
+      ? oldest?.priority === "NORMAL"
+      : normalized < ratio.ratioNormal;
   const preferred = wantsNormal ? normal : preferential;
   const fallback = wantsNormal ? preferential : normal;
   return {

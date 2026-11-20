@@ -47,6 +47,20 @@ test("falls back when either type is empty and preserves its turn", () => {
   });
 });
 
+test("uses arrival to choose the block across services and prioritizes 80+ within the preferential block", () => {
+  const priority80 = ticket("80", "PRIORITY80", 3);
+  const preferential = ticket("P", "PREFERENTIAL", 1);
+  const normal = ticket("N", "NORMAL", 2);
+  expect(
+    pickNextTicket([normal, priority80, preferential], "arrival").ticket,
+  ).toBe(priority80);
+
+  const olderNormal = ticket("N0", "NORMAL", 0);
+  expect(
+    pickNextTicket([priority80, olderNormal, preferential], "arrival").ticket,
+  ).toBe(olderNormal);
+});
+
 test("calculates a tenant-local operational day and a custom opening hour", () => {
   expect(
     businessDate(

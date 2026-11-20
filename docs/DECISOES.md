@@ -5,6 +5,7 @@
 - Cadastros em uso são desativados para preservar o histórico.
 - A porta web local é 5180. A URL da aplicação é configurada por ambiente.
 - A intercalação começa com o bloco normal. O 80+ sempre tem precedência no bloco preferencial. Se o tipo previsto estiver vazio, a chamada do outro tipo mantém a posição do ciclo.
+- Num guichê com vários serviços, cada serviço indica a próxima senha conforme sua intercalação. A candidata mais antiga define o bloco da chamada. Se for o preferencial, as candidatas 80+ dos serviços do guichê têm precedência. A chamada atualiza somente a intercalação do serviço da senha chamada.
 - A virada usa o horário local do tenant. Senhas aguardando de datas anteriores são canceladas e registradas pelo job. Atendimentos em andamento podem ser concluídos no guichê.
 - O encaminhamento mantém o código e entra no fim do grupo de prioridade da etapa de destino. A posição impressa representa a fila no momento da emissão.
 - Os códigos de pareamento são descartáveis, expiram em 15 minutos e incluem o identificador da empresa. Gerar outro código revoga o token anterior do dispositivo.

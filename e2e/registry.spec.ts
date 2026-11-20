@@ -80,7 +80,7 @@ test("issues and displays preferential and 80+ registry tickets on separate devi
         ).toBeVisible();
       else await expect(waiting).toHaveCount(0);
     }
-    for (const code of ["FS002", "FP001", "GS002", "GP001"]) {
+    for (const code of ["FS002", "GS002", "FP001", "GP001"]) {
       await page.getByRole("button", { name: "Chamar próximo" }).click();
       await expect(page.locator(".current-code")).toHaveText(code);
       await expect(tv.locator(".tv-overlay .tv-call-code")).toHaveText(code, {

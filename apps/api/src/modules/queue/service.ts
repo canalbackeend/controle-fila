@@ -329,9 +329,11 @@ export function callTicket(actor: Actor, code?: string): Promise<QueueChange> {
         ? [{ service, ticket: selection.ticket, nextTurn: selection.nextTurn }]
         : [];
     });
-    const selected = candidates.sort((a, b) =>
-      compareQueueOrder(a.ticket, b.ticket),
-    )[0];
+    const { ticket: nextTicket } = pickNextTicket(
+      candidates.map(({ ticket }) => ticket),
+      "arrival",
+    );
+    const selected = candidates.find(({ ticket }) => ticket === nextTicket);
     if (!selected)
       missing(
         code ? "Senha indisponível neste guichê." : "Nenhuma senha aguardando.",
