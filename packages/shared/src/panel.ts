@@ -64,6 +64,7 @@ export type PanelSettings = WeatherLocation & {
   ticker: string;
   sceneIds: PanelSceneId[];
   sceneFrequency: number;
+  callSound: CallSound;
 };
 export type PanelData = {
   theme: TenantTheme;
@@ -89,10 +90,19 @@ export const defaultPanelSettings: PanelSettings = {
   ticker: "",
   sceneIds: [],
   sceneFrequency: 3,
+  callSound: "BEEP",
 };
 
 import { z } from "zod";
 import { idSchema, nameSchema } from "./admin.js";
+
+export const callSounds = ["BEEP", "VOICE"] as const;
+export const callSoundSchema = z.enum(callSounds);
+export type CallSound = z.infer<typeof callSoundSchema>;
+export const callSoundLabels: Record<CallSound, string> = {
+  BEEP: "Bip",
+  VOICE: "Chamada de voz",
+};
 
 export const panelSceneIds = [
   "misty-river",
@@ -178,6 +188,7 @@ export const panelInput = z.object({
   city: nameSchema,
   state: weatherStateSchema.nullable().default(null),
   callDisplaySeconds: z.coerce.number().int().min(2).max(30),
+  callSound: callSoundSchema.default("BEEP"),
   ticker: z.string().trim().max(400),
 });
 export const assetUrlSchema = z

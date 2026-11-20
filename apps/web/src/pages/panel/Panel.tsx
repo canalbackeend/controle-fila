@@ -18,6 +18,7 @@ import { PairingForm, usePairing } from "../devices/pairing";
 import { FullscreenButton } from "../devices/FullscreenButton";
 import { VideoScene } from "./VideoScene";
 import { playAlert } from "./sound";
+import { speakCall, stopSpeech, unlockSpeech } from "./voice";
 
 const cardLabels = {
   NOTICE: "Aviso",
@@ -344,19 +345,30 @@ function PanelDevice({ id }: { id: string }) {
     scene,
     scenes,
   ]);
+  const callSound = useRef(config.callSound);
+  callSound.current = config.callSound;
   useEffect(() => {
     if (!started || !current) return;
     if (audio.current) playAlert(audio.current);
+    const voice =
+      callSound.current === "VOICE"
+        ? window.setTimeout(() => speakCall(current), 700)
+        : undefined;
     const timer = window.setTimeout(
       () => setOverlay((queue) => queue.slice(1)),
       config.callDisplaySeconds * 1000,
     );
-    return () => window.clearTimeout(timer);
+    return () => {
+      window.clearTimeout(voice);
+      window.clearTimeout(timer);
+    };
   }, [config.callDisplaySeconds, current, started]);
+  useEffect(() => stopSpeech, []);
 
   async function start() {
     try {
       if (!audio.current) audio.current = new AudioContext();
+      unlockSpeech();
       await audio.current.resume();
       if (audio.current.state !== "running")
         throw new Error("Audio unavailable");

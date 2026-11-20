@@ -31,6 +31,7 @@ export function settingsFor(saved: PanelConfig | null): PanelSettings {
     newsCategories: saved.newsCategories,
     cardSeconds: saved.cardSeconds,
     callDisplaySeconds: saved.callDisplaySeconds,
+    callSound: saved.callSound,
     ticker: saved.ticker,
     sceneIds: saved.sceneIds.flatMap(
       (id) => panelSceneId.safeParse(id).data ?? [],

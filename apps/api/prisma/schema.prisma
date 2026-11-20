@@ -231,20 +231,21 @@ model Device {
 }
 
 model PanelConfig {
-  deviceId           String   @id
+  deviceId           String    @id
   tenantId           String
-  serviceIds         String[] @default([])
-  weights            Json     @default("{\"NOTICE\":50,\"NEWS\":30,\"WEATHER\":20,\"TIP\":20}")
-  cardSeconds        Int      @default(10)
-  newsMode           String   @default("AUTO")
-  newsCategories     String[] @default([])
-  city               String   @default("São Paulo")
+  serviceIds         String[]  @default([])
+  weights            Json      @default("{\"NOTICE\":50,\"NEWS\":30,\"WEATHER\":20,\"TIP\":20}")
+  cardSeconds        Int       @default(10)
+  newsMode           String    @default("AUTO")
+  newsCategories     String[]  @default([])
+  city               String    @default("São Paulo")
   state              String?
-  callDisplaySeconds Int      @default(5)
-  ticker             String   @default("")
-  sceneIds           String[] @default([])
-  sceneFrequency     Int      @default(3)
-  device             Device   @relation(fields: [tenantId, deviceId], references: [tenantId, id], onDelete: Cascade)
+  callDisplaySeconds Int       @default(5)
+  callSound          CallSound @default(BEEP)
+  ticker             String    @default("")
+  sceneIds           String[]  @default([])
+  sceneFrequency     Int       @default(3)
+  device             Device    @relation(fields: [tenantId, deviceId], references: [tenantId, id], onDelete: Cascade)
 
   @@unique([tenantId, deviceId])
 }
@@ -311,4 +312,9 @@ model Template {
   id     String @id
   name   String
   config Json
+}
+
+enum CallSound {
+  BEEP
+  VOICE
 }
